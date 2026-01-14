@@ -1,67 +1,83 @@
 """
-Парсер сообщений.
+Улучшенный парсер.
 """
 
 import re
 
 
 class SimpleParser:
-    """Парсер ключевых слов."""
+    """Парсер для понимания технических терминов."""
 
     @staticmethod
     def parse(text):
         text_lower = text.lower().strip()
         result = {}
 
-        # Материалы
-        if 'сталь' in text_lower:
-            result['material'] = 'сталь'
-            steel_match = re.search(r'сталь\s*(\d+\w*)', text_lower)
-            if steel_match:
-                result['material'] = f"сталь {steel_match.group(1)}"
+        # === МАТЕРИАЛЫ ===
+        materials = {
+            'сталь': 'сталь',
+            'сталь 45': 'сталь 45',
+            'сталь45': 'сталь 45',
+            'алюмин': 'алюминий',
+            'титан': 'титан',
+            'латун': 'латунь',
+            'медь': 'медь',
+            'нержавейк': 'нержавейка'
+        }
 
-        elif 'алюмин' in text_lower:
-            result['material'] = 'алюминий'
+        for key, value in materials.items():
+            if key in text_lower:
+                result['material'] = value
+                break
 
-        elif 'титан' in text_lower:
-            result['material'] = 'титан'
-
-        # Операции
-        if 'токар' in text_lower:
+        # === ОПЕРАЦИИ ===
+        if any(word in text_lower for word in ['токар', 'точить', 'проточить']):
             result['operation'] = 'токарная'
-        elif 'фрез' in text_lower:
+
+        if any(word in text_lower for word in ['фрезер', 'фрез', 'фрезеровк']):
             result['operation'] = 'фрезерная'
 
-        # Режимы
-        if 'черн' in text_lower:
+        # === РЕЖИМЫ ===
+        if any(word in text_lower for word in ['чернов', 'черн', 'груб', 'съем']):
             result['mode'] = 'черновая'
-        elif 'чист' in text_lower:
+
+        if any(word in text_lower for word in ['чистов', 'чист', 'финиш', 'точн']):
             result['mode'] = 'чистовая'
 
-        # Диаметр
-        dia_match = re.search(r'(\d+[.,]?\d*)\s*(?:мм|mm|Ø|ø|диаметр)', text_lower)
-        if dia_match:
-            result['diameter'] = dia_match.group(1)
+        # Если оба режима упомянуты
+        if ('черн' in text_lower and 'чист' in text_lower) or \
+                ('груб' in text_lower and 'точн' in text_lower):
+            result['mode'] = 'оба режима'  # Особый флаг
 
-        # Команды рекомендаций
+        # === ДИАМЕТР ===
+        # Ищем числа с указанием мм
+        mm_patterns = [
+            r'(\d+[.,]?\d*)\s*мм',
+            r'диаметр\s*(\d+[.,]?\d*)',
+            r'[øØ]\s*(\d+[.,]?\d*)',
+            r'd\s*(\d+[.,]?\d*)'
+        ]
+
+        for pattern in mm_patterns:
+            match = re.search(pattern, text_lower)
+            if match:
+                result['diameter'] = match.group(1)
+                break
+
+        # === КОМАНДЫ ===
         command_words = [
             'рекомендац', 'совет', 'подскажи', 'параметр',
-            'режимы', 'настрой', 'что делать', 'как', 'помоги',
-            'посоветуй', 'скажи'
+            'настрой', 'что делать', 'как', 'помоги',
+            'посоветуй', 'скажи', 'дай'
         ]
 
         for word in command_words:
             if word in text_lower:
-                result['command'] = 'get_recommendations'
+                result['command'] = True
                 break
 
-        # "дай" только если не просто "да"
-        if 'дай' in text_lower and len(text_lower) > 3:
-            result['command'] = 'get_recommendations'
-
-        # Положительные ответы (НЕ команды)
-        positive_words = ['да', 'ок', 'хорошо', 'ага', 'угу', 'ладно', 'понял', 'ясно']
-        if text_lower in positive_words:
-            result['response'] = 'positive'
+        # Короткие команды
+        if text_lower in ['дай', 'скажи', 'совет', 'рекомендации']:
+            result['command'] = True
 
         return result

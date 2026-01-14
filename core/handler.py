@@ -1,37 +1,57 @@
 """
-Умный обработчик сообщений.
+Умный обработчик для Дня 1 - Бот который уточняет, а не предполагает.
 """
 
 import random
 from core.context import get_context
 from core.parser import SimpleParser
-from core.assumptions import AssumptionEngine
-from core.human_recommendations import HumanRecommender
+from core.recommendations import SmartRecommender
 
 
 class MessageHandler:
-    """Обработчик сообщений."""
+    """Интеллектуальный обработчик."""
 
     def __init__(self):
         self.parser = SimpleParser()
-        self.assumption_engine = AssumptionEngine()
-        self.recommender = HumanRecommender()
+        self.recommender = SmartRecommender()
 
-        # Вариации
-        self.greetings = [
-            "Привет! Что будем обрабатывать?",
-            "Здравствуй! Какая задача?",
-            "Приветствую! Что делаем сегодня?",
-            "Добрый день! Что обрабатываем?",
-            "Привет! Готов помочь. Какая операция?"
-        ]
+        # Фразы для разных ситуаций
+        self.phrases = {
+            'greeting': [
+                "Привет! Что обрабатываем?",
+                "Здравствуйте! Какой материал?",
+                "Добрый день! Что за задача?",
+                "Приветствую! Что будем делать?"
+            ],
 
-        self.confused_responses = [
-            "Не совсем понял... Можешь объяснить по-другому?",
-            "Хм, не уверен что понял. Уточни?",
-            "Запутался. Расскажи подробнее?",
-            "Не совсем ясно. Повтори иначе?"
-        ]
+            'ask_operation': [
+                "Хорошо. Какая операция? (токарка/фрезеровка)",
+                "Понял материал. Что делаем? Токарка или фрезеровка?",
+                "Материал запомнил. Какая операция нужна?",
+                "Так. Теперь скажи операцию: токарка или фрезеровка?"
+            ],
+
+            'ask_mode': [
+                "Какой режим обработки? (черновой/чистовой)",
+                "Черновая или чистовая обработка?",
+                "Уточни режим: черновой или чистовой?",
+                "Режим какой нужен: черновой или чистовой?"
+            ],
+
+            'ready': [
+                "✅ Всё понял! Хочешь рекомендации?",
+                "👍 Данные собраны. Дать совет по настройке?",
+                "👌 Запомнил. Могу подсказать с параметрами.",
+                "✅ Готово! Нужны рекомендации по обработке?"
+            ],
+
+            'confused': [
+                "Не совсем понял... Можешь объяснить иначе?",
+                "Хм, не уловил мысль. Расскажи подробнее?",
+                "Запутался. Можешь повторить по-другому?",
+                "Не понял. Можешь сказать проще?"
+            ]
+        }
 
     def handle_message(self, user_id, text):
         """Обрабатывает сообщение."""
@@ -39,177 +59,171 @@ class MessageHandler:
             context = get_context(user_id)
             parsed = self.parser.parse(text)
 
-            print(f"DEBUG: Парсинг '{text}' -> {parsed}")
+            print(f"DEBUG: '{text}' -> {parsed}")
 
-            # 1. Если это команда рекомендаций
-            if 'command' in parsed and parsed['command'] == 'get_recommendations':
-                print(f"DEBUG: Распознана команда рекомендаций")
-                return self._get_recommendations(context)
+            # Если это команда рекомендаций
+            if 'command' in parsed:
+                return self._give_recommendations(context)
 
-            # 2. Если это положительный ответ (да, ок, хорошо)
-            if 'response' in parsed and parsed['response'] == 'positive':
-                print(f"DEBUG: Положительный ответ")
-                return self._handle_positive_response(context)
+            # Обновляем контекст ЧАСТИЧНО
+            updated = False
 
-            # 3. Обновляем контекст
-            for field, value in parsed.items():
-                if field not in ['command', 'query', 'response'] and value:
-                    confidence = 0.9
-                    # Если режим угадан из контекста - меньше уверенность
-                    if field == 'mode' and 'черн' not in text.lower() and 'чист' not in text.lower():
-                        confidence = 0.6
-                    context.update(field, value, source="parser", confidence=confidence)
+            if 'material' in parsed and parsed['material']:
+                # Если материал меняется - сбрасываем остальное
+                if context.material != parsed['material']:
+                    context.material = parsed['material']
+                    context.operation = None  # Сбрасываем операцию
+                    context.mode = None  # Сбрасываем режим
+                    context.diameter = None  # Сбрасываем диаметр
+                    updated = True
 
-            # 4. Предположения
-            assumptions = self.assumption_engine.apply_assumptions(context)
+            if 'operation' in parsed and parsed['operation']:
+                context.operation = parsed['operation']
+                updated = True
 
-            # 5. Ответ
-            response = self._generate_response(context, assumptions, text)
+            if 'mode' in parsed and parsed['mode']:
+                context.mode = parsed['mode']
+                updated = True
 
-            return response
+            if 'diameter' in parsed and parsed['diameter']:
+                context.diameter = parsed['diameter']
+                updated = True
+
+            # Генерируем ответ на основе текущего состояния
+            return self._generate_smart_response(context, text)
 
         except Exception as e:
-            print(f"Ошибка в handle_message: {e}")
+            print(f"Ошибка: {e}")
             import traceback
             traceback.print_exc()
-            return "Что-то пошло не так... Давай начнем заново. Что обрабатываем?"
+            return "Что-то пошло не так... Напиши /start для начала."
 
-    def _generate_response(self, context, assumptions, original_text=""):
-        """Генерирует ответ."""
+    def _generate_smart_response(self, context, user_text):
+        """Генерирует умный ответ на основе контекста."""
 
-        # Если пустой контекст
-        if not context.has_minimum_data():
-            return random.choice(self.greetings)
+        user_text_lower = user_text.lower()
 
-        # Информация
-        info_parts = []
-        if context.material:
-            info_parts.append(f"**Материал:** {context.material}")
-        if context.operation:
-            info_parts.append(f"**Операция:** {context.operation}")
-        if context.mode:
-            info_parts.append(f"**Режим:** {context.mode}")
+        # 1. Если пользователь просит оба режима
+        if ('чернов' in user_text_lower and 'чистов' in user_text_lower) or \
+                ('черн' in user_text_lower and 'чист' in user_text_lower):
+            return (
+                "А, понимаю — нужны параметры и для черновой, и для чистовой обработки?\n\n"
+                "Давай так:\n"
+                "1. Сначала обсудим черновую\n"
+                "2. Потом чистовая\n\n"
+                "Для какого материала и операции?"
+            )
 
-        info_text = "\n".join(info_parts) if info_parts else ""
+        # 2. Если пользователь говорит о диаметре
+        if 'диаметр' in user_text_lower or 'ø' in user_text_lower or 'мм' in user_text_lower:
+            if context.diameter:
+                return (
+                    f"Диаметр {context.diameter} мм запомнил.\n\n"
+                    f"Для такого диаметра нужны особые настройки. "
+                    f"Уточни материал и операцию."
+                )
 
-        # С предположениями
-        if assumptions:
-            assumption_text = " ".join(assumptions)
-            variants = [
-                f"{assumption_text}\n\n{info_text}",
-                f"Думаю так:\n{assumption_text}\n\n{info_text}",
-                f"{assumption_text}\n\n{info_text}"
-            ]
-            base_response = random.choice(variants)
-        else:
-            base_response = info_text
+        # 3. Поэтапный сбор информации
+        if not context.material:
+            return random.choice(self.phrases['greeting'])
 
-        # Добавляем призыв к действию
-        if context.material and context.operation and context.mode:
-            # Если всё собрано - предлагаем рекомендации
-            if hasattr(context, 'recommendations_given') and context.recommendations_given:
-                call_to_action = random.choice([
-                    "\n\n✅ Рекомендации уже давал. Что-то уточнить?",
-                    "\n\n👌 Помню эту задачу. Нужны дополнительные пояснения?",
-                    "\n\n💭 Уже обсуждали. Что-то изменилось?"
-                ])
+        elif context.material and not context.operation:
+            return random.choice(self.phrases['ask_operation'])
+
+        elif context.material and context.operation and not context.mode:
+            # Если есть диаметр - упоминаем его
+            if context.diameter:
+                return (
+                    f"Материал: {context.material}\n"
+                    f"Операция: {context.operation}\n"
+                    f"Диаметр: {context.diameter} мм\n\n"
+                    f"{random.choice(self.phrases['ask_mode'])}"
+                )
             else:
-                call_to_action = random.choice([
-                    "\n\n✅ Всё готово! Напиши 'совет' или 'рекомендации'.",
-                    "\n\n👌 Запомнил. Хочешь получить параметры?",
-                    "\n\n👍 Данные собраны. Можешь попросить рекомендации."
-                ])
-        elif context.material and context.operation:
-            # Если нет режима
-            call_to_action = random.choice([
-                "\n\nУточни режим: черновая или чистовая?",
-                "\n\nКакой режим обработки?",
-                "\n\nЭто черновая или чистовая работа?"
-            ])
-        elif context.material:
-            # Если только материал
-            call_to_action = random.choice([
-                f"\n\nЧто делаем с {context.material}?",
-                f"\n\nКакая операция для {context.material}?",
-                "\n\nТокарка или фрезеровка?"
-            ])
-        else:
-            call_to_action = "\n\nЧто-то ещё?"
+                return random.choice(self.phrases['ask_mode'])
 
-        response = base_response + call_to_action if base_response else call_to_action
+        elif context.material and context.operation and context.mode:
+            # Собираем информацию о том, что у нас есть
+            info = []
+            if context.material:
+                info.append(f"• Материал: {context.material}")
+            if context.operation:
+                info.append(f"• Операция: {context.operation}")
+            if context.mode:
+                info.append(f"• Режим: {context.mode}")
+            if context.diameter:
+                info.append(f"• Диаметр: {context.diameter} мм")
 
-        # Добавляем "человечность" (30% шанс)
-        if random.random() < 0.3:
-            human_touch = random.choice([
-                "\n\n🤔 Что скажешь?",
-                "\n\n💭 Как тебе?",
-                "\n\n👨‍🏭 На твоём опыте...",
-                "\n\n🔧 По-моему так..."
-            ])
-            response += human_touch
+            info_text = "\n".join(info)
 
-        return response
-
-    def _handle_positive_response(self, context):
-        """Обрабатывает положительный ответ (да, ок и т.д.)."""
-        if context.material and context.operation and context.mode:
-            # Если всё есть - спрашиваем что дальше
-            responses = [
-                "Отлично! Что дальше?\n▸ 'совет' - рекомендации\n▸ /reset - новая задача\n▸ 'сталь' - другой материал",
-                "Хорошо. Что будем делать?\n▸ Нужны параметры?\n▸ Хочешь уточнить?\n▸ Или новая задача?",
-                "Понял. Ещё что-то нужно?\n▸ Рекомендации?\n▸ Вопросы?\n▸ Или продолжаем?"
+            # Разные варианты ответа
+            variants = [
+                f"{info_text}\n\n{random.choice(self.phrases['ready'])}",
+                f"Итак:\n{info_text}\n\n{random.choice(self.phrases['ready'])}",
+                f"Понял задачу:\n{info_text}\n\n{random.choice(self.phrases['ready'])}"
             ]
-            return random.choice(responses)
-        else:
-            # Если данных мало
-            return "Хорошо. Продолжим сбор информации?"
 
-    def _get_recommendations(self, context):
+            # В 40% случаев добавляем "сомнение"
+            if random.random() < 0.4:
+                doubt = random.choice([
+                    "\n\n🤔 Правильно понял?",
+                    "\n\n💭 Как думаешь, всё верно?",
+                    "\n\n👨‍🏭 По-моему так. Ты согласен?"
+                ])
+                return random.choice(variants) + doubt
+
+            return random.choice(variants)
+
+        else:
+            return random.choice(self.phrases['confused'])
+
+    def _give_recommendations(self, context):
         """Даёт рекомендации."""
         if not context.material or not context.operation:
-            return "Сначала скажи, что обрабатываем и какую операцию делаем."
+            return (
+                "Сначала нужно знать:\n"
+                "1. Материал (например: алюминий, сталь 45)\n"
+                "2. Операция (токарка или фрезеровка)\n\n"
+                "Потом могу дать рекомендации."
+            )
 
-        print(f"DEBUG: Даю рекомендации для {context.material}, {context.operation}, {context.mode}")
+        # Если нет режима - спрашиваем
+        if not context.mode:
+            return (
+                f"По {context.material} для {context.operation}:\n\n"
+                "Нужно уточнить режим:\n"
+                "• Черновая обработка — для быстрого съёма\n"
+                "• Чистовая — для точности и качества\n\n"
+                "Какой режим нужен?"
+            )
 
-        # Если рекомендации уже давались
-        if hasattr(context, 'recommendations_given') and context.recommendations_given:
-            responses = [
-                "Я уже давал рекомендации по этой задаче. Хочешь что-то уточнить?",
-                "По этой задаче мы уже обсуждали параметры. Что-то изменилось?",
-                "Помню эту задачу. Нужны дополнительные пояснения?"
-            ]
-            return random.choice(responses)
-
-        # Даем рекомендации
+        # Даём рекомендации
         recommendation = self.recommender.get_recommendation(context)
 
-        # Помечаем, что рекомендации даны
-        context.recommendations_given = True
-
-        # Интеллектуальный вывод
-        intro = random.choice([
-            "🤔 **Думаю так:**",
-            "👨‍🏭 **По моему опыту:**",
-            "🔧 **Советую начать с:**",
-            "💡 **Мои мысли:**"
-        ])
-
-        # Контекст
+        # Форматируем с контекстом
         context_info = []
         if context.material:
-            context_info.append(f"• **Материал:** {context.material}")
+            context_info.append(f"**Материал:** {context.material}")
         if context.operation:
-            context_info.append(f"• **Операция:** {context.operation}")
+            context_info.append(f"**Операция:** {context.operation}")
         if context.mode:
-            context_info.append(f"• **Режим:** {context.mode}")
+            context_info.append(f"**Режим:** {context.mode}")
+        if context.diameter:
+            context_info.append(f"**Диаметр:** {context.diameter} мм")
 
-        # Вопрос для продолжения
-        follow_up = random.choice([
-            "\n\n**Что дальше?**\n▸ Попробуем другие параметры\n▸ Начнём новую задачу (/reset)\n▸ Спроси что-нибудь",
-            "\n\n**Как думаешь?**\n▸ Подойдёт?\n▸ Нужно изменить?\n▸ Свой опыт напиши",
-            "\n\n**Понятно?**\n▸ Да - продолжаем\n▸ Нет - уточняй\n▸ Другой материал - скажи"
+        # Выбираем вступление
+        intro = random.choice([
+            "🤔 **Вот что я думаю:**",
+            "👨‍🏭 **По моему опыту:**",
+            "🔧 **Рекомендую начать с:**",
+            "💡 **Мой совет:**"
         ])
 
-        full_response = f"{intro}\n\n" + "\n".join(context_info) + "\n\n" + recommendation + follow_up
+        # Выбираем завершение
+        ending = random.choice([
+            "\n\n**Что скажешь?**\n▸ Подойдёт?\n▸ Нужны уточнения?\n▸ Или другой режим?",
+            "\n\n**Как думаешь?**\n▸ Попробуешь так?\n▸ Или изменить параметры?",
+            "\n\n**Дальше?**\n▸ Уточни что-нибудь\n▸ Или /reset для новой задачи"
+        ])
 
-        return full_response
+        return f"{intro}\n\n" + "\n".join(context_info) + "\n\n" + recommendation + ending
