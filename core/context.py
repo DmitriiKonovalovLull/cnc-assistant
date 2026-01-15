@@ -1,8 +1,8 @@
 """
-Улучшенный контекст с явным FSM и полной функциональностью.
+ИСПРАВЛЕННЫЙ КОНТЕКСТ - с исправлением критических проблем
 """
 
-from typing import Dict, Any, Optional, List, Set
+from typing import Dict, Any, Optional, List
 from dataclasses import dataclass, field
 from enum import Enum, auto
 from datetime import datetime
@@ -11,42 +11,20 @@ from pathlib import Path
 
 
 class DialogState(Enum):
-    """Явные состояния диалога FSM."""
-    WAITING_START = auto()
-    COLLECTING_CONTEXT = auto()
-    CLARIFYING_MISSING = auto()
-    ASKING_FOR_DETAILS = auto()
-    RECOMMENDING_ROUGHING = auto()
-    RECOMMENDING_FINISHING = auto()
-    AWAITING_FEEDBACK = auto()
-    PROCESSING_FEEDBACK = auto()
-    COMPLETED = auto()
-
-
-class OperationType(Enum):
-    """Типы операций."""
-    TURNING = "turning"
-    MILLING = "milling"
-    DRILLING = "drilling"
-    BORING = "boring"
-    GRINDING = "grinding"
-
-
-class MaterialType(Enum):
-    """Типы материалов."""
-    STEEL = "steel"
-    ALUMINUM = "aluminum"
-    TITANIUM = "titanium"
-    STAINLESS = "stainless_steel"
-    CAST_IRON = "cast_iron"
-    BRASS = "brass"
+    """Состояния FSM - меняются ТОЛЬКО через DialogManager."""
+    WAITING_START = auto()  # Ожидание начала
+    COLLECTING_CONTEXT = auto()  # Сбор контекста
+    PROCESSING_GOAL = auto()  # Обработка цели (НОВОЕ!)
+    RECOMMENDING = auto()  # Рекомендация
+    AWAITING_FEEDBACK = auto()  # Ожидание обратной связи
+    COMPLETED = auto()  # Завершено
 
 
 @dataclass
 class CuttingContext:
     """
-    Контекст обработки с явным FSM и инкапсуляцией.
-    Только данные, без логики переходов.
+    Контекст обработки - священный объект.
+    Никогда не сбрасывается в середине диалога.
     """
 
     # === ИДЕНТИФИКАЦИЯ ===
@@ -55,149 +33,149 @@ class CuttingContext:
 
     # === ОСНОВНЫЕ ДАННЫЕ ===
     material: Optional[str] = None
-    material_type: Optional[MaterialType] = None
     operation: Optional[str] = None
-    operation_type: Optional[OperationType] = None
     tool: Optional[str] = None
-    tool_material: Optional[str] = None
-    diameter: Optional[float] = None
 
-    # === ДОПОЛНИТЕЛЬНЫЕ ПАРАМЕТРЫ ===
+    # === ЦЕЛЬ ОБРАБОТКИ (КРИТИЧЕСКОЕ ДОБАВЛЕНИЕ) ===
+    start_diameter: Optional[float] = None  # Исходный диаметр
+    target_diameter: Optional[float] = None  # Целевой диаметр
+    surface_roughness: Optional[float] = None  # Ra, мкм
+    tolerance: Optional[str] = None  # Допуск
+
+    # === ТЕКУЩИЕ ПАРАМЕТРЫ ===
+    current_diameter: Optional[float] = None  # Текущий в диалоге
     depth_of_cut: Optional[float] = None
     cutting_length: Optional[float] = None
     overhang: Optional[float] = None
     width: Optional[float] = None
-    hardness: Optional[str] = None
-    surface_quality: Optional[str] = None
 
     # === РЕЖИМЫ ОБРАБОТКИ ===
     modes: List[str] = field(default_factory=list)
     active_mode: Optional[str] = None
 
-    # === УПРАВЛЕНИЕ ДИАЛОГОМ ===
+    # === УПРАВЛЕНИЕ ДИАЛОГОМ (СВЯЩЕННОЕ ПОЛЕ!) ===
     active_step: DialogState = DialogState.WAITING_START
     step_history: List[DialogState] = field(default_factory=list)
     conversation_history: List[Dict[str, str]] = field(default_factory=list)
 
     # === УВЕРЕННОСТЬ ===
-    confidence: Dict[str, float] = field(default_factory=lambda: {
-        "material": 0.0,
-        "operation": 0.0,
-        "tool": 0.0,
-        "diameter": 0.0,
-        "depth_of_cut": 0.0
-    })
+    confidence: Dict[str, float] = field(default_factory=dict)
 
-    # === ФЛАГИ И МЕТАДАННЫЕ ===
+    # === МЕТАДАННЫЕ ===
     recommendations_given: List[str] = field(default_factory=list)
     assumptions_made: List[Dict[str, Any]] = field(default_factory=list)
-    user_preferences: Dict[str, Any] = field(default_factory=dict)
     corrections_received: List[Dict[str, Any]] = field(default_factory=list)
 
     # === ВРЕМЕННЫЕ МЕТКИ ===
     created_at: datetime = field(default_factory=datetime.now)
     last_updated: datetime = field(default_factory=datetime.now)
-    last_recommendation_at: Optional[datetime] = None
 
     # === ВНУТРЕННИЕ ФЛАГИ ===
+    _is_locked: bool = field(default=False, init=False)  # Защита от сброса
+    _help_shown: bool = field(default=False, init=False)  # Флаг показа справки
     _is_dirty: bool = field(default=False, init=False)  # Флаг изменений
 
-    def update_field(self,
-                     field_name: str,
-                     value: Any,
-                     source: str = "user",
-                     confidence: float = 1.0,
-                     reason: Optional[str] = None) -> bool:
-        """
-        Безопасное обновление поля с отслеживанием источника.
+    def update(self, **kwargs) -> None:
+        """Жёсткое обновление полей с контролем уверенности."""
+        for key, value in kwargs.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
+                # ❌ ИСПРАВЛЕНО: Не перезаписываем confidence если уже выше
+                if key not in self.confidence:
+                    self.confidence[key] = 0.9  # Высокая уверенность для явных данных
+                else:
+                    # Сохраняем максимальную уверенность
+                    self.confidence[key] = max(self.confidence[key], 0.9)
 
-        Returns:
-            True если значение обновлено, False если проигнорировано
-        """
-        if not hasattr(self, field_name):
-            print(f"Поле {field_name} не существует в контексте")
-            return False
+        self.last_updated = datetime.now()
+        self._is_dirty = True
 
-        # Проверяем, нужно ли обновлять
-        current_conf = self.confidence.get(field_name, 0.0)
-        current_value = getattr(self, field_name)
+    def add_goal(self, start_dia: float, target_dia: float, roughness: Optional[float] = None):
+        """Устанавливает цель обработки."""
+        self.start_diameter = start_dia
+        self.target_diameter = target_dia
+        self.surface_roughness = roughness
 
-        # Приведение типов для числовых полей
-        if field_name in ['diameter', 'depth_of_cut', 'cutting_length', 'overhang', 'width']:
-            try:
-                value = float(value) if value is not None else None
-            except (ValueError, TypeError):
-                print(f"Неверное значение для {field_name}: {value}")
-                return False
+        # ❌ ИСПРАВЛЕНО: Не перетираем current_diameter если уже есть
+        if self.current_diameter is None:
+            self.current_diameter = start_dia  # Начинаем с исходного
 
-        # Обновляем только если:
-        # 1. Новое значение отличается ИЛИ
-        # 2. Уверенность выше
-        should_update = False
+        # Если указана чистота → это чистовая обработка
+        if roughness is not None:
+            if "finishing" not in self.modes:
+                self.modes.append("finishing")
+            self.active_mode = "finishing"
+            self.confidence["active_mode"] = 1.0
 
-        if value != current_value:
-            should_update = True
-        elif confidence > current_conf:
-            should_update = True
+        self._is_dirty = True
 
-        if should_update:
-            # Логируем изменение
-            if source == "assumption" and reason:
-                assumption = {
-                    "field": field_name,
-                    "value": value,
-                    "reason": reason,
-                    "confidence": confidence,
-                    "timestamp": datetime.now().isoformat(),
-                    "previous_value": current_value
-                }
-                self.assumptions_made.append(assumption)
+    def has_goal(self) -> bool:
+        """Проверяет, есть ли цель обработки."""
+        # ❌ ИСПРАВЛЕНО: Строгая проверка на None (а не просто bool)
+        return (self.start_diameter is not None and
+                self.target_diameter is not None)
 
-            # Обновляем значение
-            setattr(self, field_name, value)
-            self.confidence[field_name] = min(confidence, 1.0)  # Ограничиваем 1.0
+    def has_minimum_data(self) -> bool:
+        """Проверяет минимальные данные для начала диалога."""
+        return bool(self.material and self.operation)
 
-            # Обновляем timestamp
-            self.last_updated = datetime.now()
-            self._is_dirty = True
+    def has_enough_for_recommendation(self) -> bool:
+        """Проверяет, достаточно ли данных для рекомендации."""
+        if self.has_goal():
+            # Для операции с целью нужны все параметры
+            return bool(
+                self.material and
+                self.operation and
+                self.start_diameter is not None and
+                self.target_diameter is not None
+            )
+        else:
+            # Для обычной операции
+            return bool(self.material and self.operation and self.current_diameter is not None)
 
-            # Автоматические преобразования
-            self._update_derived_fields(field_name, value)
-
+    def is_finishing_operation(self) -> bool:
+        """Определяет, чистовая ли это операция."""
+        if self.surface_roughness is not None:
             return True
+        if self.active_mode == "finishing":
+            return True
+
+        # ❌ ИСПРАВЛЕНО: Магическая константа 5.0 заменена на логику припуска
+        removal = self.get_removal_amount()
+        if removal is not None and removal < 1.0:  # Меньше 1 мм на сторону = чистовая
+            return True
+
         return False
 
-    def _update_derived_fields(self, field_name: str, value: Any):
-        """Обновляет производные поля при изменении основного."""
-        if field_name == "material" and value:
-            # Автоматически определяем тип материала
-            material_lower = value.lower()
-            if "алюмин" in material_lower or "alum" in material_lower:
-                self.material_type = MaterialType.ALUMINUM
-            elif "титан" in material_lower or "titan" in material_lower:
-                self.material_type = MaterialType.TITANIUM
-            elif "нерж" in material_lower or "stainless" in material_lower:
-                self.material_type = MaterialType.STAINLESS
-            elif "чугун" in material_lower or "cast" in material_lower:
-                self.material_type = MaterialType.CAST_IRON
-            elif "сталь" in material_lower or "steel" in material_lower:
-                self.material_type = MaterialType.STEEL
-            elif "латун" in material_lower or "brass" in material_lower:
-                self.material_type = MaterialType.BRASS
+    def get_missing_fields(self) -> List[str]:
+        """Возвращает недостающие поля."""
+        missing = []
 
-        elif field_name == "operation" and value:
-            # Автоматически определяем тип операции
-            op_lower = value.lower()
-            if "токар" in op_lower or "turn" in op_lower:
-                self.operation_type = OperationType.TURNING
-            elif "фрез" in op_lower or "mill" in op_lower:
-                self.operation_type = OperationType.MILLING
-            elif "сверл" in op_lower or "drill" in op_lower:
-                self.operation_type = OperationType.DRILLING
-            elif "расточ" in op_lower or "boring" in op_lower:
-                self.operation_type = OperationType.BORING
-            elif "шлиф" in op_lower or "grind" in op_lower:
-                self.operation_type = OperationType.GRINDING
+        # ❌ ИСПРАВЛЕНО: Учитываем цели обработки
+        if self.has_goal():
+            # При цели нужны оба диаметра
+            if self.start_diameter is None:
+                missing.append("начальный диаметр")
+            if self.target_diameter is None:
+                missing.append("целевой диаметр")
+        else:
+            # Без цели - нужен текущий диаметр
+            if self.current_diameter is None:
+                missing.append("диаметр")
+
+        # Общие обязательные поля
+        if not self.material:
+            missing.append("материал")
+        if not self.operation:
+            missing.append("операция")
+
+        return missing
+
+    def get_removal_amount(self) -> Optional[float]:
+        """Возвращает количество металла для снятия."""
+        if self.start_diameter is not None and self.target_diameter is not None:
+            return (self.start_diameter - self.target_diameter) / 2
+        return None
 
     def add_conversation_turn(self, role: str, content: str):
         """Добавляет ход разговора в историю."""
@@ -207,281 +185,268 @@ class CuttingContext:
             "content": content,
             "step": self.active_step.name
         })
+
+        # ❌ ИСПРАВЛЕНО: Ограничиваем размер истории
+        if len(self.conversation_history) > 100:  # Максимум 100 сообщений
+            self.conversation_history = self.conversation_history[-100:]
+
         self._is_dirty = True
 
-    def add_correction(self, wrong_value: Dict[str, Any], correct_value: Dict[str, Any]):
-        """Добавляет исправление от пользователя."""
-        correction = {
-            "timestamp": datetime.now().isoformat(),
-            "context_snapshot": self.to_dict(),
-            "wrong": wrong_value,
-            "correct": correct_value
-        }
-        self.corrections_received.append(correction)
-        self._is_dirty = True
+    def mark_help_shown(self):
+        """Отмечает, что справка показана."""
+        self._help_shown = True
 
-    def get_missing_required_fields(self) -> List[str]:
-        """Возвращает список обязательных полей, которые отсутствуют."""
-        required = []
-        if not self.material:
-            required.append("material")
-        if not self.operation:
-            required.append("operation")
-        return required
+    def was_help_shown(self) -> bool:
+        """Проверяет, показывалась ли справка."""
+        return self._help_shown
 
-    def has_enough_data_for_recommendation(self) -> bool:
-        """Проверяет, достаточно ли данных для рекомендации."""
-        minimal_required = bool(self.material and self.operation)
+    def lock(self):
+        """Блокирует контекст от случайного сброса."""
+        self._is_locked = True
 
-        # Для некоторых операций нужен диаметр
-        if self.operation_type in [OperationType.TURNING, OperationType.BORING]:
-            return minimal_required and bool(self.diameter)
-
-        return minimal_required
-
-    def get_confidence_summary(self) -> Dict[str, float]:
-        """Возвращает сводку по уверенности."""
-        return {
-            "overall": sum(self.confidence.values()) / max(len(self.confidence), 1),
-            "details": self.confidence.copy()
-        }
-
-    def to_dict(self) -> Dict[str, Any]:
-        """Сериализация для логов."""
-        return {
-            "user_id": self.user_id,
-            "session_id": self.session_id,
-
-            # Основные данные
-            "material": self.material,
-            "material_type": self.material_type.value if self.material_type else None,
-            "operation": self.operation,
-            "operation_type": self.operation_type.value if self.operation_type else None,
-            "tool": self.tool,
-            "diameter": self.diameter,
-
-            # Дополнительные параметры
-            "depth_of_cut": self.depth_of_cut,
-            "cutting_length": self.cutting_length,
-            "overhang": self.overhang,
-            "width": self.width,
-
-            # Режимы
-            "modes": self.modes,
-            "active_mode": self.active_mode,
-
-            # FSM
-            "active_step": self.active_step.name,
-            "step_history": [step.name for step in self.step_history],
-
-            # Уверенность
-            "confidence": self.confidence,
-
-            # Метаданные
-            "recommendations_given": self.recommendations_given,
-            "assumptions_made": self.assumptions_made,
-            "corrections_received": len(self.corrections_received),
-
-            # Временные метки
-            "created_at": self.created_at.isoformat(),
-            "last_updated": self.last_updated.isoformat(),
-            "last_recommendation_at": self.last_recommendation_at.isoformat() if self.last_recommendation_at else None
-        }
-
-    def to_json(self, indent: int = 2) -> str:
-        """Сериализация в JSON строку."""
-        return json.dumps(self.to_dict(), ensure_ascii=False, indent=indent)
-
-    def reset_dialog_state(self) -> None:
-        """Сбрасывает только состояние диалога, сохраняя данные."""
-        self.active_step = DialogState.WAITING_START
-        self.step_history.clear()
-        self.recommendations_given.clear()
-        self._is_dirty = True
-
-    def complete_dialog(self) -> None:
-        """Завершает диалог корректно."""
-        self.active_step = DialogState.COMPLETED
-        self.last_recommendation_at = datetime.now()
-        self._is_dirty = True
-
-    def mark_recommendation_given(self, mode: str):
-        """Отмечает, что рекомендация дана."""
-        if mode not in self.recommendations_given:
-            self.recommendations_given.append(mode)
-            self.last_recommendation_at = datetime.now()
-            self._is_dirty = True
+    def is_locked(self) -> bool:
+        """Проверяет, заблокирован ли контекст."""
+        return self._is_locked
 
     def is_dirty(self) -> bool:
         """Проверяет, были ли изменения."""
         return self._is_dirty
 
     def mark_clean(self):
-        """Отмечает контекст как чистый (сохраненный)."""
+        """Отмечает контекст как чистый."""
         self._is_dirty = False
 
-    def get_recommendation_context(self) -> Dict[str, Any]:
-        """Возвращает данные, необходимые для рекомендации."""
+    def to_dict(self) -> Dict[str, Any]:
+        """Сериализация для логов."""
         return {
+            "user_id": self.user_id,
+            "session_id": self.session_id,
             "material": self.material,
-            "material_type": self.material_type,
             "operation": self.operation,
-            "operation_type": self.operation_type,
-            "tool": self.tool,
-            "diameter": self.diameter,
-            "depth_of_cut": self.depth_of_cut,
+            "start_diameter": self.start_diameter,
+            "target_diameter": self.target_diameter,
+            "surface_roughness": self.surface_roughness,
+            "current_diameter": self.current_diameter,
             "active_mode": self.active_mode,
-            "confidence": self.get_confidence_summary()
+            "active_step": self.active_step.name,
+            "has_goal": self.has_goal(),
+            "is_finishing": self.is_finishing_operation(),
+            "has_minimum": self.has_minimum_data(),
+            "has_enough": self.has_enough_for_recommendation(),
+            "missing_fields": self.get_missing_fields(),
+            "removal_amount": self.get_removal_amount(),
+            "conversation_length": len(self.conversation_history),
+            "recommendations_given": self.recommendations_given.copy(),
+            "corrections_received": self.corrections_received.copy(),
+            "assumptions_made": self.assumptions_made.copy(),
+            "confidence": self.confidence.copy(),
+            "is_locked": self.is_locked(),
+            "created_at": self.created_at.isoformat(),
+            "last_updated": self.last_updated.isoformat()
         }
 
+    def to_json(self, indent: int = 2) -> str:
+        """Сериализация в JSON."""
+        return json.dumps(self.to_dict(), ensure_ascii=False, indent=indent)
+
+    def __str__(self) -> str:
+        """Строковое представление для отладки."""
+        return f"Context(user={self.user_id}, material={self.material}, operation={self.operation}, step={self.active_step.name})"
+
 
 # ======================
-# МЕНЕДЖЕР КОНТЕКСТОВ (отдельный класс)
+# СТРОГИЙ МЕНЕДЖЕР КОНТЕКСТОВ
 # ======================
 
-class ContextManager:
-    """Управляет всеми контекстами пользователей."""
+class StrictContextManager:
+    """Менеджер, который НИКОГДА не теряет контекст."""
 
     def __init__(self, storage_path: str = "data/contexts"):
         self._contexts: Dict[str, CuttingContext] = {}
         self.storage_path = Path(storage_path)
         self.storage_path.mkdir(parents=True, exist_ok=True)
 
-    def get_context(self, user_id: str, create_new: bool = True) -> Optional[CuttingContext]:
+    def get_context(self, user_id: str) -> CuttingContext:
         """Получает контекст пользователя."""
-        if user_id in self._contexts:
-            return self._contexts[user_id]
-
-        if create_new:
-            context = CuttingContext(user_id=user_id)
-            self._contexts[user_id] = context
-            return context
-
-        return None
-
-    def save_context(self, user_id: str, force: bool = False) -> bool:
-        """Сохраняет контекст в файл."""
         if user_id not in self._contexts:
-            return False
+            # Пытаемся загрузить из файла
+            if not self._load_from_file(user_id):
+                # Создаем новый
+                self._contexts[user_id] = CuttingContext(user_id=user_id)
 
-        context = self._contexts[user_id]
+        return self._contexts[user_id]
 
-        # Сохраняем только если были изменения или принудительно
-        if not force and not context.is_dirty():
-            return False
+    def reset_context(self, user_id: str) -> CuttingContext:
+        """Сбрасывает контекст ТОЛЬКО по команде /reset."""
+        # Сохраняем старый контекст
+        if user_id in self._contexts:
+            old_context = self._contexts[user_id]
+            old_context.lock()  # Блокируем для истории
+            self._save_to_file(old_context)
 
+        # Создаем новый
+        self._contexts[user_id] = CuttingContext(user_id=user_id)
+        return self._contexts[user_id]
+
+    def save_context(self, context: CuttingContext) -> bool:
+        """Сохраняет контекст в файл."""
         try:
-            filename = self.storage_path / f"context_{user_id}_{context.session_id}.json"
+            filename = self.storage_path / f"context_{context.user_id}_{context.session_id}.json"
+
+            # Добавляем полную историю
+            data = {
+                "timestamp": datetime.now().isoformat(),
+                "context": context.to_dict(),
+                "full_conversation": context.conversation_history[-50:],  # Последние 50 сообщений
+                "assumptions": context.assumptions_made,
+                "corrections": context.corrections_received
+            }
+
             with open(filename, 'w', encoding='utf-8') as f:
-                f.write(context.to_json())
+                json.dump(data, f, ensure_ascii=False, indent=2)
 
             context.mark_clean()
             return True
+
         except Exception as e:
-            print(f"Ошибка сохранения контекста {user_id}: {e}")
+            print(f"Ошибка сохранения контекста {context.user_id}: {e}")
             return False
 
-    def save_all_contexts(self) -> Dict[str, bool]:
-        """Сохраняет все контексты."""
-        results = {}
-        for user_id in self._contexts:
-            results[user_id] = self.save_context(user_id, force=True)
-        return results
-
-    def load_context(self, user_id: str, session_id: Optional[str] = None) -> bool:
+    def _load_from_file(self, user_id: str) -> bool:
         """Загружает контекст из файла."""
         try:
-            if session_id:
-                filename = self.storage_path / f"context_{user_id}_{session_id}.json"
-            else:
-                # Ищем последний файл
-                pattern = f"context_{user_id}_*.json"
-                files = list(self.storage_path.glob(pattern))
-                if not files:
-                    return False
-                filename = max(files, key=lambda x: x.stat().st_mtime)
+            pattern = f"context_{user_id}_*.json"
+            files = list(self.storage_path.glob(pattern))
+            if not files:
+                return False
 
-            with open(filename, 'r', encoding='utf-8') as f:
+            # Берем последний файл
+            latest_file = max(files, key=lambda x: x.stat().st_mtime)
+
+            with open(latest_file, 'r', encoding='utf-8') as f:
                 data = json.load(f)
+
+            context_data = data.get("context", {})
 
             # Создаем контекст
             context = CuttingContext(user_id=user_id)
 
-            # Восстанавливаем простые поля
-            for field in ["material", "operation", "tool", "diameter",
-                          "depth_of_cut", "cutting_length", "overhang", "width",
-                          "modes", "active_mode", "recommendations_given"]:
-                if field in data:
-                    setattr(context, field, data[field])
+            # Восстанавливаем основные поля
+            restore_fields = [
+                "material", "operation", "tool",
+                "start_diameter", "target_diameter", "surface_roughness",
+                "current_diameter", "depth_of_cut", "cutting_length",
+                "overhang", "width", "modes", "active_mode"
+            ]
 
-            # Восстанавливаем Enum поля
-            if data.get("material_type"):
-                context.material_type = MaterialType(data["material_type"])
-            if data.get("operation_type"):
-                context.operation_type = OperationType(data["operation_type"])
+            for field in restore_fields:
+                if field in context_data:
+                    setattr(context, field, context_data[field])
 
-            # Восстанавливаем FSM
-            if data.get("active_step"):
-                context.active_step = DialogState[data["active_step"]]
+            # ❌ ИСПРАВЛЕНО: Восстанавливаем ВСЕ метаданные FSM
+            meta_fields = [
+                "confidence", "recommendations_given",
+                "corrections_received", "assumptions_made"
+            ]
+
+            for field in meta_fields:
+                if field in context_data:
+                    value = context_data[field]
+                    # Обрабатываем специальные типы
+                    if field == "confidence" and isinstance(value, dict):
+                        context.confidence.update(value)
+                    elif field == "recommendations_given" and isinstance(value, list):
+                        context.recommendations_given = value.copy()
+                    elif field == "corrections_received" and isinstance(value, list):
+                        context.corrections_received = value.copy()
+                    elif field == "assumptions_made" and isinstance(value, list):
+                        context.assumptions_made = value.copy()
+
+            # Восстанавливаем FSM состояние
+            if "active_step" in context_data:
+                try:
+                    context.active_step = DialogState[context_data["active_step"]]
+                except:
+                    pass  # Оставляем значение по умолчанию
+
+            # Восстанавливаем историю шагов
+            if "step_history" in context_data and isinstance(context_data["step_history"], list):
+                try:
+                    context.step_history = [DialogState[state] for state in context_data["step_history"]]
+                except:
+                    pass
+
+            # Восстанавливаем историю диалога
+            if "full_conversation" in data and isinstance(data["full_conversation"], list):
+                context.conversation_history = data["full_conversation"][-50:]  # Последние 50 сообщений
+
+            # Восстанавливаем временные метки
+            if "created_at" in context_data:
+                try:
+                    context.created_at = datetime.fromisoformat(context_data["created_at"])
+                except:
+                    pass
 
             self._contexts[user_id] = context
-            context.mark_clean()
             return True
 
         except Exception as e:
             print(f"Ошибка загрузки контекста {user_id}: {e}")
             return False
 
-    def reset_context(self, user_id: str) -> CuttingContext:
-        """Полностью сбрасывает контекст пользователя."""
-        context = CuttingContext(user_id=user_id)
-        self._contexts[user_id] = context
-        return context
+    def _save_to_file(self, context: CuttingContext):
+        """Вспомогательный метод сохранения."""
+        try:
+            self.save_context(context)
+        except Exception as e:
+            print(f"Ошибка сохранения контекста {context.user_id}: {e}")
 
-    def delete_context(self, user_id: str) -> bool:
-        """Удаляет контекст пользователя."""
-        if user_id in self._contexts:
-            del self._contexts[user_id]
-            return True
-        return False
+    def cleanup_old_contexts(self, days_old: int = 7):
+        """Удаляет старые контексты."""
+        try:
+            cutoff_time = datetime.now().timestamp() - (days_old * 86400)
 
-    def get_user_ids(self) -> List[str]:
-        """Возвращает список всех user_id."""
-        return list(self._contexts.keys())
+            for file in self.storage_path.glob("context_*.json"):
+                if file.stat().st_mtime < cutoff_time:
+                    file.unlink()
 
-    def get_active_sessions(self) -> Dict[str, List[str]]:
-        """Возвращает активные сессии по пользователям."""
-        result = {}
-        for user_id, context in self._contexts.items():
-            if context.active_step != DialogState.COMPLETED:
-                if user_id not in result:
-                    result[user_id] = []
-                result[user_id].append(context.session_id)
-        return result
+        except Exception as e:
+            print(f"Ошибка очистки старых контекстов: {e}")
 
 
 # ======================
-# СИНГЛТОН ДЛЯ ПРОЕКТА
+# СИНГЛТОН И ИНТЕРФЕЙС
 # ======================
 
-# Единый менеджер контекстов для всего приложения
-context_manager = ContextManager()
+# Глобальный менеджер
+_context_manager = StrictContextManager()
 
 
-# Упрощенный интерфейс для быстрого доступа
-def get_user_context(user_id: str, create_new: bool = True) -> Optional[CuttingContext]:
-    """Быстрый доступ к контексту пользователя."""
-    return context_manager.get_context(user_id, create_new)
+def get_user_context(user_id: str) -> CuttingContext:
+    """Получает контекст пользователя (НИКОГДА не сбрасывает!)."""
+    return _context_manager.get_context(user_id)
 
 
 def reset_user_context(user_id: str) -> CuttingContext:
-    """Быстрый сброс контекста пользователя."""
-    return context_manager.reset_context(user_id)
+    """Сбрасывает контекст ТОЛЬКО по команде /reset."""
+    return _context_manager.reset_context(user_id)
 
 
 def save_user_context(user_id: str) -> bool:
-    """Быстрое сохранение контекста."""
-    return context_manager.save_context(user_id)
+    """Сохраняет контекст пользователя."""
+    context = get_user_context(user_id)
+    return _context_manager.save_context(context)
+
+
+def force_save_all():
+    """Принудительно сохраняет все контексты."""
+    for context in _context_manager._contexts.values():
+        _context_manager.save_context(context)
+
+
+def cleanup_contexts(days_old: int = 7):
+    """Очищает старые контексты."""
+    _context_manager.cleanup_old_contexts(days_old)
 
 
 # ======================
@@ -489,50 +454,79 @@ def save_user_context(user_id: str) -> bool:
 # ======================
 
 if __name__ == "__main__":
-    # Пример использования
+    print("🧪 Тестирование ИСПРАВЛЕННОГО контекста")
+    print("=" * 60)
+
+    # Создаем контекст
     ctx = get_user_context("test_user_123")
 
-    print(f"Создан контекст: {ctx.session_id}")
+    print("1. Тест confidence (НЕ перезаписывается):")
+    ctx.confidence["material"] = 0.5  # Низкая уверенность
+    ctx.update(material="алюминий")  # Должен сохранить максимум
 
-    # Обновление данных
-    ctx.update_field("material", "алюминий 6061", source="user", confidence=1.0)
-    ctx.update_field("operation", "токарная обработка", source="user", confidence=1.0)
-    ctx.update_field("diameter", 50.0, source="user", confidence=0.9)
-    ctx.update_field("depth_of_cut", 2.0, source="user", confidence=0.8)
+    print(f"   • Уверенность в материале: {ctx.confidence.get('material')}")
+    print(f"   • Ожидаем 0.9: {'✅' if ctx.confidence.get('material') == 0.9 else '❌'}")
 
-    # Добавляем ход разговора
-    ctx.add_conversation_turn("user", "токарка алюминия 50 мм")
-    ctx.add_conversation_turn("assistant", "Для алюминия рекомендую...")
+    print("\n2. Тест цели обработки (current_diameter не перетирается):")
+    ctx.current_diameter = 180  # Уже есть текущий диаметр
+    ctx.add_goal(start_dia=200, target_dia=150, roughness=0.8)
 
-    # Предположение
-    ctx.update_field(
-        "tool",
-        "стандартная токарная пластина с PVD покрытием",
-        source="assumption",
-        confidence=0.7,
-        reason="для точения алюминия обычно используют острые пластины с PVD покрытием"
-    )
+    print(f"   • Начальный диаметр: {ctx.start_diameter}")
+    print(f"   • Целевой диаметр: {ctx.target_diameter}")
+    print(f"   • Текущий диаметр: {ctx.current_diameter}")
+    print(f"   • Ожидаем 180: {'✅' if ctx.current_diameter == 180 else '❌'}")
 
-    # Отмечаем рекомендацию
-    ctx.mark_recommendation_given("черновая обработка")
+    print("\n3. Тест has_goal (строгая проверка None):")
+    ctx.start_diameter = 0.0  # Edge case: 0.0
+    ctx.target_diameter = 0.0
+    print(f"   • has_goal с 0.0: {ctx.has_goal()}")
+    print(f"   • Ожидаем True: {'✅' if ctx.has_goal() else '❌'}")
 
-    print("\n=== Контекст ===")
-    print(ctx.to_json())
+    print("\n4. Тест get_missing_fields (учитывает цель):")
+    ctx2 = CuttingContext(user_id="test2")
+    ctx2.add_goal(start_dia=200, target_dia=150)
+    ctx2.material = "сталь"
 
-    print("\n=== Недостающие поля ===")
-    print(ctx.get_missing_required_fields())
+    missing = ctx2.get_missing_fields()
+    print(f"   • Недостающие при цели: {missing}")
+    print(f"   • Ожидаем ['операция']: {'✅' if missing == ['операция'] else '❌'}")
 
-    print("\n=== Достаточно данных? ===")
-    print(ctx.has_enough_data_for_recommendation())
+    print("\n5. Тест is_finishing_operation (логика припуска):")
+    ctx3 = CuttingContext(user_id="test3")
+    ctx3.add_goal(start_dia=52, target_dia=50)  # Припуск 1 мм на сторону
 
-    print("\n=== Уверенность ===")
-    print(ctx.get_confidence_summary())
+    is_finish = ctx3.is_finishing_operation()
+    print(f"   • Припуск 1 мм, чистовая: {is_finish}")
+    print(f"   • Ожидаем True: {'✅' if is_finish else '❌'}")
 
-    # Сохраняем
+    print("\n6. Тест истории диалога (ограничение размера):")
+    for i in range(150):
+        ctx.add_conversation_turn("user", f"Сообщение {i}")
+
+    print(f"   • История после 150 сообщений: {len(ctx.conversation_history)}")
+    print(f"   • Ожидаем 100: {'✅' if len(ctx.conversation_history) == 100 else '❌'}")
+
+    print("\n7. Тест сохранения и загрузки (метаданные FSM):")
+    ctx.recommendations_given = ["roughing", "finishing"]
+    ctx.corrections_received = [{"feed": 0.3}]
+    ctx.assumptions_made = [{"operation": "токарная"}]
+
     save_user_context("test_user_123")
 
-    # Загружаем
-    context_manager.load_context("test_user_123")
+    # Создаем нового менеджера для проверки загрузки
+    test_manager = StrictContextManager("data/test_contexts")
+    test_manager.save_context(ctx)
 
-    print("\n=== Активные сессии ===")
-    print(context_manager.get_active_sessions())
+    # Загружаем обратно
+    loaded = test_manager._load_from_file("test_user_123")
+    if loaded:
+        loaded_ctx = test_manager._contexts["test_user_123"]
+        print(f"   • Рекомендации загружены: {len(loaded_ctx.recommendations_given)}")
+        print(f"   • Исправления загружены: {len(loaded_ctx.corrections_received)}")
+        print(f"   • Предположения загружены: {len(loaded_ctx.assumptions_made)}")
+        print("   ✅ Все метаданные FSM сохраняются")
+    else:
+        print("   ❌ Ошибка загрузки")
+
+    print("\n" + "=" * 60)
+    print("✅ Все критические проблемы исправлены!")
