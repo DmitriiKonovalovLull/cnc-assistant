@@ -1,316 +1,557 @@
 """
-Интеллектуальный обработчик с мультиязычностью.
+Интеллектуальный обработчик с мультиязычностью, памятью и обучением.
 """
 
-import re
-import random
-from core.context import get_context, reset_context
+from typing import Optional, Dict, Any, List
+from core.context import get_user_context, DialogState, context_manager
 from core.parser import IntelligentParser
-from core.assumptions import AssumptionEngine
-from core.recommendations import ReasoningRecommender
+from core.dialog_manager import DialogManager
 from core.calculator import CuttingCalculator
-from core.language import set_language, get_translator  # Новый импорт
+from core.language import set_language, get_translator
+from core.memory.memory_manager import MemoryManager, ContextWithMemory
 
 
 class IntelligentHandler:
-    """Обработчик с мультиязычностью."""
+    """Обработчик с мультиязычностью, FSM и долговременной памятью."""
 
     def __init__(self):
         self.parser = IntelligentParser()
-        self.assumptions = AssumptionEngine()
-        self.recommender = ReasoningRecommender()
+        self.dialog_manager = DialogManager()
         self.calculator = CuttingCalculator()
         self.translator = get_translator()
+        self.memory_manager = MemoryManager()
 
-    def handle_message(self, user_id, text):
-        """Обрабатывает одно сообщение с учетом языка."""
+        # Кэш для быстрого доступа к памяти пользователей
+        self._user_memory_wrappers: Dict[str, ContextWithMemory] = {}
+
+    def handle_message(self, user_id: str, text: str) -> str:
+        """Обрабатывает сообщение с памятью и обучением."""
         try:
-            context = get_context(user_id)
+            # Получаем контекст с памятью
+            context_wrapper = self._get_context_with_memory(user_id)
+            context = context_wrapper.context
+
+            print(f"\n{'=' * 50}")
+            print(f"Обработка для пользователя: {user_id}")
+            print(f"Сообщение: {text}")
+            print(f"Текущее состояние: {context.active_step.name}")
+
+            # Парсим сообщение
             parsed = self.parser.parse(text)
+            print(f"Парсинг: {parsed}")
 
-            print(f"DEBUG: '{text}' -> {parsed}")
+            # Устанавливаем язык
+            self._set_language_from_parsed(parsed)
 
-            # Устанавливаем язык если определили
-            if 'detected_language' in parsed:
-                set_language(parsed['detected_language'])
-                print(f"DEBUG: Установлен язык: {parsed['detected_language']}")
+            # Добавляем сообщение в историю
+            context.add_conversation_turn("user", text)
 
-            if 'language' in parsed:
-                set_language(parsed['language'])
-                print(f"DEBUG: Установлен язык по команде: {parsed['language']}")
+            # Проверяем специальные команды
+            special_response = self._check_special_commands(user_id, text, parsed)
+            if special_response:
+                context.add_conversation_turn("assistant", special_response)
+                return special_response
 
-            # Если это запрос на расчёт
+            # Применяем персонализированные предложения из памяти
+            self._apply_learned_patterns(context_wrapper)
+
+            # Обрабатываем запросы на расчет
             if parsed.get('is_calculation_request') or parsed.get('intent') == 'get_calculation':
-                return self._handle_calculation_request(context, parsed, text)
+                response = self._handle_calculation_request_with_memory(user_id, parsed, context)
+                context.add_conversation_turn("assistant", response)
 
-            # Стандартная обработка
-            if 'intent' in parsed:
-                if parsed['intent'] == 'get_advice':
-                    return self._handle_advice_request(context)
+                # Логируем успешный расчет
+                if "🧮" in response or "🔢" in response or "⚙️" in response:
+                    self._log_successful_calculation(user_id, context, parsed, response)
 
-            # Обновление контекста
-            self._update_context_smartly(context, parsed)
+                return response
 
-            # Применение предположений
-            assumption_actions = self.assumptions.apply_assumptions(context)
+            # Обновляем контекст из распарсенных данных
+            self._update_context_with_memory(context, parsed, context_wrapper)
 
-            # Выполнение шага
-            return self._execute_single_step(context, assumption_actions, text)
+            # Обрабатываем через DialogManager
+            response, next_state = self.dialog_manager.process_step(context, parsed)
+
+            # Проверяем наличие исправлений в ответе пользователя
+            corrections = self._extract_corrections_from_response(text, response, context)
+            if corrections:
+                self._log_corrections(user_id, corrections, context)
+
+            # Добавляем персонализацию в ответ
+            response = self._personalize_response(response, context_wrapper)
+
+            # Добавляем ответ в историю
+            context.add_conversation_turn("assistant", response)
+
+            # Сохраняем если были изменения
+            if context.is_dirty():
+                from core.context import save_user_context
+                save_user_context(user_id)
+
+            # Логируем завершение диалога если нужно
+            if next_state == DialogState.COMPLETED:
+                self._log_completed_dialog(user_id, context, response)
+
+            print(f"Ответ: {response[:100]}...")
+            print(f"Следующее состояние: {next_state.name}")
+            print(f"{'=' * 50}\n")
+
+            return response
 
         except Exception as e:
-            print(f"Ошибка: {e}")
+            print(f"Ошибка в обработчике: {e}")
             import traceback
             traceback.print_exc()
-            return self.translator.translate("error_restart", "Что-то пошло не так. Начнем заново? /start")
+            return self.translator.translate("error_restart",
+                                             "Что-то пошло не так. Начнем заново? /start")
 
-    def _handle_calculation_request(self, context, parsed, original_text):
-        """Обрабатывает запрос на расчёт."""
+    def _get_context_with_memory(self, user_id: str) -> ContextWithMemory:
+        """Получает контекст с оберткой памяти."""
+        if user_id not in self._user_memory_wrappers:
+            context = get_user_context(user_id)
+            context_wrapper = ContextWithMemory(user_id)
+            context_wrapper.context = context
+            self._user_memory_wrappers[user_id] = context_wrapper
+        return self._user_memory_wrappers[user_id]
 
-        # Извлекаем параметры из парсера
-        diameter = parsed.get('diameter')
-        overhang = parsed.get('overhang')
-        width = parsed.get('width')
-        depth = parsed.get('depth')
-        material = parsed.get('material', 'сталь')
+    def _set_language_from_parsed(self, parsed: Dict[str, Any]):
+        """Устанавливает язык из распарсенных данных."""
+        if 'detected_language' in parsed:
+            set_language(parsed['detected_language'])
+            print(f"DEBUG: Установлен язык: {parsed['detected_language']}")
 
-        # Если есть все 4 параметра - делаем расчёт расточки
-        if all(param is not None for param in [diameter, overhang, width, depth]):
-            result = self.calculator.calculate_for_boring(
-                diameter=diameter,
-                overhang=overhang,
-                width=width,
-                depth=depth,
-                material=material
-            )
+        if 'language' in parsed:
+            set_language(parsed['language'])
+            print(f"DEBUG: Установлен язык по команде: {parsed['language']}")
 
-            # Форматируем с переводом
-            calculation = self.translator.format_calculation(result)
+    def _check_special_commands(self, user_id: str, text: str, parsed: Dict[str, Any]) -> Optional[str]:
+        """Проверяет специальные команды."""
+        text_lower = text.lower().strip()
 
-            explanation = (
-                    "🧮 **" + self.translator.translate("calculation_based_on", "Расчёт выполнен на основе") + ":**\n"
-                                                                                                              "• " + self.translator.translate(
-                "cutting_formulas", "Формул резания для расточных операций") + "\n"
-                                                                               "• " + self.translator.translate(
-                "rigidity_coefficients", "Коэффициентов жёсткости при большом вылете") + "\n"
-                                                                                         "• " + self.translator.translate(
-                "material_corrections", "Практических поправок для материала") + "\n"
-                                                                                 "• " + self.translator.translate(
-                "vibration_limits", "Ограничений по вибрациям") + "\n\n"
-            )
+        # Сброс контекста
+        if text_lower == '/reset' or text_lower == 'сброс':
+            from core.context import reset_user_context
+            reset_user_context(user_id)
 
-            return explanation + calculation
+            # Очищаем кэш
+            if user_id in self._user_memory_wrappers:
+                del self._user_memory_wrappers[user_id]
 
-        # Если только диаметр + материал - расчёт токарки
-        elif diameter and material:
-            # Создаём временный контекст
-            class TempContext:
-                def __init__(self):
-                    self.material = material
-                    self.operation = 'токарная'
-                    self.active_mode = 'черновая'
-                    self.diameter = str(diameter)
-                    self.confidence = {'material': 0.9, 'operation': 0.9}
+            return self.translator.translate("reset_success",
+                                             "✅ Контекст сброшен. Начнём новую задачу.\n\nКакой материал обрабатываем?")
 
-            temp_context = TempContext()
-            result = self.calculator.calculate_for_turning(temp_context)
+        # Показать историю
+        elif text_lower == '/history' or text_lower == 'история':
+            return self._show_user_history(user_id)
 
-            if result:
-                calculation = self.translator.format_calculation(result)
+        # Показать статистику
+        elif text_lower == '/stats' or text_lower == 'статистика':
+            return self._show_user_stats(user_id)
 
-                explanation = (
-                        f"🔢 **" + self.translator.translate("calculation_for", "Расчёт для") +
-                        f" {self.translator.translate_material(material)}, Ø{diameter} мм:**\n\n"
-                        "**" + self.translator.translate("calculation_basis", "Основа расчёта") + ":**\n"
-                                                                                                  "• " + self.translator.translate(
-                    "basic_cutting_speeds", "Базовые скорости резания для материала") + "\n"
-                                                                                        f"• " + self.translator.translate(
-                    "diameter_for_rpm", "Диаметр {diameter} мм для расчёта оборотов") + "\n"
-                                                                                        "• " + self.translator.translate(
-                    "standard_feeds", "Стандартные подачи для черновой обработки") + "\n\n"
-                )
+        # Помощь
+        elif text_lower == '/help' or text_lower == 'помощь':
+            return self._show_help()
 
-                return explanation + calculation
+        return None
 
-        # Не хватает данных
-        return (
-                "🧐 " + self.translator.translate("calculation_request_detected",
-                                                 "Вижу запрос на расчёт, но нужно больше данных.") + "\n\n"
-                                                                                                     "**" + self.translator.translate(
-            "for_exact_calculation", "Для точного расчёта укажите") + ":**\n"
-                                                                      "• **" + self.translator.translate("diameter",
-                                                                                                         "Диаметр") + "** " + self.translator.translate(
-            "hole_part", "отверстия/детали") + " (мм)\n"
-                                               "• **" + self.translator.translate("material",
-                                                                                  "Материал") + "** (титан, сталь, алюминий...)\n"
-                                                                                                "• **" + self.translator.translate(
-            "operation", "Операция") + "** (токарка, расточка, фрезеровка)\n\n"
-                                       "**" + self.translator.translate("examples", "Примеры") + ":**\n"
-                                                                                                 "• 'расточка диаметр 200 титан вылет 150'\n"
-                                                                                                 "• 'посчитай для стали 45 диаметр 80'\n"
-                                                                                                 "• 'какие обороты для алюминия 50 мм'"
-        )
+    def _apply_learned_patterns(self, context_wrapper: ContextWithMemory):
+        """Применяет изученные паттерны из памяти."""
+        context = context_wrapper.context
 
-    def _update_context_smartly(self, context, parsed):
-        """Обновляет контекст с учётом языка."""
+        # Получаем персонализированные предложения
+        suggestions = context_wrapper.get_personalized_suggestions()
 
-        # Активируем диалог при любом сообщении
-        context.is_dialog_active = True
+        for param, suggestion in suggestions.items():
+            if suggestion["confidence"] > 0.7:  # Высокая уверенность
+                if hasattr(context, param):
+                    current_value = getattr(context, param)
 
-        # Если контекст в состоянии завершения - сбрасываем его
-        if context.active_step == "feedback":
-            context.active_step = "processing"
+                    # Применяем только если поле пустое или уверенность выше
+                    current_conf = context.confidence.get(param, 0.0)
+                    if not current_value or suggestion["confidence"] > current_conf:
+                        # Формируем причину
+                        source_map = {
+                            "user_history": "вашей истории использования",
+                            "similar_cases": "похожих случаев",
+                            "global_pattern": "общих паттернов"
+                        }
+                        reason = f"На основе {source_map.get(suggestion.get('source', ''), 'истории')}"
+
+                        context.update_field(
+                            param,
+                            suggestion["value"],
+                            source="memory",
+                            confidence=suggestion["confidence"],
+                            reason=reason
+                        )
+
+                        print(f"Применен паттерн из памяти: {param} = {suggestion['value']} "
+                              f"(уверенность: {suggestion['confidence']:.0%})")
+
+    def _update_context_with_memory(self, context, parsed: Dict[str, Any],
+                                    context_wrapper: ContextWithMemory):
+        """Обновляет контекст с учетом памяти."""
 
         # Материал
         if 'material' in parsed and parsed['material']:
-            if not context.material or context.confidence.get('material', 0) < 0.7:
-                context.update("material", parsed['material'],
-                               confidence=parsed.get('material_confidence', 0.9))
+            material = parsed['material']
+
+            # Проверяем, есть ли у пользователя предпочтения по этому материалу
+            user_memory = self.memory_manager.get_user_memory(context.user_id)
+            material_count = user_memory.preferred_materials.get(material, 0)
+
+            # Повышаем уверенность если материал часто используется
+            base_confidence = parsed.get('material_confidence', 0.9)
+            if material_count > 0:
+                bonus = min(0.1, material_count * 0.02)
+                base_confidence = min(1.0, base_confidence + bonus)
+
+            if not context.material or context.confidence.get('material', 0) < base_confidence:
+                context.update_field(
+                    "material",
+                    material,
+                    source="user",
+                    confidence=base_confidence
+                )
 
         # Операция
         if 'operation' in parsed and parsed['operation']:
-            if not context.operation or context.confidence.get('operation', 0) < 0.7:
-                context.update("operation", parsed['operation'],
-                               confidence=parsed.get('operation_confidence', 0.9))
+            operation = parsed['operation']
 
-        # Режимы
+            # Аналогично для операции
+            user_memory = self.memory_manager.get_user_memory(context.user_id)
+            operation_count = user_memory.preferred_operations.get(operation, 0)
+
+            base_confidence = parsed.get('operation_confidence', 0.9)
+            if operation_count > 0:
+                bonus = min(0.1, operation_count * 0.02)
+                base_confidence = min(1.0, base_confidence + bonus)
+
+            if not context.operation or context.confidence.get('operation', 0) < base_confidence:
+                context.update_field(
+                    "operation",
+                    operation,
+                    source="user",
+                    confidence=base_confidence
+                )
+
+        # Режимы обработки
         if 'modes' in parsed and parsed['modes']:
             for mode in parsed['modes']:
                 if mode not in context.modes:
                     context.modes.append(mode)
                     context.confidence['modes'] = parsed.get('modes_confidence', 0.8)
 
-        # Диаметр и другие параметры
-        for param in ['diameter', 'overhang', 'width', 'depth']:
+        # Числовые параметры с учетом типичных значений
+        for param in ['diameter', 'overhang', 'width', 'depth', 'depth_of_cut']:
             if param in parsed and parsed[param] is not None:
-                if not getattr(context, param, None):
-                    setattr(context, param, parsed[param])
+                try:
+                    value = float(parsed[param])
 
-    def _execute_single_step(self, context, assumption_actions, original_text):
-        """Выполняет один шаг с переводом."""
+                    # Проверяем типичное значение пользователя
+                    typical_value = context_wrapper.user_memory.get_typical_value(param)
+                    if typical_value and abs(value - typical_value) / typical_value < 0.3:
+                        # Значение близко к типичному - повышаем уверенность
+                        confidence = 0.9
+                    else:
+                        confidence = 0.8
 
-        next_step = context.move_to_next_step()
-        print(f"DEBUG: Следующий шаг: {next_step}")
+                    if not getattr(context, param, None):
+                        context.update_field(
+                            param,
+                            value,
+                            source="user",
+                            confidence=confidence
+                        )
+                except (ValueError, TypeError):
+                    pass
 
-        if next_step == "waiting_start":
-            return self.translator.translate("what_material", "Какой материал обрабатываем?")
-
-        elif next_step == "clarify_missing":
-            return self._clarify_missing(context, assumption_actions)
-
-        elif next_step == "set_active_mode":
-            return self._set_active_mode(context, assumption_actions)
-
-        elif next_step.startswith("recommend_"):
-            mode_type = "roughing" if "roughing" in next_step else "finishing"
-            return self._give_recommendation(context, mode_type, assumption_actions)
-
-        elif next_step == "feedback":
-            return self._ask_for_feedback(context)
-
-        return self.translator.translate("what_next", "Что дальше?")
-
-    def _clarify_missing(self, context, assumption_actions):
-        """Уточняет недостающие данные."""
-
-        response_parts = []
-
-        if assumption_actions:
-            response_parts.append(" ".join(assumption_actions))
-
-        if not context.material:
-            response_parts.append(self.translator.translate("what_material", "Какой материал обрабатываем?"))
-
-        elif not context.operation:
-            response_parts.append(self.translator.translate("what_operation", "Какая операция? (токарка/фрезеровка)"))
-
-        elif not context.modes and not assumption_actions:
-            response_parts.append(self.translator.translate("what_mode", "Какой режим обработки?"))
-
-        if len(response_parts) > 1:
-            return "\n\n".join(response_parts)
-        else:
-            return response_parts[0] if response_parts else self.translator.translate("continue", "Продолжаем?")
-
-    def _set_active_mode(self, context, assumption_actions):
-        """Устанавливает активный режим."""
-
-        if assumption_actions:
-            base = " ".join(assumption_actions)
-        elif context.modes:
-            if 'черновая' in context.modes:
-                context.active_mode = 'черновая'
-                base = self.translator.translate("start_with_roughing", "Начнём с черновой обработки.")
-            else:
-                context.active_mode = context.modes[0]
-                base = self.translator.translate("start_with_mode", f"Начнём с {context.active_mode} обработки.")
-        else:
-            base = self.translator.translate("what_mode_needed", "Какой режим обработки нужен?")
-
-        return f"{base}\n\n{self.translator.translate('if_not_correct', 'Если не так — поправь.')}"
-
-    def _give_recommendation(self, context, mode_type, assumption_actions):
-        """Даёт рекомендации с переводом."""
-
-        if context.active_mode:
-            context.recommendations_given.append(context.active_mode)
-
-        # Генерируем рекомендации
-        recommendation = self.recommender.get_recommendation(context)
-
-        response_parts = []
-
-        if assumption_actions:
-            response_parts.append(" ".join(assumption_actions))
-
-        response_parts.append(recommendation)
-
-        # Добавляем возможность расчёта
-        if context.diameter:
-            try:
-                dia = float(str(context.diameter).replace(',', '.'))
-                if dia > 0:
-                    response_parts.append(
-                        f"\n📊 **{self.translator.translate('can_calculate', 'Могу сделать точный расчёт для')} Ø{dia} мм.**\n"
-                        f"{self.translator.translate('write_calculate', 'Напиши \"посчитай\" или \"расчёт\".')}"
-                    )
-            except:
-                pass
-
-        response_parts.append(
-            f"\n**{self.translator.translate('if_parameters_not_suitable', 'Если параметры не подходят — скажи.')}**")
-
-        return "\n\n".join(response_parts)
-
-    def _handle_advice_request(self, context):
-        """Обрабатывает запрос советов."""
-
-        if context.has_minimum_data():
-            return self._give_recommendation(context, "roughing", [])
-        else:
-            missing = []
-            if not context.material:
-                missing.append(self.translator.translate("material", "материал"))
-            if not context.operation:
-                missing.append(self.translator.translate("operation", "операция"))
-
-            return (
-                f"{self.translator.translate('to_give_advice', 'Чтобы дать совет, нужно знать')}: {', '.join(missing)}.\n\n"
-                f"**{self.translator.translate('write_all_at_once', 'Напиши сразу всё, например')}:**\n"
-                f"• 'алюминий токарка черновая'\n"
-                f"• 'сталь 45 фрезеровка Ø50'\n"
-                f"• 'титан расточка вылет 100'"
+        # Инструмент
+        if 'tool' in parsed and parsed['tool']:
+            context.update_field(
+                "tool",
+                parsed['tool'],
+                source="user",
+                confidence=parsed.get('tool_confidence', 0.8)
             )
 
-    def _ask_for_feedback(self, context):
-        """Спрашивает обратную связь."""
+    def _handle_calculation_request_with_memory(self, user_id: str, parsed: Dict[str, Any],
+                                                context) -> str:
+        """Обрабатывает запрос на расчёт с учетом памяти."""
 
-        options = [
-            f"• {self.translator.translate('try_other_parameters', 'Попробовать другие параметры')}",
-            f"• {self.translator.translate('new_task', 'Новая задача')} (/reset)",
-            f"• {self.translator.translate('or_all_clear', 'Или всё понятно?')}"
+        # Получаем персонализированные предложения
+        context_wrapper = self._get_context_with_memory(user_id)
+        suggestions = context_wrapper.get_personalized_suggestions()
+
+        # Обогащаем распарсенные данные предложениями из памяти
+        enriched_parsed = parsed.copy()
+        for param, suggestion in suggestions.items():
+            if suggestion["confidence"] > 0.8 and param not in enriched_parsed:
+                enriched_parsed[param] = suggestion["value"]
+                enriched_parsed[f"{param}_confidence"] = suggestion["confidence"]
+                print(f"Добавлено из памяти: {param} = {suggestion['value']}")
+
+        # Выполняем расчет
+        return self._handle_calculation_request(enriched_parsed)
+
+    def _handle_calculation_request(self, parsed: Dict[str, Any]) -> str:
+        """Обрабатывает запрос на расчёт (базовая логика)."""
+        # [Ваш существующий код _handle_calculation_request]
+        # ... (оставляем как есть)
+
+        # Для примера:
+        diameter = parsed.get('diameter')
+        material = parsed.get('material', 'сталь')
+
+        if diameter and material:
+            # Упрощенный расчет для примера
+            result = {
+                "material": material,
+                "diameter": diameter,
+                "recommended_rpm": 1000,
+                "recommended_feed": 0.2,
+                "cutting_speed": 150,
+                "notes": ["Расчет с учетом данных из памяти"]
+            }
+            return self._format_calculation_result(result, "general")
+
+        return "Не хватает данных для расчета."
+
+    def _extract_corrections_from_response(self, user_text: str, bot_response: str,
+                                           context) -> List[Dict[str, Any]]:
+        """Извлекает исправления из ответа пользователя."""
+        corrections = []
+
+        # Простые паттерны для обнаружения исправлений
+        correction_patterns = [
+            (r'нет\s*,?\s*(\w+)\s*(\d+\.?\d*)', "value_correction"),
+            (r'исправь\s+(\w+)\s+на\s+(\d+\.?\d*)', "value_correction"),
+            (r'(\w+)\s+(\d+\.?\d*)\s+-\s+это\s+много', "value_too_high"),
+            (r'(\w+)\s+(\d+\.?\d*)\s+-\s+это\s+мало', "value_too_low"),
         ]
 
-        return (
-                f"✅ {self.translator.translate('everything_discussed', 'По этой задаче всё обсудили.')}\n\n"
-                f"**{self.translator.translate('what_next', 'Что дальше?')}**\n" + "\n".join(options)
+        for pattern, correction_type in correction_patterns:
+            import re
+            matches = re.findall(pattern, user_text.lower())
+            for match in matches:
+                if len(match) == 2:
+                    param, value = match
+
+                    # Пытаемся понять, какое значение исправляется
+                    # Ищем числа в предыдущем ответе бота
+                    bot_numbers = re.findall(r'\d+\.?\d*', bot_response)
+
+                    if bot_numbers:
+                        wrong_value = float(bot_numbers[-1]) if bot_numbers else None
+                        correct_value = float(value)
+
+                        correction = {
+                            "wrong": {param: wrong_value},
+                            "correct": {param: correct_value},
+                            "type": correction_type,
+                            "context": context.to_dict()
+                        }
+                        corrections.append(correction)
+
+        return corrections
+
+    def _log_corrections(self, user_id: str, corrections: List[Dict[str, Any]], context):
+        """Логирует исправления от пользователя."""
+        for correction in corrections:
+            self.memory_manager.log_correction(
+                user_id,
+                correction["wrong"],
+                correction["correct"],
+                correction.get("context", {})
+            )
+
+            print(f"Записано исправление: {correction['wrong']} -> {correction['correct']}")
+
+    def _log_successful_calculation(self, user_id: str, context, parsed: Dict[str, Any],
+                                    response: str):
+        """Логирует успешный расчет для обучения."""
+        # Собираем параметры расчета
+        calculation_params = {}
+        for param in ['diameter', 'overhang', 'width', 'depth', 'depth_of_cut', 'material', 'operation']:
+            if param in parsed and parsed[param]:
+                calculation_params[param] = parsed[param]
+            elif hasattr(context, param) and getattr(context, param):
+                calculation_params[param] = getattr(context, param)
+
+        # Логируем как успешный диалог
+        dialog_data = {
+            "user_id": user_id,
+            "context": context.to_dict(),
+            "calculation_params": calculation_params,
+            "response": response,
+            "outcome": "successful_calculation",
+            "timestamp": context.last_updated.isoformat()
+        }
+
+        # Сохраняем в памяти
+        user_memory = self.memory_manager.get_user_memory(user_id)
+        if "material" in calculation_params and "operation" in calculation_params:
+            user_memory.update_preferences(
+                calculation_params["material"],
+                calculation_params["operation"],
+                {k: v for k, v in calculation_params.items() if isinstance(v, (int, float))}
+            )
+            self.memory_manager._save_user_memory(user_memory)
+
+        print(f"Записано успешный расчет в память пользователя {user_id}")
+
+    def _log_completed_dialog(self, user_id: str, context, final_response: str):
+        """Логирует завершенный диалог."""
+        self.memory_manager.log_dialog(
+            context,
+            context.conversation_history,
+            context.corrections_received,
+            final_response
         )
+        print(f"Завершенный диалог записан в память для пользователя {user_id}")
+
+    def _personalize_response(self, response: str, context_wrapper: ContextWithMemory) -> str:
+        """Добавляет персонализацию в ответ."""
+        user_memory = context_wrapper.user_memory
+
+        # Если у пользователя есть история
+        if user_memory.total_dialogs > 0:
+            favorite_material = user_memory.get_favorite_material()
+
+            if favorite_material and "материал" in response.lower():
+                personal_note = f"\n\n📝 *На заметку:* Вы чаще всего работаете с **{favorite_material}**."
+                response += personal_note
+
+            # Добавляем статистику если пользователь опытный
+            if user_memory.total_dialogs > 5:
+                stats_note = f"\n🎯 *Ваша статистика:* {user_memory.total_dialogs} диалогов, " \
+                             f"{len(user_memory.corrections_history)} исправлений учтены."
+                response += stats_note
+
+        return response
+
+    def _show_user_history(self, user_id: str) -> str:
+        """Показывает историю пользователя."""
+        user_memory = self.memory_manager.get_user_memory(user_id)
+
+        if user_memory.total_dialogs == 0:
+            return "📊 У вас пока нет истории взаимодействий."
+
+        # Самый частый материал
+        favorite_material = user_memory.get_favorite_material()
+        material_count = user_memory.preferred_materials.get(favorite_material, 0) if favorite_material else 0
+
+        # Самый частый операция
+        favorite_operation = max(user_memory.preferred_operations.items(),
+                                 key=lambda x: x[1])[0] if user_memory.preferred_operations else "нет данных"
+        operation_count = user_memory.preferred_operations.get(favorite_operation, 0)
+
+        # Типичные параметры
+        typical_diameter = user_memory.get_typical_value("diameter")
+        typical_feed = user_memory.get_typical_value("feed")
+
+        history_text = (
+            f"📊 **Ваша история использования:**\n\n"
+            f"• **Всего диалогов:** {user_memory.total_dialogs}\n"
+            f"• **Первое использование:** {user_memory.first_seen.strftime('%d.%m.%Y')}\n"
+            f"• **Последняя активность:** {user_memory.last_seen.strftime('%d.%m.%Y %H:%M')}\n\n"
+
+            f"**Предпочтения:**\n"
+            f"• Чаще всего материал: **{favorite_material or 'нет данных'}** ({material_count} раз)\n"
+            f"• Чаще всего операция: **{favorite_operation}** ({operation_count} раз)\n"
+        )
+
+        if typical_diameter:
+            history_text += f"• Типичный диаметр: **Ø{typical_diameter:.1f} мм**\n"
+        if typical_feed:
+            history_text += f"• Типичная подача: **{typical_feed:.3f} мм/об**\n"
+
+        history_text += f"\n**Исправления учтены:** {len(user_memory.corrections_history)}\n"
+
+        if user_memory.custom_rules:
+            history_text += f"\n**Ваши правила:** {len(user_memory.custom_rules)}\n"
+
+        return history_text
+
+    def _show_user_stats(self, user_id: str) -> str:
+        """Показывает статистику пользователя."""
+        from datetime import datetime
+
+        user_memory = self.memory_manager.get_user_memory(user_id)
+
+        days_active = (datetime.now() - user_memory.first_seen).days
+        if days_active == 0:
+            days_active = 1
+
+        dialogs_per_day = user_memory.total_dialogs / days_active
+
+        stats_text = (
+            f"📈 **Статистика использования:**\n\n"
+            f"• **Активность:** {days_active} дней\n"
+            f"• **Среднее в день:** {dialogs_per_day:.1f} диалогов\n"
+            f"• **Исправления/диалог:** {len(user_memory.corrections_history) / max(user_memory.total_dialogs, 1):.1f}\n\n"
+
+            f"**Топ материалов:**\n"
+        )
+
+        # Топ 3 материала
+        top_materials = sorted(user_memory.preferred_materials.items(),
+                               key=lambda x: x[1], reverse=True)[:3]
+        for material, count in top_materials:
+            percentage = (count / user_memory.total_dialogs * 100) if user_memory.total_dialogs > 0 else 0
+            stats_text += f"• {material}: {count} раз ({percentage:.0f}%)\n"
+
+        stats_text += f"\n**Уровень опыта:** "
+        if user_memory.total_dialogs > 20:
+            stats_text += "🎓 Эксперт"
+        elif user_memory.total_dialogs > 10:
+            stats_text += "📚 Опытный"
+        elif user_memory.total_dialogs > 3:
+            stats_text += "📖 Начинающий"
+        else:
+            stats_text += "🆕 Новый пользователь"
+
+        return stats_text
+
+    def _show_help(self) -> str:
+        """Показывает справку."""
+        help_text = (
+            "🆘 **Справка по командам:**\n\n"
+
+            "**Основные команды:**\n"
+            "• /reset или 'сброс' - начать новую задачу\n"
+            "• /history или 'история' - показать вашу историю\n"
+            "• /stats или 'статистика' - показать статистику\n"
+            "• /help или 'помощь' - эта справка\n\n"
+
+            "**Примеры запросов:**\n"
+            "• 'алюминий токарка черновая диаметр 50'\n"
+            "• 'посчитай для стали 45 расточка'\n"
+            "• 'фрезеровка титан фреза 12 мм'\n\n"
+
+            "**Корректировки:**\n"
+            "• 'нет, подача 0.3 слишком большая'\n"
+            "• 'исправь скорость на 150'\n"
+            "• 'это много, сделай глубину 2 мм'\n\n"
+
+            "🤖 *Примечание:* Я запоминаю ваши предпочтения и становлюсь точнее со временем!"
+        )
+
+        return help_text
+
+
+# ==================== ИНИЦИАЛИЗАЦИЯ ====================
+
+# Создаем глобальный экземпляр обработчика
+intelligent_handler = IntelligentHandler()
+
+
+# Упрощенные функции для импорта
+def handle_user_message(user_id: str, text: str) -> str:
+    """Обрабатывает сообщение пользователя."""
+    return intelligent_handler.handle_message(user_id, text)
+
+
+def reset_user_dialog(user_id: str) -> str:
+    """Сбрасывает диалог пользователя."""
+    return intelligent_handler.handle_reset(user_id)

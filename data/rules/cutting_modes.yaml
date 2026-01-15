@@ -1,0 +1,58 @@
+materials:
+  steel:
+    name: "Сталь"
+    cutting_speed:
+      min: 80
+      max: 150
+      default: 100
+    feed:
+      min: 0.1
+      max: 0.3
+      default: 0.2
+    notes: "Для твердых сталей уменьшить скорость на 20%"
+
+  aluminum:
+    name: "Алюминий"
+    cutting_speed:
+      min: 200
+      max: 400
+      default: 300
+    feed:
+      min: 0.2
+      max: 0.4
+      default: 0.3
+    notes: "Использовать острый инструмент, избегать налипания"
+
+  titanium:
+    name: "Титан"
+    cutting_speed:
+      min: 40
+      max: 80
+      default: 60
+    feed:
+      min: 0.08
+      max: 0.15
+      default: 0.1
+    notes: "Малая подача, охлаждение обязательно"
+
+operations:
+  turning:
+    name: "Токарная обработка"
+    default_tool: "токарный резец"
+    formula: "n = (1000 * Vc) / (π * D)"
+
+  milling:
+    name: "Фрезерование"
+    default_tool: "концевая фреза"
+    formula: "n = (1000 * Vc) / (π * D)"
+
+modes:
+  roughing:
+    name: "Черновая обработка"
+    depth_multiplier: 1.0
+    feed_multiplier: 1.0
+
+  finishing:
+    name: "Чистовая обработка"
+    depth_multiplier: 0.3
+    feed_multiplier: 0.5

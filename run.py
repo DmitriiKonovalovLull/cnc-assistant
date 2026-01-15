@@ -5,7 +5,6 @@
 import sys
 import os
 from pathlib import Path
-from dotenv import load_dotenv
 
 # Добавляем корневую директорию в путь
 sys.path.insert(0, str(Path(__file__).parent))
@@ -46,7 +45,14 @@ def check_environment():
             print("⚠️  Замените 'your_bot_token_here' на ваш реальный токен!")
 
     # 2. Загружаем переменные окружения
-    load_dotenv()
+    try:
+        from dotenv import load_dotenv
+        load_dotenv()
+    except ImportError:
+        print("❌ python-dotenv не установлен!")
+        print("📦 Установите: pip install python-dotenv")
+        return False
+
     token = os.getenv('TELEGRAM_TOKEN')
 
     if not token or token == 'your_bot_token_here':
@@ -60,6 +66,12 @@ def check_environment():
         print("5. Вставьте токен в файл .env:")
         print("   TELEGRAM_TOKEN=ваш_токен_здесь")
         print("=" * 40)
+
+        # Показываем содержимое .env файла если он есть
+        if env_file.exists():
+            print("\n📄 Содержимое .env файла:")
+            with open(env_file, 'r') as f:
+                print(f.read())
         return False
 
     # 3. Проверяем структуру данных
@@ -83,59 +95,79 @@ def check_environment():
         if not file_path.exists():
             if file_path.name.endswith('.yaml'):
                 # Создаем базовый YAML
-                import yaml
-                basic_rules = {
-                    "materials": {
-                        "steel": {
-                            "name": "Сталь",
-                            "cutting_speed": {"min": 80, "max": 150},
-                            "feed": {"min": 0.1, "max": 0.3}
+                try:
+                    import yaml
+                    basic_rules = {
+                        "materials": {
+                            "steel": {
+                                "name": "Сталь",
+                                "cutting_speed": {"min": 80, "max": 150},
+                                "feed": {"min": 0.1, "max": 0.3}
+                            },
+                            "aluminum": {
+                                "name": "Алюминий",
+                                "cutting_speed": {"min": 200, "max": 400},
+                                "feed": {"min": 0.2, "max": 0.4}
+                            },
+                            "titanium": {
+                                "name": "Титан",
+                                "cutting_speed": {"min": 40, "max": 80},
+                                "feed": {"min": 0.08, "max": 0.15}
+                            }
                         },
-                        "aluminum": {
-                            "name": "Алюминий",
-                            "cutting_speed": {"min": 200, "max": 400},
-                            "feed": {"min": 0.2, "max": 0.4}
-                        },
-                        "titanium": {
-                            "name": "Титан",
-                            "cutting_speed": {"min": 40, "max": 80},
-                            "feed": {"min": 0.08, "max": 0.15}
-                        }
-                    },
-                    "operations": {
-                        "turning": {
-                            "name": "Токарная обработка",
-                            "default_tool": "токарный резец"
-                        },
-                        "milling": {
-                            "name": "Фрезерование",
-                            "default_tool": "концевая фреза"
+                        "operations": {
+                            "turning": {
+                                "name": "Токарная обработка",
+                                "default_tool": "токарный резец"
+                            },
+                            "milling": {
+                                "name": "Фрезерование",
+                                "default_tool": "концевая фреза"
+                            }
                         }
                     }
-                }
-                with open(file_path, 'w', encoding='utf-8') as f:
-                    yaml.dump(basic_rules, f, allow_unicode=True, default_flow_style=False)
+                    with open(file_path, 'w', encoding='utf-8') as f:
+                        yaml.dump(basic_rules, f, allow_unicode=True, default_flow_style=False)
+                    print(f"📄 Создан файл: {file_path}")
+                except ImportError:
+                    print(f"❌ Не удалось создать {file_path}: yaml не установлен")
             elif file_path.name.endswith('.jsonl'):
                 # Создаем пустой файл
                 file_path.touch()
+                print(f"📄 Создан файл: {file_path}")
             elif file_path.name == '__init__.py':
                 # Создаем пустой __init__.py
                 file_path.touch()
+                print(f"📄 Создан файл: {file_path}")
 
     # 5. Проверяем зависимости
     print("\n🔍 Проверка зависимостей...")
-    required_packages = ['python-telegram-bot', 'pyyaml', 'python-dotenv']
 
+    missing_packages = []
+
+    # Проверяем каждую зависимость отдельно
     try:
         import telegram
+    except ImportError:
+        missing_packages.append('python-telegram-bot')
+
+    try:
         import yaml
+    except ImportError:
+        missing_packages.append('pyyaml')
+
+    try:
         from dotenv import load_dotenv
-        print("✅ Все зависимости установлены")
-    except ImportError as e:
-        print(f"❌ Не хватает зависимостей: {e}")
+    except ImportError:
+        missing_packages.append('python-dotenv')
+
+    if missing_packages:
+        print(f"❌ Не хватает зависимостей: {', '.join(missing_packages)}")
         print("\n📦 Установите недостающие пакеты:")
-        print(f"pip install {' '.join(required_packages)}")
+        print(f"pip install {' '.join(missing_packages)}")
         return False
+
+    print("✅ Все зависимости установлены")
 
     print("\n✅ Окружение проверено и настроено!")
     print(f"🤖 Токен: {token[:10]}...")
@@ -190,8 +222,15 @@ def main():
         print("=" * 60)
 
         # Импортируем и запускаем бота
-        from bot.telegram_bot import main as run_bot
-        run_bot()
+        try:
+            from bot.telegram_bot import main as run_bot
+            run_bot()
+        except ImportError as e:
+            print(f"❌ Не удалось импортировать бота: {e}")
+            print("📁 Проверьте структуру проекта:")
+            print("• Есть ли папка bot/?")
+            print("• Есть ли файл bot/telegram_bot.py?")
+            return 1
 
     except KeyboardInterrupt:
         print("\n\n👋 Завершение работы...")
