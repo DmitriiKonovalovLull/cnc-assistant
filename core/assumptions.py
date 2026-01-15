@@ -1,80 +1,50 @@
 """
-Assumption Engine ("магия ИИ").
-Задача: не спрашивать сразу, а предполагать.
-Делает бота умнее без сложной логики.
+Assumption Engine с правилами приоритета.
 """
 
 
 class AssumptionEngine:
-    """Двигатель предположений."""
+    """Двигатель предположений с учетом уверенности."""
 
     @staticmethod
     def apply_assumptions(context):
-        assumptions = []
+        """Применяет предположения, если уверенность низкая."""
+        actions = []
 
-        # Не делаем предположений при пустом контексте
-        if not context.has_minimum_data():
-            return assumptions
-
-        # === ПРАВИЛО: Маленький диаметр → выше обороты ===
-        if context.diameter:
-            try:
-                dia = float(context.diameter.replace(',', '.'))
-                if dia < 20:
-                    assumptions.append(f"Диаметр {dia} мм маленький — нужны высокие обороты.")
-                elif dia > 100:
-                    assumptions.append(f"Диаметр {dia} мм большой — осторожно с вибрациями.")
-            except:
-                pass
-
-        # === ПРАВИЛО: Алюминий + маленький диаметр → острый инструмент ===
-        if (context.material and 'алюмин' in context.material.lower() and
-                context.diameter):
-            try:
-                dia = float(context.diameter.replace(',', '.'))
-                if dia < 15:
-                    assumptions.append("Для маленького диаметра алюминия нужен очень острый инструмент.")
-            except:
-                pass
-
-        # Остальные правила...
-
-        # === ПРАВИЛО 1: Если есть материал, но нет операции ===
+        # ПРАВИЛО 1: Если есть материал, но нет операции
         if context.material and not context.operation:
-            material_lower = context.material.lower()
+            if context.confidence.get('material', 0) >= 0.5:
+                assumption = AssumptionEngine._assume_operation(context.material)
+                if assumption:
+                    context.update("operation", assumption, source="assumption", confidence=0.4)
+                    actions.append(f"Я предполагаю {assumption}.")
 
-            if 'сталь' in material_lower:
-                context.update("operation", "токарная",
-                               source="assumption", confidence=0.4)
-                assumptions.append("Я предполагаю токарную обработку. Если не так — скажи 'фрезеровка'.")
+        # ПРАВИЛО 2: Если есть операция, но нет режимов
+        if context.operation and not context.modes:
+            if context.confidence.get('operation', 0) >= 0.5:
+                context.modes = ['черновая']
+                context.confidence['modes'] = 0.3
+                actions.append("Предполагаю черновую обработку.")
 
-            elif 'алюмин' in material_lower:
-                context.update("operation", "токарная",
-                               source="assumption", confidence=0.5)
-                assumptions.append("Для алюминия часто используют токарку. Это верно?")
+        # ПРАВИЛО 3: Если есть режимы, но нет активного
+        if context.modes and not context.active_mode:
+            # Всегда начинаем с черновой
+            context.active_mode = 'черновая'
+            context.confidence['active_mode'] = 0.4
+            actions.append("Начнём с черновой обработки.")
 
-        # === ПРАВИЛО 2: Если есть операция, но нет режима ===
-        elif context.operation and not context.mode:
-            # Только если уже есть материал
-            if context.material:
-                context.update("mode", "черновая",
-                               source="assumption", confidence=0.3)
-                assumptions.append("Предполагаю черновую обработку. Уточни режим если нужно.")
+        return actions
 
-        # === ПРАВИЛО 3: Если есть сталь и токарка, но нет инструмента ===
-        elif (context.material and 'сталь' in context.material.lower() and
-              context.operation and 'токар' in context.operation and
-              not context.tool):
-            context.update("tool", "резец с пластиной",
-                           source="assumption", confidence=0.5)
-            assumptions.append("Для стали обычно используют резец с твердосплавной пластиной.")
+    @staticmethod
+    def _assume_operation(material):
+        """Предполагает операцию на основе материала."""
+        material_lower = material.lower()
 
-        # === ПРАВИЛО 4: Если есть алюминий и токарка, но нет инструмента ===
-        elif (context.material and 'алюмин' in context.material.lower() and
-              context.operation and 'токар' in context.operation and
-              not context.tool):
-            context.update("tool", "острый резец",
-                           source="assumption", confidence=0.6)
-            assumptions.append("Для алюминия рекомендую острые резцы.")
+        if 'сталь' in material_lower:
+            return 'токарная'
+        elif 'алюмин' in material_lower:
+            return 'токарная'
+        elif 'титан' in material_lower:
+            return 'токарная'
 
-        return assumptions
+        return None

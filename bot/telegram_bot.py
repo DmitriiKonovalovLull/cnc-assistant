@@ -7,7 +7,7 @@ import logging
 from telegram import Update
 from telegram.ext import Updater, CommandHandler, MessageHandler as TGMessageHandler, Filters, CallbackContext
 
-from core.handler import MessageHandler as CoreMessageHandler
+from core.handler import IntelligentHandler as CoreMessageHandler
 
 # Минимальное логирование
 logging.basicConfig(
