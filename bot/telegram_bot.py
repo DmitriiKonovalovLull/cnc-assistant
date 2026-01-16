@@ -1,36 +1,36 @@
 """
-🏁 CNC Assistant - Главный файл запуска (упрощенная версия)
+🏁 CNC Assistant - Главный файл запуска (исправленная версия)
 """
 
 import os
+import logging
 import sys
 from pathlib import Path
+from dotenv import load_dotenv
+from typing import Optional, Any
 
-# Определяем корневую директорию проекта
-ROOT_DIR = Path(__file__).parent.parent
-sys.path.insert(0, str(ROOT_DIR))
+# Добавляем корень проекта в путь
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
-# Создаем необходимые директории
-LOG_DIR = ROOT_DIR / "data" / "logs"
-LOG_DIR.mkdir(parents=True, exist_ok=True)
+# Настраиваем логирование
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.INFO,
+    handlers=[
+        logging.FileHandler('data/logs/bot_main.log', encoding='utf-8'),
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger(__name__)
 
-CONTEXT_DIR = ROOT_DIR / "data" / "contexts"
-CONTEXT_DIR.mkdir(parents=True, exist_ok=True)
+# Загружаем переменные окружения
+load_dotenv()
 
-RULES_DIR = ROOT_DIR / "data" / "rules"
-RULES_DIR.mkdir(parents=True, exist_ok=True)
-
-# Получаем токен из переменных окружения
-try:
-    from dotenv import load_dotenv
-
-    load_dotenv(ROOT_DIR / ".env")
-except ImportError:
-    pass
-
+# Получаем токен
 TOKEN = os.getenv('TELEGRAM_TOKEN')
 
 if not TOKEN or TOKEN == 'your_bot_token_here':
+    logger.error("❌ TELEGRAM_TOKEN не найден в .env файле!")
     print("\n" + "=" * 60)
     print("❌ ТОКЕН НЕ НАСТРОЕН!")
     print("=" * 60)
@@ -38,267 +38,382 @@ if not TOKEN or TOKEN == 'your_bot_token_here':
     print("1. Откройте Telegram")
     print("2. Найдите @BotFather")
     print("3. Создайте бота: /newbot")
-    print("4. Скопируйте токен")
+    print("4. Скопируйте токен (пример: 123456789:ABCdefGHIjklMNOpqrsTUVwxyz)")
     print("5. Вставьте в файл .env:")
     print("   TELEGRAM_TOKEN=ваш_токен_здесь")
     print("=" * 60)
-
-    env_file = ROOT_DIR / ".env"
-    if not env_file.exists():
-        env_file.parent.mkdir(parents=True, exist_ok=True)
-        with open(env_file, 'w', encoding='utf-8') as f:
-            f.write("TELEGRAM_TOKEN=your_bot_token_here\n")
-        print(f"✅ Создан файл .env: {env_file}")
-
     exit(1)
 
 print(f"🤖 Запуск CNC Assistant с токеном: {TOKEN[:10]}...")
-print(f"📁 Корневая директория: {ROOT_DIR}")
+print("⚙️  Проверка архитектуры...")
 
 
-# ==================== ФУНКЦИИ ОБРАБОТКИ СООБЩЕНИЙ ====================
+# ==================== ИСПРАВЛЕННЫЙ FALLBACK ====================
 
-def handle_start() -> str:
-    """Обработка команды /start."""
-    return (
-        "👋 Привет! Я CNC Assistant - бот для расчета режимов резания.\n\n"
-        "🎯 **Что я умею:**\n"
-        "• Рассчитывать скорости, подачи, глубины резания\n"
-        "• Работать с разными материалами и операциями\n\n"
-        "💡 **Пример запроса:**\n"
-        "`токарка алюминия диаметр 50 мм`\n"
-        "`фрезеровка стали 45 чистовая`\n"
-        "`титан с 200 до 150`\n\n"
-        "Напишите ваш запрос в одном сообщении!"
-    )
+class StatelessFallback:
+    """Stateless Fallback Handler - UX-помощник без состояния."""
 
+    def __init__(self):
+        logger.info("🔄 Stateless Fallback инициализирован")
 
-def handle_help() -> str:
-    """Обработка команды /help."""
-    return (
-        "🆘 **Справка по формату запросов**\n\n"
-        "📋 **Обязательно укажите:**\n"
-        "1. Материал (алюминий, сталь, титан, нержавейка)\n"
-        "2. Операция (токарка, фрезеровка, расточка)\n"
-        "3. Размер (диаметр 50 или с 100 до 95)\n\n"
-        "💡 **Примеры:**\n"
-        "• токарка алюминия диаметр 50\n"
-        "• титан с 200 до 150\n"
-        "• фрезеровка стали 45 чистовая\n"
-        "• расточка нержавейки Ø80 черновая\n\n"
-        "⚠️ **Важно:** Всё в одном сообщении!"
-    )
+    @staticmethod
+    def _handle_start() -> str:
+        """Приветствие без состояния."""
+        return (
+            "👋 Привет! Я CNC Assistant.\n\n"
+            "💡 **Опишите задачу в одном сообщении:**\n"
+            "• `токарка алюминия диаметр 50`\n"
+            "• `титан с 200 до 150 чистота 0.8`\n"
+            "• `фрезеровка стали 45 чистовая`\n\n"
+            "📋 **Что нужно указать:**\n"
+            "1. Материал (алюминий, сталь, титан)\n"
+            "2. Операция (токарка, фрезеровка)\n"
+            "3. Диаметр (или цель: с X до Y)\n"
+            "4. [опционально] Черновая/чистовая\n\n"
+            "Попробуйте отправить полный запрос!"
+        )
 
+    @staticmethod
+    def _handle_help() -> str:
+        """Справка без рекомендаций."""
+        return (
+            "🆘 **Справка по формату запросов:**\n\n"
+            "💡 **Полный пример запроса:**\n"
+            "```\n"
+            "титан токарка с 200 до 150 чистота 0.8\n"
+            "```\n\n"
+            "📋 **Обязательные данные:**\n"
+            "✅ Материал (алюминий, сталь, титан, нержавейка)\n"
+            "✅ Операция (токарка, фрезеровка, расточка, сверление)\n"
+            "✅ Диаметр (50) или цель (с 200 до 150)\n\n"
+            "📊 **Дополнительно можно указать:**\n"
+            "• черновая / чистовая\n"
+            "• чистота Ra (например: Ra 0.8)\n"
+            "• допуск (±0.1)\n\n"
+            "⚠️  **Важно:** Укажите всё в одном сообщении."
+        )
 
-def handle_reset() -> str:
-    """Обработка команды /reset."""
-    return "🔄 Контекст сброшен. Начните новый запрос."
+    @staticmethod
+    def _handle_reset() -> str:
+        """Сброс (только сообщение)."""
+        return (
+            "🔄 Команда /reset в fallback режиме\n\n"
+            "В этом режиме я НЕ храню контекст.\n"
+            "Просто отправьте новый запрос в правильном формате.\n\n"
+            "💡 **Примеры новых запросов:**\n"
+            "• `алюминий фрезеровка диаметр 20`\n"
+            "• `сталь токарка с 100 до 95`\n"
+            "• `титан чистовая Ra 1.6`"
+        )
 
+    @staticmethod
+    def _unknown_command(command: str) -> str:
+        """Неизвестная команда."""
+        return (
+            f"❌ Неизвестная команда: {command}\n\n"
+            "📋 **Доступные команды:**\n"
+            "/start - начало работы\n"
+            "/help - справка по формату\n"
+            "/reset - информация о сбросе\n\n"
+            "💡 **Или просто опишите задачу:**\n"
+            "`токарка алюминия диаметр 50`"
+        )
 
-def calculate_cutting_parameters(text: str) -> str:
-    """Рассчитывает параметры резания."""
-    text_lower = text.lower()
+    @staticmethod
+    def _show_format_examples(original_text: str) -> str:
+        """Показывает примеры формата БЕЗ анализа текста."""
+        display_text = original_text[:50] + ("..." if len(original_text) > 50 else "")
 
-    # Определяем материал
-    if 'алюмин' in text_lower:
-        material = "алюминий"
-        speed = "200-400 м/мин"
-        feed = "0.2-0.4 мм/об"
-        depth = "1.5-4.0 мм"
-    elif 'стал' in text_lower:
-        material = "сталь"
-        speed = "80-150 м/мин"
-        feed = "0.1-0.3 мм/об"
-        depth = "1.0-3.0 мм"
-    elif 'титан' in text_lower:
-        material = "титан"
-        speed = "40-80 м/мин"
-        feed = "0.08-0.15 мм/об"
-        depth = "0.5-1.5 мм"
-    elif 'нержавей' in text_lower:
-        material = "нержавейка"
-        speed = "60-100 м/мин"
-        feed = "0.1-0.25 мм/об"
-        depth = "1.0-2.5 мм"
-    else:
-        material = "неизвестный"
-        speed = "100-200 м/мин"
-        feed = "0.1-0.3 мм/об"
-        depth = "1.0-3.0 мм"
+        return (
+            f"📝 **Запрос:** `{display_text}`\n\n"
+            "🤔 **Правильный формат запросов:**\n"
+            "```\n"
+            "титан токарка с 200 до 150 чистота 0.8\n"
+            "алюминий фрезеровка диаметр 20\n"
+            "сталь 45 расточка черновая\n"
+            "```\n\n"
+            "📋 **Что указать:**\n"
+            "1. **Материал:** алюминий/сталь/титан\n"
+            "2. **Операция:** токарка/фрезеровка\n"
+            "3. **Размер:** диаметр ИЛИ цель\n"
+            "4. **[опционально]** режим/чистота\n\n"
+            "🔄 **Попробуйте в таком формате!**"
+        )
 
-    # Определяем операцию
-    if 'токар' in text_lower:
-        operation = "токарная"
-        tool = "токарный резец"
-    elif 'фрезер' in text_lower:
-        operation = "фрезерная"
-        tool = "концевая фреза"
-    elif 'расточ' in text_lower:
-        operation = "расточная"
-        tool = "расточной резец"
-    elif 'сверл' in text_lower:
-        operation = "сверление"
-        tool = "спиральное сверло"
-    else:
-        operation = "неизвестная"
-        tool = "стандартный инструмент"
+    def handle_message(self, text: str) -> str:
+        """Обрабатывает сообщение БЕЗ хранения состояния."""
+        text_lower = text.lower().strip()
 
-    # Определяем режим
-    if 'чистов' in text_lower:
-        mode = "чистовая"
-        feed = "0.1-0.2 мм/об"
-    elif 'чернов' in text_lower:
-        mode = "черновая"
-        feed = "0.2-0.4 мм/об"
-    else:
-        mode = "стандартный"
+        # Команды
+        if text_lower == '/start':
+            return self._handle_start()
+        elif text_lower == '/help':
+            return self._handle_help()
+        elif text_lower == '/reset':
+            return self._handle_reset()
+        elif text_lower.startswith('/'):
+            return self._unknown_command(text_lower)
 
-    return (
-        f"⚙️ **Режимы резания для {material}:**\n\n"
-        f"**Операция:** {operation}\n"
-        f"**Инструмент:** {tool}\n"
-        f"**Режим:** {mode}\n\n"
-        f"📊 **Рекомендуемые параметры:**\n"
-        f"• Скорость резания: {speed}\n"
-        f"• Подача: {feed}\n"
-        f"• Глубина резания: {depth}\n\n"
-        f"💡 **Для точного расчета укажите:**\n"
-        f"• Точный материал (например: сталь 45)\n"
-        f"• Диаметр заготовки\n"
-        f"• Целевую чистоту поверхности\n"
-        f"• Тип инструмента\n\n"
-        f"🔄 **Попробуйте уточнить запрос!**"
-    )
+        # Любой другой текст - показываем формат
+        return self._show_format_examples(text)
 
 
-def handle_text_message(text: str) -> str:
-    """Обрабатывает текстовое сообщение."""
-    text_lower = text.lower().strip()
+# ==================== ГЛАВНЫЙ ОБРАБОТЧИК ====================
 
-    # Команды
-    if text_lower == '/start':
-        return handle_start()
-    elif text_lower == '/help':
-        return handle_help()
-    elif text_lower == '/reset':
-        return handle_reset()
-    elif text_lower.startswith('/'):
-        return f"❌ Неизвестная команда: {text_lower}\n\nИспользуйте /start для начала работы."
+class MainHandler:
+    """Главный обработчик с интеллектуальным fallback."""
 
-    # Проверяем, похож ли запрос на расчет параметров
-    materials = ['алюмин', 'стал', 'титан', 'нержавей']
-    operations = ['токар', 'фрезер', 'расточ', 'сверл']
+    def __init__(self):
+        self.fallback = StatelessFallback()
+        self.use_fallback_only = False
+        self.main_system_loaded = False
+        self._main_handle_func = None
+        self._try_load_main_system()
 
-    if any(word in text_lower for word in materials):
-        if any(word in text_lower for word in operations):
-            return calculate_cutting_parameters(text_lower)
+    def _try_load_main_system(self):
+        """Пытается загрузить основную систему."""
+        try:
+            # Пробуем импортировать основные модули
+            from bot.handlers.message_handler import handle_message as main_handle
 
-    # Неправильный формат
-    display_text = text[:50] + "..." if len(text) > 50 else text
-    return (
-        f"📝 **Ваш запрос:** `{display_text}`\n\n"
-        "🤔 Не могу разобрать запрос.\n\n"
-        "💡 **Правильный формат:**\n"
-        "`<материал> <операция> <размер> [режим]`\n\n"
-        "**Пример:**\n"
-        "• токарка алюминия диаметр 50\n"
-        "• фрезеровка стали 45 чистовая\n"
-        "• титан с 200 до 150\n\n"
-        "Попробуйте еще раз!"
-    )
+            self._main_handle_func = main_handle
+            self.main_system_loaded = True
+            logger.info("✅ Основная система загружена")
+
+        except ImportError as import_err:
+            logger.warning(f"⚠️  Основная система недоступна: {import_err}")
+            self.main_system_loaded = False
+            self.use_fallback_only = True
+
+        except Exception as err:
+            logger.error(f"❌ Ошибка загрузки основной системы: {err}")
+            self.main_system_loaded = False
+            self.use_fallback_only = True
+
+    def handle_message(self, user_id: str, text: str) -> str:
+        """Умная обработка с автоматическим fallback."""
+        text = text.strip()
+
+        if not text:
+            return "Пожалуйста, введите текст."
+
+        # Если включен режим только fallback
+        if self.use_fallback_only:
+            return self.fallback.handle_message(text)
+
+        # Пытаемся использовать основную систему
+        try:
+            if self.main_system_loaded and self._main_handle_func:
+                # Передаем в основную систему
+                return self._main_handle_func(user_id, text)
+            else:
+                # Используем fallback
+                return self.fallback.handle_message(text)
+
+        except (ImportError, RuntimeError) as critical_err:
+            # Критические ошибки - переключаемся на fallback
+            logger.error(f"❌ Критическая ошибка, переключаюсь на fallback: {critical_err}")
+            self.use_fallback_only = True
+            return self.fallback.handle_message(text)
+
+        except Exception as other_err:
+            # Другие ошибки - пробуем fallback, но логируем
+            logger.error(f"⚠️  Ошибка в основной системе: {other_err}")
+            try:
+                if self._main_handle_func:
+                    return self._main_handle_func(user_id, text)
+            except Exception as nested_err:
+                logger.error(f"⚠️  Повторная ошибка: {nested_err}")
+
+            return self.fallback.handle_message(text)
+
+    def handle_command(self, user_id: str, command: str) -> str:
+        """Обрабатывает команды."""
+        command_lower = command.lower().strip()
+
+        if command_lower == '/fallback':
+            self.use_fallback_only = True
+            return "✅ Переключился на fallback режим"
+
+        elif command_lower == '/main':
+            if self.main_system_loaded:
+                self.use_fallback_only = False
+                return "✅ Переключился на основную систему"
+            else:
+                return "❌ Основная система недоступна"
+
+        elif command_lower == '/status':
+            status = "✅ Основная система" if not self.use_fallback_only else "🔄 Fallback режим"
+            loaded = "✅ Загружена" if self.main_system_loaded else "❌ Не загружена"
+            return f"📊 **Статус системы:**\n• Режим: {status}\n• Основная система: {loaded}"
+
+        else:
+            # Пробуем обработать как обычное сообщение
+            return self.handle_message(user_id, command)
 
 
-# ==================== TELEGRAM БОТ ====================
+# ==================== TELEGRAM ИНТЕГРАЦИЯ ====================
 
-def create_telegram_bot():
-    """Создает и настраивает Telegram бота."""
+def setup_telegram_bot() -> Optional[Any]:
+    """Настраивает и запускает Telegram бота."""
+    telegram_available = False
+
     try:
         from telegram import Update
-        from telegram.ext import Application, CommandHandler, MessageHandler, filters
-        print("✅ python-telegram-bot импортирован")
-    except ImportError:
-        print("\n" + "=" * 60)
-        print("❌ БИБЛИОТЕКА НЕ УСТАНОВЛЕНА")
-        print("=" * 60)
-        print("Установите python-telegram-bot версии 20.0+:")
-        print("pip install python-telegram-bot")
-        print("=" * 60)
+        from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
+        telegram_available = True
+
+    except ImportError as import_err:
+        logger.error(f"❌ python-telegram-bot не установлен: {import_err}")
+        print("\n📦 Установите зависимости:")
+        print("pip install python-telegram-bot python-dotenv pyyaml")
         return None
 
-    # Функции-обработчики
-    async def start_command(update: Update, context):
-        await update.message.reply_text(handle_start())
-
-    async def help_command(update: Update, context):
-        await update.message.reply_text(handle_help())
-
-    async def reset_command(update: Update, context):
-        await update.message.reply_text(handle_reset())
-
-    async def text_message_handler(update: Update, context):
-        text = update.message.text
-        response = handle_text_message(text)
-        await update.message.reply_text(response)
-
-    async def error_handler(update: Update, context):
-        print(f"❌ Ошибка: {context.error}")
-
-    try:
-        print("🤖 Создаю Telegram приложение...")
-        application = Application.builder().token(TOKEN).build()
-
-        # Регистрируем обработчики
-        application.add_handler(CommandHandler("start", start_command))
-        application.add_handler(CommandHandler("help", help_command))
-        application.add_handler(CommandHandler("reset", reset_command))
-        application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, text_message_handler))
-        application.add_error_handler(error_handler)
-
-        print("✅ Приложение создано")
-        return application
-
-    except Exception as e:
-        print(f"❌ Ошибка создания приложения: {e}")
+    if not telegram_available:
         return None
 
+    # Создаем главный обработчик
+    main_handler = MainHandler()
 
-# ==================== CLI РЕЖИМ ====================
+    # Обработчики для Telegram
+    async def start_command(update: Update, context: CallbackContext) -> None:
+        """Обрабатывает /start."""
+        user_id = str(update.effective_user.id)
+        response = main_handler.handle_message(user_id, "/start")
+        await update.message.reply_text(response, parse_mode='Markdown')
 
-def run_cli_mode():
-    """Запускает CLI режим."""
+    async def help_command(update: Update, context: CallbackContext) -> None:
+        """Обрабатывает /help."""
+        user_id = str(update.effective_user.id)
+        response = main_handler.handle_message(user_id, "/help")
+        await update.message.reply_text(response, parse_mode='Markdown')
+
+    async def reset_command(update: Update, context: CallbackContext) -> None:
+        """Обрабатывает /reset."""
+        user_id = str(update.effective_user.id)
+        response = main_handler.handle_message(user_id, "/reset")
+        await update.message.reply_text(response, parse_mode='Markdown')
+
+    async def fallback_command(update: Update, context: CallbackContext) -> None:
+        """Обрабатывает /fallback."""
+        user_id = str(update.effective_user.id)
+        response = main_handler.handle_command(user_id, "/fallback")
+        await update.message.reply_text(response, parse_mode='Markdown')
+
+    async def main_command(update: Update, context: CallbackContext) -> None:
+        """Обрабатывает /main."""
+        user_id = str(update.effective_user.id)
+        response = main_handler.handle_command(user_id, "/main")
+        await update.message.reply_text(response, parse_mode='Markdown')
+
+    async def status_command(update: Update, context: CallbackContext) -> None:
+        """Обрабатывает /status."""
+        user_id = str(update.effective_user.id)
+        response = main_handler.handle_command(user_id, "/status")
+        await update.message.reply_text(response, parse_mode='Markdown')
+
+    async def handle_text_message(update: Update, context: CallbackContext) -> None:
+        """Обрабатывает текстовые сообщения."""
+        user_id = str(update.effective_user.id)
+        text = update.message.text.strip()
+
+        logger.info(f"📨 Сообщение от {user_id}: {text}")
+
+        try:
+            response = main_handler.handle_message(user_id, text)
+            await update.message.reply_text(response, parse_mode='Markdown')
+        except Exception as err:
+            logger.error(f"❌ Ошибка обработки: {err}")
+            await update.message.reply_text(
+                "❌ Произошла ошибка. Попробуйте еще раз.",
+                parse_mode='Markdown'
+            )
+
+    def setup_dispatcher(dispatcher):
+        """Настраивает диспетчер команд."""
+        dispatcher.add_handler(CommandHandler("start", start_command))
+        dispatcher.add_handler(CommandHandler("help", help_command))
+        dispatcher.add_handler(CommandHandler("reset", reset_command))
+        dispatcher.add_handler(CommandHandler("fallback", fallback_command))
+        dispatcher.add_handler(CommandHandler("main", main_command))
+        dispatcher.add_handler(CommandHandler("status", status_command))
+        dispatcher.add_handler(MessageHandler(Filters.TEXT & ~Filters.COMMAND, handle_text_message))
+
+        logger.info("✅ Диспетчер команд настроен")
+
+    # Функция для запуска бота
+    def start_bot():
+        """Запускает Telegram бота."""
+        try:
+            # Создаем Updater с правильной версией библиотеки
+            updater = Updater(TOKEN)
+            dispatcher = updater.dispatcher
+
+            # Настраиваем диспетчер
+            setup_dispatcher(dispatcher)
+
+            # Запускаем бота
+            updater.start_polling()
+            logger.info("✅ Бот запущен и готов к работе!")
+
+            return updater
+
+        except Exception as bot_err:
+            logger.error(f"❌ Ошибка запуска бота: {bot_err}")
+            return None
+
+    return start_bot
+
+
+# ==================== CLI ТЕСТОВЫЙ РЕЖИМ ====================
+
+def run_cli_test_mode():
+    """Запускает тестовый режим в командной строке."""
     print("\n" + "=" * 60)
     print("🧪 Тестовый режим CNC Assistant")
     print("=" * 60)
-    print("💡 **Доступные команды:**")
+
+    main_handler = MainHandler()
+
+    print("📊 Статус системы:")
+    if main_handler.main_system_loaded:
+        print("✅ Основная система загружена")
+    else:
+        print("🔄 Используется fallback режим")
+
+    print("\n💡 Примеры запросов:")
     print("• /start - начало работы")
-    print("• /help - справка")
-    print("• /reset - сброс")
+    print("• токарка алюминия диаметр 50")
+    print("• титан с 200 до 150 чистота 0.8")
+    print("• /status - статус системы")
     print("• /exit - выход")
-    print("• <запрос> - расчет параметров")
     print("=" * 60)
+
+    user_id = "cli_user_001"
 
     while True:
         try:
             text = input("\n📝 Ваш запрос: ").strip()
 
-            if text.lower() in ['/exit', 'exit', 'выход', 'quit']:
-                print("👋 Завершение работы...")
+            if text.lower() in ['/exit', 'exit', 'quit', 'выход']:
+                print("\n👋 Завершение работы...")
                 break
 
             if not text:
+                print("⚠️  Пожалуйста, введите текст")
                 continue
 
-            response = handle_text_message(text)
-            print("\n" + "=" * 60)
-            print("🤖 Ответ:")
+            print("\n🤖 Ответ бота:")
+            print("-" * 50)
+            response = main_handler.handle_message(user_id, text)
             print(response)
-            print("=" * 60)
+            print("-" * 50)
 
         except KeyboardInterrupt:
-            print("\n👋 Завершение работы...")
+            print("\n\n👋 Завершение работы...")
             break
-        except Exception as e:
-            print(f"❌ Ошибка: {e}")
+        except Exception as err:
+            print(f"\n❌ Ошибка: {err}")
 
 
 # ==================== ГЛАВНАЯ ФУНКЦИЯ ====================
@@ -309,79 +424,69 @@ def main():
     print("🚀 Запуск CNC Assistant")
     print("=" * 60)
 
-    # Проверяем структуру проекта
-    print(f"\n📁 Структура проекта:")
-    print(f"• Корень: {ROOT_DIR}")
-    print(f"• Логи: {LOG_DIR} {'✅' if LOG_DIR.exists() else '❌'}")
-    print(f"• Правила: {RULES_DIR} {'✅' if RULES_DIR.exists() else '❌'}")
+    # Проверяем базовые зависимости
+    try:
+        # Проверяем наличие python-dotenv
+        from dotenv import load_dotenv
+        load_dotenv()
 
-    # Создаем файл правил если его нет
-    yaml_file = RULES_DIR / "cutting_modes.yaml"
-    if not yaml_file.exists():
-        yaml_file.parent.mkdir(parents=True, exist_ok=True)
-        default_rules = """materials:
-  сталь:
-    speed_min: 80
-    speed_max: 150
-    feed_min: 0.1
-    feed_max: 0.3
-    depth_min: 1.0
-    depth_max: 3.0
-
-  алюминий:
-    speed_min: 200
-    speed_max: 400
-    feed_min: 0.2
-    feed_max: 0.4
-    depth_min: 1.5
-    depth_max: 4.0
-
-  титан:
-    speed_min: 40
-    speed_max: 80
-    feed_min: 0.08
-    feed_max: 0.15
-    depth_min: 0.5
-    depth_max: 1.5
-"""
-        with open(yaml_file, 'w', encoding='utf-8') as f:
-            f.write(default_rules)
-        print(f"✅ Создан файл правил: {yaml_file}")
-
-    # Создаем Telegram бота
-    print("\n🤖 Создаю Telegram бота...")
-    application = create_telegram_bot()
-
-    if application:
-        print("\n" + "=" * 60)
-        print("✅ CNC Assistant ЗАПУЩЕН!")
-        print("=" * 60)
-        print("📱 Откройте Telegram и найдите вашего бота")
-        print("💬 Напишите /start чтобы начать")
-        print("\n⚡ **Доступные команды:**")
-        print("• /start - начало работы")
-        print("• /help - справка по формату")
-        print("• /reset - сброс контекста")
-        print("\n💡 **Примеры запросов:**")
-        print("• токарка алюминия диаметр 50")
-        print("• титан с 200 до 150")
-        print("• фрезеровка стали 45 чистовая")
-        print("=" * 60)
-
+        # Проверяем наличие pyyaml
         try:
-            # Запускаем бота
-            print("\n🔄 Запускаю бота...")
-            application.run_polling(drop_pending_updates=True)
+            import yaml
+        except ImportError:
+            print("⚠️  pyyaml не установлен. Установите: pip install pyyaml")
+            print("Бот будет работать, но некоторые функции могут быть недоступны.")
+
+        print("✅ Базовые зависимости проверены")
+
+    except ImportError as import_err:
+        print(f"⚠️  Ошибка импорта: {import_err}")
+        print("📦 Установите зависимости:")
+        print("pip install python-dotenv pyyaml")
+        print("\n🔄 Запускаю CLI тестовый режим...")
+        run_cli_test_mode()
+        return
+
+    # Пытаемся запустить Telegram бота
+    start_bot_func = setup_telegram_bot()
+
+    if start_bot_func:
+        try:
+            # Запускаем Telegram бота
+            print("🤖 Запускаю Telegram бота...")
+            updater = start_bot_func()
+
+            if updater:
+                print("✅ Бот запущен и готов к работе!")
+                print("📱 Откройте Telegram и найдите вашего бота")
+                print("💬 Напишите /start чтобы начать")
+                print("\n⚡ Доступные команды:")
+                print("• /start - начало работы")
+                print("• /help - справка")
+                print("• /reset - сброс контекста")
+                print("• /status - статус системы")
+                print("• /fallback - переключиться на fallback")
+                print("• /main - переключиться на основную систему")
+                print("\n🔄 Для остановки нажмите Ctrl+C")
+                print("=" * 60)
+
+                # Держим бота запущенным
+                updater.idle()
+
+            else:
+                print("❌ Не удалось запустить Telegram бота")
+                print("🔄 Запускаю CLI тестовый режим...")
+                run_cli_test_mode()
+
         except KeyboardInterrupt:
-            print("\n👋 Бот остановлен")
-        except Exception as e:
-            print(f"\n❌ Ошибка при работе бота: {e}")
-            print("\n🔄 Переключаюсь в CLI режим...")
-            run_cli_mode()
+            print("\n\n👋 Бот остановлен пользователем")
+        except Exception as bot_err:
+            print(f"\n❌ Ошибка Telegram бота: {bot_err}")
+            print("🔄 Запускаю CLI тестовый режим...")
+            run_cli_test_mode()
     else:
-        print("\n❌ Не удалось создать Telegram бота")
-        print("🔄 Переключаюсь в CLI режим...")
-        run_cli_mode()
+        print("🔄 Telegram недоступен, запускаю CLI тестовый режим...")
+        run_cli_test_mode()
 
 
 # ==================== ЗАПУСК ====================
@@ -390,11 +495,10 @@ if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
-        print("\n👋 Завершение работы...")
+        print("\n\n👋 CNC Assistant завершил работу")
         sys.exit(0)
-    except Exception as e:
-        print(f"\n❌ Критическая ошибка: {e}")
-        import traceback
-
-        traceback.print_exc()
-        run_cli_mode()
+    except Exception as critical_err:
+        logger.error(f"❌ Критическая ошибка: {critical_err}")
+        print(f"\n❌ Критическая ошибка: {critical_err}")
+        print("🔄 Запускаю CLI тестовый режим...")
+        run_cli_test_mode()
