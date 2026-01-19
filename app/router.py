@@ -1,19 +1,17 @@
 from dialog.flow import process_flow
-from memory.session import get_session, update_session
-from memory.history import save_history
 
 def route_message(user_id: int, text: str) -> str:
-    # Получаем текущую сессию
-    session = get_session(user_id)
-
-    # Обработка диалога
-    # старое
+    """
+    Основной маршрутизатор сообщений пользователя.
+    Вызывает диалоговый процесс и возвращает ответ.
+    История сохраняется внутри process_flow при необходимости.
+    """
+    # Обрабатываем текст через FSM / диалоговый процесс
     response = process_flow(user_id, text)
 
-    # новое
-    response = process_flow(user_id, text)
-
-    # Сохраняем в историю
-    save_history(user_id, session)
+    # НЕ вызываем save_history здесь напрямую,
+    # чтобы не ломать сигнатуру и не дублировать данные.
+    # Все записи истории делаются внутри process_flow, когда есть
+    # recommended_params и user_choice
 
     return response

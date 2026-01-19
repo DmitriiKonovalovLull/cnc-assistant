@@ -1,41 +1,55 @@
-import math
-from memory.session import get_session
-
-# Скорости резания (Vc, м/мин) для разных материалов (токарка/фрезеровка)
-MATERIAL_VC = {
-    "aluminum": 200,
-    "steel": 80,
-    "titanium": 50,
-    "stainless_steel": 60,
-    "cast_iron": 70,
-    "brass": 180,
-    "copper": 150,
-}
-
-
-def recommend_rpm(material_id: str, machine_type: str, diameter: float) -> str:
+def recommend_rpm(material: str, machine_type: str, diameter: float, operation: str, cut_type: str = "rough") -> dict:
     """
-    Рекомендует RPM по материалу и диаметру с учётом типа станка и макс. оборотов.
+    Возвращает расширенные рекомендации по резанию.
+    material: steel, aluminum и тд
+    machine_type: cnc/manual
+    diameter: мм
+    operation: 'turning', 'milling', 'drilling'
+    cut_type: 'rough' (черновая) или 'clean' (чистовая)
     """
-    session = get_session(1)  # Можно заменить на переданный user_id, если нужно
-    max_rpm_turning = session.get("max_rpm_turning", 3000)
-    max_rpm_milling = session.get("max_rpm_milling", 12000)
+    # Базовая скорость резания Vc м/мин по материалу
+    vc_table = {
+        "steel": 120,
+        "aluminum": 300,
+        "titanium": 50,
+        "stainless_steel": 80,
+        "cast_iron": 100,
+        "brass": 200,
+        "copper": 180
+    }
+    vc = vc_table.get(material, 100)
 
-    # Получаем Vc
-    Vc = MATERIAL_VC.get(material_id, 80)  # по умолчанию 80 м/мин
+    # Базовый RPM по формуле n = Vc*1000/(π*D)
+    rpm = int((vc * 1000) / (3.14 * diameter))
 
-    # Расчёт RPM
-    rpm = (1000 * Vc) / (math.pi * diameter)
+    # Ограничение по станку
+    max_rpm = 2000 if machine_type == "cnc" else 1000
+    rpm = min(rpm, max_rpm)
 
-    if machine_type == "manual":
-        rpm = min(rpm, max_rpm_turning)
+    # Глубина реза и подача по операции и типу обработки
+    if operation == "turning":
+        depth_of_cut = 2.0 if cut_type == "rough" else 0.5
+        feed_per_tooth = 0.2 if cut_type == "rough" else 0.05
+        tool_type = "твердосплавная"
+    elif operation == "milling":
+        depth_of_cut = 5.0 if cut_type == "rough" else 1.0
+        feed_per_tooth = 0.1 if cut_type == "rough" else 0.05
+        tool_type = "твердосплавная"
+    elif operation == "drilling":
+        depth_of_cut = diameter / 2
+        feed_per_tooth = 0.05
+        tool_type = "быстрорежущая сталь"
     else:
-        rpm = min(rpm, max_rpm_milling)
+        depth_of_cut = 1.0
+        feed_per_tooth = 0.1
+        tool_type = "универсальная"
 
-    rpm = round(rpm)
-
-    return (f"Материал: {material_id}\n"
-            f"Диаметр: {diameter} мм\n"
-            f"Станок: {'ЧПУ' if machine_type == 'cnc' else 'универсальный'}\n"
-            f"Скорость резания Vc: {Vc} м/мин\n"
-            f"Рекомендуемые обороты (RPM): {rpm} об/мин")
+    return {
+        "rpm": rpm,
+        "vc": vc,
+        "depth_of_cut": depth_of_cut,
+        "feed_per_tooth": feed_per_tooth,
+        "operation_type": cut_type,
+        "tool_type": tool_type,
+        "notes": "Используй охлаждение, проверяй стружку"
+    }

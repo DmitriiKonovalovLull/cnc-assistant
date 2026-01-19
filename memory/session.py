@@ -1,55 +1,103 @@
+# ===============================
+# session.py — с долгой памятью через SQLite
+# ===============================
 import sqlite3
-import os
+import json
+from datetime import datetime
+from typing import Dict, Any
 
-os.makedirs("data", exist_ok=True)
-conn = sqlite3.connect("data/cnc.db", check_same_thread=False)
+DB_PATH = "storage/cnc.db"
 
-# === Инициализация таблицы sessions ===
-def init_sessions_table():
+DEFAULT_SESSION = {
+    "state": "IDLE",
+
+    # Слоты
+    "material": None,
+    "material_name": None,
+    "operation": None,
+    "cut_type": None,
+    "diameter": None,
+    "machine_type": None,
+    "rpm_mode": None,
+    "max_rpm_turning": None,
+    "max_rpm_milling": None,
+
+    # Метаданные
+    "created_at": None,
+    "updated_at": None,
+}
+
+
+def _ensure_table():
+    conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
     cur.execute("""
         CREATE TABLE IF NOT EXISTS sessions (
             user_id INTEGER PRIMARY KEY,
-            material TEXT,
-            material_name TEXT,
-            operation TEXT,
-            diameter REAL,
-            machine_type TEXT,
-            rpm_mode TEXT,
-            state TEXT DEFAULT 'IDLE',
-            username TEXT,
-            max_rpm_turning INTEGER DEFAULT 3000,
-            max_rpm_milling INTEGER DEFAULT 12000
+            data TEXT
         )
     """)
     conn.commit()
+    conn.close()
 
-init_sessions_table()
 
-
-# === Функции работы с сессиями ===
-def get_session(user_id: int) -> dict:
+def get_session(user_id: int) -> Dict[str, Any]:
+    _ensure_table()
+    conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
-    cur.execute("SELECT * FROM sessions WHERE user_id=?", (user_id,))
+    cur.execute("SELECT data FROM sessions WHERE user_id=?", (user_id,))
     row = cur.fetchone()
+    conn.close()
+
     if row:
-        columns = [col[1] for col in cur.execute("PRAGMA table_info(sessions)")]
-        return dict(zip(columns, row))
+        return json.loads(row[0])
     else:
-        cur.execute("INSERT INTO sessions (user_id, state) VALUES (?, ?)", (user_id, "IDLE"))
-        conn.commit()
-        return get_session(user_id)
+        now = datetime.utcnow().isoformat()
+        session = DEFAULT_SESSION.copy()
+        session["created_at"] = now
+        session["updated_at"] = now
+        save_session(user_id, session)
+        return session
 
 
-def update_session(user_id: int, clear=False, **kwargs):
+def save_session(user_id: int, session: Dict[str, Any]):
+    session["updated_at"] = datetime.utcnow().isoformat()
+    conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
-    if clear:
-        cur.execute("DELETE FROM sessions WHERE user_id=?", (user_id,))
-        conn.commit()
-        return
-    if not kwargs:
-        return
-    fields = ", ".join(f"{k}=?" for k in kwargs)
-    values = list(kwargs.values()) + [user_id]
-    cur.execute(f"UPDATE sessions SET {fields} WHERE user_id=?", values)
+    cur.execute(
+        "INSERT OR REPLACE INTO sessions (user_id, data) VALUES (?, ?)",
+        (user_id, json.dumps(session))
+    )
     conn.commit()
+    conn.close()
+
+
+def update_session(user_id: int, **kwargs):
+    session = get_session(user_id)
+    clear = kwargs.pop("clear", False)
+    if clear:
+        session = DEFAULT_SESSION.copy()
+        session["created_at"] = datetime.utcnow().isoformat()
+    session.update(kwargs)
+    save_session(user_id, session)
+
+
+def clear_session(user_id: int):
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    cur.execute("DELETE FROM sessions WHERE user_id=?", (user_id,))
+    conn.commit()
+    conn.close()
+
+
+def set_state(user_id: int, state: str):
+    update_session(user_id, state=state)
+
+
+def debug_dump() -> Dict[int, Dict[str, Any]]:
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    cur.execute("SELECT user_id, data FROM sessions")
+    rows = cur.fetchall()
+    conn.close()
+    return {user_id: json.loads(data) for user_id, data in rows}

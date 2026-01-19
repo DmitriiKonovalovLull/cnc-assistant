@@ -1,8 +1,15 @@
-from router import route_message
+# ===============================
+# main.py — CLI с долгой памятью
+# ===============================
+from memory.session import get_session, update_session
+from router import route_message  # сюда подключи твой process_flow
+import os
 
-print("CNC Assistant запущен")
+os.makedirs("storage", exist_ok=True)
 
-user_id = 1  # для теста CLI
+print("✅ CNC Assistant запущен")
+
+user_id = 1  # для CLI теста
 
 while True:
     user_input = input(">> ")

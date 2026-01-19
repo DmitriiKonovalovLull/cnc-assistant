@@ -1,52 +1,45 @@
 import sqlite3
 import os
 
-# Папка для хранения базы
-os.makedirs("storage", exist_ok=True)
-db_path = "storage/cnc.db"
+from storage.models import (
+    USER_TABLE,
+    HISTORY_TABLE,
+    DECISIONS_TABLE,
+    PROFILE_TABLE,
+)
 
-# Подключение к базе
-conn = sqlite3.connect(db_path, check_same_thread=False)
+# Папка и путь к БД
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(BASE_DIR, "cnc.db")
+
+# Создаём папку если нет
+os.makedirs(BASE_DIR, exist_ok=True)
+
+# Подключение
+conn = sqlite3.connect(DB_PATH, check_same_thread=False)
+conn.row_factory = sqlite3.Row
 cur = conn.cursor()
 
+
 def init_db():
-    # === Таблица пользователей ===
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS users (
-            user_id INTEGER PRIMARY KEY,
-            experience REAL DEFAULT 0.0
-        )
-    """)
-
-    # === Таблица сессий ===
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS sessions (
-            user_id INTEGER PRIMARY KEY,
-            material TEXT,
-            material_name TEXT,
-            operation TEXT,
-            diameter REAL,
-            machine_type TEXT,
-            rpm_mode TEXT,
-            state TEXT DEFAULT 'IDLE',
-            username TEXT,
-            max_rpm_turning INTEGER DEFAULT 3000,
-            max_rpm_milling INTEGER DEFAULT 12000
-        )
-    """)
-
-    # === Таблица истории сообщений ===
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS history (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER,
-            raw_text TEXT,
-            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
-
+    """Инициализация всех таблиц"""
+    cur.execute(USER_TABLE)
+    cur.execute(HISTORY_TABLE)
+    cur.execute(DECISIONS_TABLE)
+    cur.execute(PROFILE_TABLE)
     conn.commit()
 
-# Инициализация базы
+
+def get_connection():
+    """Возвращает активное соединение"""
+    return conn
+
+
+def get_cursor():
+    return conn.cursor()
+
+
+# Автоинициализация при импорте
 init_db()
-print(f"✅ База CNC и таблицы созданы или проверены в '{db_path}'")
+
+print(f"✅ SQLite инициализирован: {DB_PATH}")
