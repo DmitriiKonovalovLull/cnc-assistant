@@ -1,0 +1,25 @@
+2026-01-20 20:50:08,070 - __main__ - ERROR - ����������� ������: No module named 'dialog'
+Traceback (most recent call last):
+  File "C:\projects\cnc-assistant\app\main.py", line 304, in <module>
+    main()
+    ~~~~^^
+  File "C:\projects\cnc-assistant\app\main.py", line 293, in main
+    run_telegram_bot()
+    ~~~~~~~~~~~~~~~~^^
+  File "C:\projects\cnc-assistant\app\main.py", line 132, in run_telegram_bot
+    from router import route_message
+  File "C:\projects\cnc-assistant\app\router.py", line 8, in <module>
+    from dialog.flow import process_flow
+ModuleNotFoundError: No module named 'dialog'
+2026-01-20 21:00:13,594 - __main__ - INFO - [CLI User 1] Вход: 'покажи'
+2026-01-20 21:00:13,595 - router - INFO - [User 1] Вход: 'покажи'
+2026-01-20 21:00:13,596 - router - INFO - [User 1] Ответ: '📋 Текущие параметры:
+• Материал: Сталь
+• Операция: turning
+• Тип обработки: чистовая
+• Диаметр: 300....'
+2026-01-20 21:00:13,596 - __main__ - INFO - [CLI Bot] Ответ: '📋 Текущие параметры:
+• Материал: Сталь
+• Операция: turning
+• Тип обработки: чистовая
+• Диаметр: 300....'

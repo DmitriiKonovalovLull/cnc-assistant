@@ -1,0 +1,133 @@
+# Базовые правила для режимов резания
+# НЕ таблица режимов, а логические правила для rule-based системы
+
+materials:
+  сталь:
+    base_vc: 150  # базовая скорость резания, м/мин
+    hardness_factor: 1.0
+    thermal_factor: 1.0
+    difficulty: 1.0
+
+  алюминий:
+    base_vc: 300
+    hardness_factor: 0.3
+    thermal_factor: 2.0
+    difficulty: 0.5
+
+  титан:
+    base_vc: 60
+    hardness_factor: 1.8
+    thermal_factor: 0.4
+    difficulty: 1.8
+
+  нержавейка:
+    base_vc: 80
+    hardness_factor: 1.5
+    thermal_factor: 0.3
+    difficulty: 1.5
+
+  чугун:
+    base_vc: 100
+    hardness_factor: 1.2
+    thermal_factor: 0.8
+    difficulty: 1.2
+
+  латунь:
+    base_vc: 200
+    hardness_factor: 0.4
+    thermal_factor: 1.5
+    difficulty: 0.6
+
+operations:
+  токарка:
+    base_feed: 0.2
+    vc_factor: 1.0
+    complexity: 1.0
+
+  фрезерование:
+    base_feed: 0.1
+    vc_factor: 0.8
+    complexity: 1.2
+
+  сверление:
+    base_feed: 0.15
+    vc_factor: 0.6
+    complexity: 0.8
+
+  растачивание:
+    base_feed: 0.08
+    vc_factor: 0.9
+    complexity: 1.3
+
+modes:
+  черновой:
+    vc_factor: 1.2
+    feed_factor: 1.5
+    ap_factor: 2.0
+
+  получистовой:
+    vc_factor: 1.0
+    feed_factor: 1.0
+    ap_factor: 1.0
+
+  чистовой:
+    vc_factor: 0.8
+    feed_factor: 0.7
+    ap_factor: 0.5
+
+diameter_adjustments:
+  # Корректировка скорости резания в зависимости от диаметра
+  # Малые диаметры - ограничение по оборотам
+  # Большие диаметры - ограничение по мощности
+  small:  # < 10 мм
+    max_rpm_factor: 0.8
+    vc_factor: 0.9
+
+  medium:  # 10-50 мм
+    max_rpm_factor: 1.0
+    vc_factor: 1.0
+
+  large:  # 50-200 мм
+    max_rpm_factor: 1.0
+    vc_factor: 1.0
+
+  xlarge:  # > 200 мм
+    max_rpm_factor: 1.0
+    vc_factor: 0.9
+    feed_factor: 0.8
+
+machine_constraints:
+  universal:
+    max_rpm: 2000
+    min_rpm: 50
+    power_limit: 10
+    rigidity: medium
+
+  cnc_lathe:
+    max_rpm: 5000
+    min_rpm: 10
+    power_limit: 15
+    rigidity: high
+
+  high_speed_cnc:
+    max_rpm: 10000
+    min_rpm: 100
+    power_limit: 20
+    rigidity: very_high
+
+# Правила для ML сбора данных
+data_collection:
+  ask_why_threshold: 0.3  # спрашивать "почему" при отклонении >30%
+  context_questions: [
+    "Почему такие обороты?",
+    "Какой станок?",
+    "Какой инструмент?",
+    "Была ли вибрация?",
+    "Какая шероховатость?"
+  ]
+  min_samples_per_user: 10
+  quality_metrics: [
+    "deviation_score",
+    "consistency",
+    "material_expertise"
+  ]

@@ -34,50 +34,42 @@
 cnc-assistant/
 │
 ├── app/
-│   ├── main.py
-│   ├── router.py
-│
-│   ├── data/
-│   │   ├── cnc.db
-│   │   └── db.sqlite
-│
-│   ├── dialog/
-│   │   ├── flow.py          # FSM диалога (РАСШИРЕН)
-│   │   ├── intents.py       # интенты + confidence hints
-│   │   ├── slots.py         # слоты + source (user/system)
-│   │   └── validators.py   # ✅ НОВОЕ (проверка адекватности данных)
-│
+│   ├── main.py                # Точка входа
+│   │
+│   ├── bot/
+│   │   ├── telegram_bot.py    # Telegram-обвязка
+│   │   ├── cli_bot.py         # CLI (для отладки)
+│   │   └── prompts.py         # Тексты вопросов (вариативность)
+│   │
+│   ├── core/
+│   │   ├── state_machine.py   # Логика диалога (FSM)
+│   │   ├── intent_parser.py   # Разбор текста (без LLM)
+│   │   └── validator.py       # Проверка данных
+│   │
 │   ├── domain/
-│   │   ├── machines.py      # станки + ограничения
-│   │   ├── materials.py     # материалы
-│   │   ├── operations.py   # операции
-│   │   └── tools.py         # ✅ НОВОЕ (инструмент)
+│   │   ├── materials.py       # Материалы (модель)
+│   │   ├── operations.py      # Операции
+│   │   ├── machines.py        # Станки
+│   │   └── tools.py           # Инструмент (пока минимум)
+│   │
+│   ├── services/
+│   │   ├── recommendation.py  # Расчёт режимов
+│   │   ├── experience.py      # Коэф. опыта (пассивный сбор)
+│   │   └── memory.py          # Работа с памятью
+│   │
+│   └── storage/
+│       ├── db.py              # SQLite init
+│       ├── models.py          # ORM / схемы таблиц
+│       └── migrations.sql
 │
-│   ├── logic/
-│   │   ├── questions.py     # вопросы пользователю
-│   │   ├── recommend.py    # рекомендации
-│   │   └── evaluate.py     # ✅ НОВОЕ (оценка данных, не человека)
+├── data/
+│   └── rules/
+│       └── cutting_modes.yaml # Базовые режимы (НЕ хардкод)
 │
-│   ├── memory/
-│   │   ├── session.py       # текущее состояние
-│   │   ├── history.py       # история диалогов
-│   │   ├── profiles.py     # ✅ НОВОЕ (агрегированный профиль)
-│   │   └── data/
-│   │       └── db.sqlite
+├── storage/
+│   └── cnc.db                 # База данных
 │
-│   ├── storage/
-│   │   ├── sqlite.py
-│   │   └── models.py        # ✅ НОВОЕ (таблицы)
-│
-│   ├── analytics/           # ✅ НОВОЕ (очень важно)
-│   │   ├── experience.py    # коэффициенты
-│   │   └── dataset.py       # формирование датасетов
-│
-│   └── config/
-│       └── thresholds.py    # ✅ НОВОЕ (пороги адекватности)
-│
-├── .env
-├── .env_example
-├── ARCHITECTURE.md
-└── README.md
+├── README.md
+└── requirements.txt
+
 
