@@ -32,44 +32,41 @@
 - Постепенное уточнение
 - 
 cnc-assistant/
-│
 ├── app/
-│   ├── main.py                # Точка входа
+│   ├── main.py
 │   │
 │   ├── bot/
-│   │   ├── telegram_bot.py    # Telegram-обвязка
-│   │   ├── cli_bot.py         # CLI (для отладки)
-│   │   └── prompts.py         # Тексты вопросов (вариативность)
+│   │   ├── telegram_bot.py    # Теперь с кнопками выбора
+│   │   ├── cli_bot.py
+│   │   └── dialogs.py         # Новый: диалоги с выбором (ниже/так же/выше)
 │   │
 │   ├── core/
-│   │   ├── state_machine.py   # Логика диалога (FSM)
-│   │   ├── intent_parser.py   # Разбор текста (без LLM)
-│   │   └── validator.py       # Проверка данных
+│   │   ├── state_machine.py   # FSM для сбора данных
+│   │   ├── calculator.py      # НОВЫЙ: расчет ограничений (мощность, геометрия)
+│   │   ├── pass_strategy.py   # НОВЫЙ: разбивка на проходы (чернов/получист/чист)
+│   │   └── validator.py       # Проверка физических ограничений
 │   │
 │   ├── domain/
-│   │   ├── materials.py       # Материалы (модель)
-│   │   ├── operations.py      # Операции
-│   │   ├── machines.py        # Станки
-│   │   └── tools.py           # Инструмент (пока минимум)
+│   │   ├── models.py          # Единая модель данных (как в вашем JSON)
+│   │   └── experience.py      # Новый расчет коэффициента опыта
 │   │
 │   ├── services/
-│   │   ├── recommendation.py  # Расчёт режимов
-│   │   ├── experience.py      # Коэф. опыта (пассивный сбор)
-│   │   └── memory.py          # Работа с памятью
+│   │   ├── recommendation.py  # Только БАЗОВЫЕ рекомендации (по таблицам)
+│   │   ├── comparison.py      # НОВЫЙ: сравнение bot vs user
+│   │   └── data_collector.py  # НОВЫЙ: сохранение решений оператора
 │   │
 │   └── storage/
-│       ├── db.py              # SQLite init
-│       ├── models.py          # ORM / схемы таблиц
-│       └── migrations.sql
+│       ├── db.py
+│       ├── models.py          # Обновленная схема под новую JSON-структуру
+│       └── data_pipeline.py   # НОВЫЙ: подготовка данных для ИИ
 │
 ├── data/
-│   └── rules/
-│       └── cutting_modes.yaml # Базовые режимы (НЕ хардкод)
+│   ├── rules/
+│   │   └── cutting_modes.yaml # Только справочные значения
+│   └── limits/
+│       ├── machine_limits.yaml # Макс. ap по станкам
+│       └── tool_limits.yaml    # Макс. ap по инструментам
 │
-├── storage/
-│   └── cnc.db                 # База данных
-│
-├── README.md
 └── requirements.txt
 
 

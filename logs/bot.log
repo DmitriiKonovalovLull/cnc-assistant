@@ -1,0 +1,275 @@
+2026-01-25 03:57:53,198 - app.bot.telegram_bot - INFO - ============================================================
+2026-01-25 03:57:53,198 - app.bot.telegram_bot - INFO - 🤖 Запуск бота: @cnc_123_bot
+2026-01-25 03:57:53,199 - app.bot.telegram_bot - INFO - 📝 Bot ID: 8201932079
+2026-01-25 03:57:53,199 - app.bot.telegram_bot - INFO - 👤 Имя: cnc-assistant
+2026-01-25 03:57:53,199 - app.bot.telegram_bot - INFO - ============================================================
+2026-01-25 03:57:53,200 - app.bot.telegram_bot - INFO - ✅ Система памяти подключена
+2026-01-25 03:57:53,252 - app.bot.telegram_bot - INFO - Вебхук удален
+2026-01-25 03:57:53,252 - aiogram.dispatcher - INFO - Start polling
+2026-01-25 03:57:53,305 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-01-25 03:58:01,595 - aiogram.event - INFO - Update id=897835285 is handled. Duration 192 ms by bot id=8201932079
+2026-01-25 03:58:03,218 - aiogram.event - INFO - Update id=897835286 is handled. Duration 77 ms by bot id=8201932079
+2026-01-25 03:58:05,519 - aiogram.event - INFO - Update id=897835287 is handled. Duration 73 ms by bot id=8201932079
+2026-01-25 03:58:08,235 - aiogram.event - INFO - Update id=897835288 is handled. Duration 73 ms by bot id=8201932079
+2026-01-25 03:58:23,143 - aiogram.event - INFO - Update id=897835289 is handled. Duration 71 ms by bot id=8201932079
+2026-01-25 03:58:45,692 - app.storage.memory - INFO - Взаимодействие #1 сохранено для user_7173846851
+2026-01-25 03:58:45,852 - aiogram.event - INFO - Update id=897835290 is handled. Duration 166 ms by bot id=8201932079
+2026-01-25 03:58:51,407 - aiogram.event - INFO - Update id=897835291 is handled. Duration 453 ms by bot id=8201932079
+2026-01-25 04:06:40,380 - aiogram.dispatcher - INFO - Polling stopped
+2026-01-25 04:06:40,381 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-01-25 04:06:40,381 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-01-25 04:06:40,635 - app.bot.telegram_bot - INFO - Сессия бота закрыта
+2026-01-25 04:06:40,635 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-01-25 04:06:44,765 - app.bot.telegram_bot - INFO - ============================================================
+2026-01-25 04:06:44,765 - app.bot.telegram_bot - INFO - 🤖 Запуск бота: @cnc_123_bot
+2026-01-25 04:06:44,766 - app.bot.telegram_bot - INFO - 📝 Bot ID: 8201932079
+2026-01-25 04:06:44,766 - app.bot.telegram_bot - INFO - 👤 Имя: cnc-assistant
+2026-01-25 04:06:44,766 - app.bot.telegram_bot - INFO - ============================================================
+2026-01-25 04:06:44,767 - app.storage.memory - INFO - Пользователь зарегистрирован: user_test_001
+2026-01-25 04:06:44,767 - app.bot.telegram_bot - INFO - ✅ Система памяти подключена
+2026-01-25 04:06:44,822 - app.bot.telegram_bot - INFO - Вебхук удален
+2026-01-25 04:06:44,822 - aiogram.dispatcher - INFO - Start polling
+2026-01-25 04:06:44,876 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-01-25 04:06:51,566 - aiogram.event - INFO - Update id=897835292 is handled. Duration 213 ms by bot id=8201932079
+2026-01-25 04:06:53,809 - aiogram.event - INFO - Update id=897835293 is handled. Duration 74 ms by bot id=8201932079
+2026-01-25 04:06:59,008 - aiogram.event - INFO - Update id=897835294 is handled. Duration 81 ms by bot id=8201932079
+2026-01-25 04:07:00,940 - aiogram.event - INFO - Update id=897835295 is handled. Duration 71 ms by bot id=8201932079
+2026-01-25 04:07:05,638 - aiogram.event - INFO - Update id=897835296 is handled. Duration 72 ms by bot id=8201932079
+2026-01-25 04:07:15,815 - aiogram.event - INFO - Update id=897835297 is handled. Duration 79 ms by bot id=8201932079
+2026-01-25 04:08:18,572 - aiogram.event - INFO - Update id=897835298 is handled. Duration 380 ms by bot id=8201932079
+2026-01-25 04:08:24,221 - aiogram.event - INFO - Update id=897835299 is handled. Duration 82 ms by bot id=8201932079
+2026-01-25 04:08:31,513 - aiogram.event - INFO - Update id=897835300 is handled. Duration 74 ms by bot id=8201932079
+2026-01-25 04:08:33,308 - aiogram.event - INFO - Update id=897835301 is handled. Duration 78 ms by bot id=8201932079
+2026-01-25 04:08:37,969 - aiogram.event - INFO - Update id=897835302 is handled. Duration 393 ms by bot id=8201932079
+2026-01-25 04:09:39,186 - aiogram.event - INFO - Update id=897835303 is handled. Duration 81 ms by bot id=8201932079
+2026-01-25 04:10:36,409 - aiogram.event - INFO - Update id=897835304 is handled. Duration 122 ms by bot id=8201932079
+2026-01-25 04:15:25,622 - aiogram.dispatcher - INFO - Polling stopped
+2026-01-25 04:15:25,623 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-01-25 04:15:25,623 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-01-25 04:15:25,881 - app.bot.telegram_bot - INFO - Сессия бота закрыта
+2026-01-25 04:15:25,882 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-01-25 04:23:44,158 - __main__ - INFO - ============================================================
+2026-01-25 04:23:44,158 - __main__ - INFO - 🤖 Запуск бота: @cnc_123_bot
+2026-01-25 04:23:44,158 - __main__ - INFO - 📝 Bot ID: 8201932079
+2026-01-25 04:23:44,158 - __main__ - INFO - 👤 Имя: cnc-assistant
+2026-01-25 04:23:44,158 - __main__ - INFO - ============================================================
+2026-01-25 04:23:44,159 - __main__ - INFO - ✅ Система памяти подключена
+2026-01-25 04:23:44,159 - app.services.recommendation - INFO - Рассчитаны режимы токарки: сталь, Ø100.0→90.0мм, n=482 об/мин, Vc=144.0 м/мин
+2026-01-25 04:23:44,159 - __main__ - INFO - ✅ Recommendation.py подключен: Vc=144.0 м/мин
+2026-01-25 04:23:44,235 - __main__ - INFO - Вебхук удален
+2026-01-25 04:23:44,235 - aiogram.dispatcher - INFO - Start polling
+2026-01-25 04:23:44,309 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-01-25 04:23:47,718 - aiogram.event - INFO - Update id=897835305 is handled. Duration 207 ms by bot id=8201932079
+2026-01-25 04:23:49,524 - aiogram.event - INFO - Update id=897835306 is handled. Duration 97 ms by bot id=8201932079
+2026-01-25 04:23:51,543 - aiogram.event - INFO - Update id=897835307 is handled. Duration 116 ms by bot id=8201932079
+2026-01-25 04:23:53,917 - aiogram.event - INFO - Update id=897835308 is handled. Duration 91 ms by bot id=8201932079
+2026-01-25 04:23:55,421 - aiogram.event - INFO - Update id=897835309 is handled. Duration 72 ms by bot id=8201932079
+2026-01-25 04:24:00,168 - aiogram.event - INFO - Update id=897835310 is handled. Duration 137 ms by bot id=8201932079
+2026-01-25 04:24:08,340 - aiogram.event - INFO - Update id=897835311 is handled. Duration 73 ms by bot id=8201932079
+2026-01-25 04:24:09,863 - aiogram.event - INFO - Update id=897835312 is handled. Duration 93 ms by bot id=8201932079
+2026-01-25 04:24:12,053 - aiogram.event - INFO - Update id=897835313 is handled. Duration 69 ms by bot id=8201932079
+2026-01-25 04:24:16,795 - aiogram.event - INFO - Update id=897835314 is handled. Duration 383 ms by bot id=8201932079
+2026-01-25 04:24:20,537 - aiogram.event - INFO - Update id=897835315 is handled. Duration 81 ms by bot id=8201932079
+2026-01-25 04:24:26,547 - aiogram.event - INFO - Update id=897835316 is handled. Duration 93 ms by bot id=8201932079
+2026-01-25 04:24:38,847 - aiogram.event - INFO - Update id=897835317 is handled. Duration 91 ms by bot id=8201932079
+2026-01-25 04:24:40,321 - aiogram.event - INFO - Update id=897835318 is handled. Duration 78 ms by bot id=8201932079
+2026-01-25 04:24:43,314 - aiogram.event - INFO - Update id=897835319 is handled. Duration 94 ms by bot id=8201932079
+2026-01-25 04:24:47,305 - aiogram.event - INFO - Update id=897835320 is handled. Duration 73 ms by bot id=8201932079
+2026-01-25 04:24:49,489 - aiogram.event - INFO - Update id=897835321 is handled. Duration 93 ms by bot id=8201932079
+2026-01-25 04:26:44,632 - aiogram.dispatcher - INFO - Polling stopped
+2026-01-25 04:26:44,633 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-01-25 04:26:44,633 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-01-25 04:26:44,892 - __main__ - INFO - Сессия бота закрыта
+2026-01-25 04:26:44,892 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-01-25 04:26:48,347 - __main__ - INFO - ============================================================
+2026-01-25 04:26:48,347 - __main__ - INFO - 🤖 Запуск бота: @cnc_123_bot
+2026-01-25 04:26:48,347 - __main__ - INFO - 📝 Bot ID: 8201932079
+2026-01-25 04:26:48,347 - __main__ - INFO - 👤 Имя: cnc-assistant
+2026-01-25 04:26:48,347 - __main__ - INFO - ============================================================
+2026-01-25 04:26:48,348 - __main__ - INFO - ✅ Система памяти подключена
+2026-01-25 04:26:48,348 - app.services.recommendation - INFO - Рассчитаны режимы токарки: сталь, Ø100.0→90.0мм, n=482 об/мин, Vc=144.0 м/мин
+2026-01-25 04:26:48,348 - __main__ - INFO - ✅ Recommendation.py подключен: Vc=144.0 м/мин
+2026-01-25 04:26:48,405 - __main__ - INFO - Вебхук удален
+2026-01-25 04:26:48,405 - aiogram.dispatcher - INFO - Start polling
+2026-01-25 04:26:48,461 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-01-25 04:26:52,132 - aiogram.dispatcher - INFO - Polling stopped
+2026-01-25 04:26:52,132 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-01-25 04:26:52,132 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-01-25 04:26:52,384 - __main__ - INFO - Сессия бота закрыта
+2026-01-25 04:26:52,385 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-01-25 16:09:03,315 - __main__ - INFO - ============================================================
+2026-01-25 16:09:03,315 - __main__ - INFO - 🤖 Запуск бота: @cnc_123_bot
+2026-01-25 16:09:03,315 - __main__ - INFO - 📝 Bot ID: 8201932079
+2026-01-25 16:09:03,315 - __main__ - INFO - 👤 Имя: cnc-assistant
+2026-01-25 16:09:03,315 - __main__ - INFO - ============================================================
+2026-01-25 16:09:03,316 - __main__ - INFO - ✅ Система памяти подключена
+2026-01-25 16:09:03,316 - __main__ - ERROR - ❌ Ошибка подключения к recommendation.py: calculate_cutting_modes_turning_for_bot() got an unexpected keyword argument 'tool_radius'
+2026-01-25 16:09:03,382 - __main__ - INFO - Вебхук удален
+2026-01-25 16:09:03,382 - aiogram.dispatcher - INFO - Start polling
+2026-01-25 16:09:03,439 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-01-25 16:19:03,319 - aiogram.dispatcher - INFO - Polling stopped
+2026-01-25 16:19:03,320 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-01-25 16:19:03,320 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-01-25 16:19:03,578 - __main__ - INFO - Сессия бота закрыта
+2026-01-25 16:19:03,578 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-01-25 16:19:06,798 - __main__ - INFO - ============================================================
+2026-01-25 16:19:06,799 - __main__ - INFO - 🤖 Запуск бота: @cnc_123_bot
+2026-01-25 16:19:06,799 - __main__ - INFO - 📝 Bot ID: 8201932079
+2026-01-25 16:19:06,799 - __main__ - INFO - 👤 Имя: cnc-assistant
+2026-01-25 16:19:06,799 - __main__ - INFO - ============================================================
+2026-01-25 16:19:06,800 - __main__ - INFO - ✅ Система памяти подключена
+2026-01-25 16:19:06,800 - app.services.recommendation - INFO - Рассчитаны режимы токарки: сталь, Ø100.0→90.0мм, n=434 об/мин, Vc=129.6 м/мин, радиус=0.8мм
+2026-01-25 16:19:06,800 - __main__ - INFO - ✅ Recommendation.py подключен: Vc=129.6 м/мин
+2026-01-25 16:19:06,857 - __main__ - INFO - Вебхук удален
+2026-01-25 16:19:06,857 - aiogram.dispatcher - INFO - Start polling
+2026-01-25 16:19:06,921 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-01-25 16:20:21,169 - aiogram.event - INFO - Update id=897835322 is handled. Duration 468 ms by bot id=8201932079
+2026-01-25 16:20:24,076 - aiogram.event - INFO - Update id=897835323 is handled. Duration 81 ms by bot id=8201932079
+2026-01-25 16:20:30,901 - aiogram.event - INFO - Update id=897835324 is handled. Duration 85 ms by bot id=8201932079
+2026-01-25 16:20:33,563 - aiogram.event - INFO - Update id=897835325 is handled. Duration 179 ms by bot id=8201932079
+2026-01-25 16:20:34,695 - aiogram.event - INFO - Update id=897835326 is handled. Duration 76 ms by bot id=8201932079
+2026-01-25 16:20:36,260 - aiogram.event - INFO - Update id=897835327 is handled. Duration 113 ms by bot id=8201932079
+2026-01-25 16:20:43,350 - aiogram.event - INFO - Update id=897835328 is handled. Duration 240 ms by bot id=8201932079
+2026-01-25 16:20:48,439 - aiogram.event - INFO - Update id=897835329 is handled. Duration 125 ms by bot id=8201932079
+2026-01-25 16:20:53,964 - aiogram.event - INFO - Update id=897835330 is handled. Duration 78 ms by bot id=8201932079
+2026-01-25 16:20:55,606 - aiogram.event - INFO - Update id=897835331 is handled. Duration 76 ms by bot id=8201932079
+2026-01-25 16:20:57,559 - aiogram.event - INFO - Update id=897835332 is handled. Duration 78 ms by bot id=8201932079
+2026-01-25 16:21:01,664 - aiogram.event - INFO - Update id=897835333 is handled. Duration 87 ms by bot id=8201932079
+2026-01-25 16:37:13,151 - aiogram.dispatcher - INFO - Polling stopped
+2026-01-25 16:37:13,152 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-01-25 16:37:13,152 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-01-25 16:37:13,415 - __main__ - INFO - Сессия бота закрыта
+2026-01-25 16:37:13,416 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-01-25 18:16:27,509 - __main__ - INFO - ============================================================
+2026-01-25 18:16:27,509 - __main__ - INFO - 🤖 Запуск бота: @cnc_123_bot
+2026-01-25 18:16:27,509 - __main__ - INFO - 📝 Bot ID: 8201932079
+2026-01-25 18:16:27,509 - __main__ - INFO - 👤 Имя: cnc-assistant
+2026-01-25 18:16:27,509 - __main__ - INFO - ============================================================
+2026-01-25 18:16:27,510 - __main__ - INFO - ✅ Система памяти подключена
+2026-01-25 18:16:27,510 - app.services.recommendation - INFO - Рассчитаны режимы токарки: сталь, Ø100.0→90.0мм, геометрия: simple
+2026-01-25 18:16:27,510 - __main__ - INFO - ✅ Recommendation.py подключен: Vc=129.6 м/мин, геометрия: simple
+2026-01-25 18:16:27,511 - __main__ - INFO - ✅ State machine подключен: начальное состояние <app.core.state_machine.UserState._State object at 0x000001C7B9D14D70>
+2026-01-25 18:16:27,565 - __main__ - INFO - Вебхук удален
+2026-01-25 18:16:27,565 - aiogram.dispatcher - INFO - Start polling
+2026-01-25 18:16:27,623 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-01-25 18:16:38,118 - app.core.state_machine - WARNING - No handler for state: None
+2026-01-25 18:16:38,593 - aiogram.event - INFO - Update id=897835335 is handled. Duration 477 ms by bot id=8201932079
+2026-01-25 18:16:39,896 - aiogram.event - INFO - Update id=897835336 is handled. Duration 86 ms by bot id=8201932079
+2026-01-25 18:16:44,763 - aiogram.event - INFO - Update id=897835337 is handled. Duration 94 ms by bot id=8201932079
+2026-01-25 18:16:46,474 - aiogram.event - INFO - Update id=897835338 is handled. Duration 83 ms by bot id=8201932079
+2026-01-25 18:16:47,689 - aiogram.event - INFO - Update id=897835339 is handled. Duration 134 ms by bot id=8201932079
+2026-01-25 18:16:55,890 - aiogram.event - INFO - Update id=897835340 is handled. Duration 145 ms by bot id=8201932079
+2026-01-25 18:17:00,542 - aiogram.event - INFO - Update id=897835341 is handled. Duration 91 ms by bot id=8201932079
+2026-01-25 18:17:03,493 - aiogram.event - INFO - Update id=897835342 is handled. Duration 371 ms by bot id=8201932079
+2026-01-25 18:17:08,187 - aiogram.event - INFO - Update id=897835343 is handled. Duration 96 ms by bot id=8201932079
+2026-01-25 18:17:09,917 - aiogram.event - INFO - Update id=897835344 is handled. Duration 113 ms by bot id=8201932079
+2026-01-25 18:17:14,380 - aiogram.event - INFO - Update id=897835345 is handled. Duration 92 ms by bot id=8201932079
+2026-01-25 18:17:17,970 - aiogram.event - INFO - Update id=897835346 is handled. Duration 94 ms by bot id=8201932079
+2026-01-25 18:19:14,001 - aiogram.dispatcher - INFO - Polling stopped
+2026-01-25 18:19:14,002 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-01-25 18:19:14,003 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-01-25 18:19:14,253 - __main__ - INFO - Сессия бота закрыта
+2026-01-25 18:19:14,254 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-01-25 18:20:53,782 - __main__ - INFO - ============================================================
+2026-01-25 18:20:53,782 - __main__ - INFO - 🤖 Запуск бота: @cnc_123_bot
+2026-01-25 18:20:53,782 - __main__ - INFO - 📝 Bot ID: 8201932079
+2026-01-25 18:20:53,782 - __main__ - INFO - 👤 Имя: cnc-assistant
+2026-01-25 18:20:53,782 - __main__ - INFO - ============================================================
+2026-01-25 18:20:53,783 - __main__ - INFO - ✅ Система памяти подключена
+2026-01-25 18:20:53,783 - app.services.recommendation - INFO - Рассчитаны режимы токарки: сталь, Ø100.0→90.0мм, геометрия: simple
+2026-01-25 18:20:53,783 - __main__ - INFO - ✅ Recommendation.py подключен: Vc=129.6 м/мин, геометрия: simple
+2026-01-25 18:20:53,783 - __main__ - INFO - ✅ State machine подключен: начальное состояние <app.core.state_machine.UserState._State object at 0x0000021B34800980>
+2026-01-25 18:20:53,843 - __main__ - INFO - Вебхук удален
+2026-01-25 18:20:53,843 - aiogram.dispatcher - INFO - Start polling
+2026-01-25 18:20:53,898 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-01-25 18:21:02,706 - app.core.state_machine - WARNING - No handler for state: None
+2026-01-25 18:21:03,168 - aiogram.event - INFO - Update id=897835347 is handled. Duration 462 ms by bot id=8201932079
+2026-01-25 18:21:10,073 - aiogram.event - INFO - Update id=897835348 is handled. Duration 527 ms by bot id=8201932079
+2026-01-25 18:21:13,528 - aiogram.event - INFO - Update id=897835349 is handled. Duration 83 ms by bot id=8201932079
+2026-01-25 18:21:15,189 - aiogram.event - INFO - Update id=897835350 is handled. Duration 89 ms by bot id=8201932079
+2026-01-25 18:21:16,327 - aiogram.event - INFO - Update id=897835351 is handled. Duration 77 ms by bot id=8201932079
+2026-01-25 18:21:19,516 - aiogram.event - INFO - Update id=897835352 is handled. Duration 79 ms by bot id=8201932079
+2026-01-25 18:21:22,131 - aiogram.event - INFO - Update id=897835353 is handled. Duration 82 ms by bot id=8201932079
+2026-01-25 18:21:23,573 - aiogram.event - INFO - Update id=897835354 is handled. Duration 85 ms by bot id=8201932079
+2026-01-25 18:21:26,072 - aiogram.event - INFO - Update id=897835355 is handled. Duration 77 ms by bot id=8201932079
+2026-01-25 18:21:29,011 - aiogram.event - INFO - Update id=897835356 is handled. Duration 77 ms by bot id=8201932079
+2026-01-25 18:21:30,965 - aiogram.event - INFO - Update id=897835357 is handled. Duration 84 ms by bot id=8201932079
+2026-01-25 18:21:33,590 - aiogram.event - INFO - Update id=897835358 is handled. Duration 89 ms by bot id=8201932079
+2026-01-25 18:24:17,844 - aiogram.dispatcher - INFO - Polling stopped
+2026-01-25 18:24:17,844 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-01-25 18:24:17,845 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-01-25 18:24:18,102 - __main__ - INFO - Сессия бота закрыта
+2026-01-25 18:24:18,103 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-01-25 18:24:21,245 - __main__ - INFO - ============================================================
+2026-01-25 18:24:21,245 - __main__ - INFO - 🤖 Запуск бота: @cnc_123_bot
+2026-01-25 18:24:21,245 - __main__ - INFO - 📝 Bot ID: 8201932079
+2026-01-25 18:24:21,245 - __main__ - INFO - 👤 Имя: cnc-assistant
+2026-01-25 18:24:21,246 - __main__ - INFO - ============================================================
+2026-01-25 18:24:21,246 - __main__ - INFO - ✅ Система памяти подключена
+2026-01-25 18:24:21,247 - app.services.recommendation - INFO - Рассчитаны режимы токарки: сталь, Ø100.0→90.0мм, геометрия: simple
+2026-01-25 18:24:21,247 - __main__ - INFO - ✅ Recommendation.py подключен: Vc=129.6 м/мин, геометрия: simple
+2026-01-25 18:24:21,247 - __main__ - INFO - ✅ State machine подключен: начальное состояние <app.core.state_machine.UserState._State object at 0x000001FE2F250980>
+2026-01-25 18:24:21,302 - __main__ - INFO - Вебхук удален
+2026-01-25 18:24:21,303 - aiogram.dispatcher - INFO - Start polling
+2026-01-25 18:24:21,374 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-01-25 18:24:29,544 - app.core.state_machine - WARNING - No handler for state: None
+2026-01-25 18:24:29,544 - __main__ - INFO - DialogManager result: next_state=None, response=Продолжаем диалог......
+2026-01-25 18:24:29,544 - __main__ - ERROR - DialogManager returned None for state: None
+2026-01-25 18:24:30,012 - aiogram.event - INFO - Update id=897835359 is handled. Duration 468 ms by bot id=8201932079
+2026-01-25 18:24:31,089 - aiogram.event - INFO - Update id=897835360 is handled. Duration 88 ms by bot id=8201932079
+2026-01-25 18:24:32,847 - __main__ - INFO - DialogManager result: next_state=<app.core.state_machine.UserState._State object at 0x000001FE2F27D6D0>, response=Выберите операцию обработки:...
+2026-01-25 18:24:32,937 - aiogram.event - INFO - Update id=897835361 is handled. Duration 90 ms by bot id=8201932079
+2026-01-25 18:24:34,150 - __main__ - INFO - DialogManager result: next_state=<app.core.state_machine.UserState._State object at 0x000001FE2F27D810>, response=Операция: токарка
+Выберите тип станка:...
+2026-01-25 18:24:34,228 - aiogram.event - INFO - Update id=897835362 is handled. Duration 79 ms by bot id=8201932079
+2026-01-25 18:24:34,948 - __main__ - INFO - DialogManager result: next_state=<app.core.state_machine.UserState._State object at 0x000001FE2F1FBD10>, response=Введите начальный диаметр заготовки в мм (1-800 мм...
+2026-01-25 18:24:35,045 - aiogram.event - INFO - Update id=897835363 is handled. Duration 97 ms by bot id=8201932079
+2026-01-25 18:24:37,620 - __main__ - INFO - DialogManager result: next_state=<app.core.state_machine.UserState._State object at 0x000001FE2F2256A0>, response=Начальный диаметр: 400.0 мм
+Введите конечный диаме...
+2026-01-25 18:24:37,744 - aiogram.event - INFO - Update id=897835364 is handled. Duration 143 ms by bot id=8201932079
+2026-01-25 18:24:41,724 - __main__ - INFO - DialogManager result: next_state=<app.core.state_machine.UserState._State object at 0x000001FE2F223360>, response=Токарка на ЧПУ токарка
+Разница диаметров: 200.0 мм...
+2026-01-25 18:24:41,823 - aiogram.event - INFO - Update id=897835365 is handled. Duration 99 ms by bot id=8201932079
+2026-01-25 18:24:43,320 - __main__ - INFO - DialogManager result: next_state=<app.core.state_machine.UserState._State object at 0x000001FE2F2257B0>, response=Тип станка: ЧПУ токарка
+Выберите тип токарного инс...
+2026-01-25 18:24:43,543 - aiogram.event - INFO - Update id=897835366 is handled. Duration 223 ms by bot id=8201932079
+2026-01-25 18:24:44,670 - __main__ - INFO - DialogManager result: next_state=<app.core.state_machine.UserState._State object at 0x000001FE2F20A750>, response=Выберите материал режущей пластины:...
+2026-01-25 18:24:44,919 - aiogram.event - INFO - Update id=897835367 is handled. Duration 249 ms by bot id=8201932079
+2026-01-25 18:24:46,164 - __main__ - INFO - DialogManager result: next_state=<app.core.state_machine.UserState._State object at 0x000001FE2F20A850>, response=Тип станка: ЧПУ токарка
+Тип инструмента: проходной...
+2026-01-25 18:24:46,872 - aiogram.event - INFO - Update id=897835368 is handled. Duration 708 ms by bot id=8201932079
+2026-01-25 18:24:48,156 - __main__ - INFO - DialogManager result: next_state=<app.core.state_machine.UserState._State object at 0x000001FE2F1C7110>, response=Введите вылет инструмента от державки в мм (10-500...
+2026-01-25 18:24:48,237 - aiogram.event - INFO - Update id=897835369 is handled. Duration 82 ms by bot id=8201932079
+2026-01-25 18:24:51,184 - __main__ - INFO - DialogManager result: next_state=CALCULATE_RECOMMENDATIONS, response=✅ Все параметры собраны. Запускаю расчёт......
+2026-01-25 18:24:51,185 - __main__ - INFO - Transitioning to waiting_recommendation from CALCULATE_RECOMMENDATIONS
+2026-01-25 18:24:51,185 - app.services.recommendation - INFO - Рассчитаны режимы токарки: сталь, Ø400.0→200.0мм, геометрия: complex
+2026-01-25 18:24:51,354 - aiogram.event - INFO - Update id=897835370 is handled. Duration 171 ms by bot id=8201932079
+2026-01-25 18:25:22,376 - __main__ - INFO - DialogManager result: next_state=<app.core.state_machine.UserState._State object at 0x000001FE2F235630>, response=🎯 <b>РЕКОМЕНДУЕМЫЕ ПАРАМЕТРЫ:</b>
+
+• <b>Скорость р...
+2026-01-25 18:25:22,477 - aiogram.event - INFO - Update id=897835371 is handled. Duration 102 ms by bot id=8201932079
+2026-01-25 18:25:35,583 - __main__ - INFO - DialogManager result: next_state=COMPLETED, response=✅ Расчёт завершён! Для нового расчёта: /start...
+2026-01-25 18:25:35,584 - app.storage.memory - ERROR - Ошибка сохранения взаимодействия: FOREIGN KEY constraint failed
+Traceback (most recent call last):
+  File "C:\projects\cnc-assistant\app\storage\memory.py", line 239, in save_interaction
+    cursor.execute('''
+    ~~~~~~~~~~~~~~^^^^
+        INSERT INTO interactions
+        ^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<20 lines>...
+        json.dumps(data.get('context', {}), ensure_ascii=False)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ))
+    ^^
+sqlite3.IntegrityError: FOREIGN KEY constraint failed
+2026-01-25 18:25:35,586 - __main__ - ERROR - Не удалось сохранить взаимодействие для user_id=7173846851
+2026-01-25 18:25:35,799 - aiogram.event - INFO - Update id=897835372 is handled. Duration 217 ms by bot id=8201932079
+2026-01-25 18:27:22,267 - aiogram.event - INFO - Update id=897835373 is handled. Duration 120 ms by bot id=8201932079
+2026-01-25 18:27:24,351 - aiogram.event - INFO - Update id=897835374 is handled. Duration 378 ms by bot id=8201932079
+2026-01-25 18:27:25,376 - aiogram.event - INFO - Update id=897835375 is handled. Duration 107 ms by bot id=8201932079
+2026-01-25 18:27:58,306 - aiogram.event - INFO - Update id=897835376 is handled. Duration 164 ms by bot id=8201932079
+2026-01-25 18:45:44,474 - aiogram.dispatcher - INFO - Polling stopped
+2026-01-25 18:45:44,475 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-01-25 18:45:44,475 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-01-25 18:45:44,730 - __main__ - INFO - Сессия бота закрыта
+2026-01-25 18:45:44,730 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
