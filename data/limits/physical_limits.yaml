@@ -1,0 +1,44 @@
+# Физические ограничения для защиты от бреда
+
+general:
+  min_rpm: 10
+  max_rpm: 30000
+  min_vc_m_min: 1
+  max_vc_m_min: 2000
+  min_feed_mm_rev: 0.01
+  max_feed_mm_rev: 5.0
+  min_ap_mm: 0.1
+  max_ap_mm: 10.0
+
+material_specific:
+  titanium:
+    max_vc_m_min: 60
+    max_feed_mm_rev: 0.3
+    max_ap_mm: 3.0
+    
+  aluminum:
+    min_vc_m_min: 100
+    max_feed_mm_rev: 1.0
+    
+  steel:
+    max_vc_m_min: 400
+    max_feed_mm_rev: 0.5
+
+tool_limits:
+  carbide:
+    max_vc_m_min: 500
+    max_ap_radius_ratio: 2.0
+    
+  hss:
+    max_vc_m_min: 100
+    max_ap_mm: 5.0
+
+safety_rules:
+  - rule: "ap_radius_ratio"
+    description: "Глубина резания не должна превышать радиус пластины более чем в 2 раза"
+    max_ratio: 2.0
+    
+  - rule: "overhang_rigidity"
+    description: "При вылете >3D снижать параметры на 30-50%"
+    critical_ratio: 3.0
+    reduction_percent: 40

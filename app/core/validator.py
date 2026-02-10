@@ -1,199 +1,309 @@
 """
 Валидация ввода пользователя для CNC Assistant.
-Расширенная система валидации с поддержкой всех типов данных.
-Версия 2.0 с улучшенными сообщениями об ошибках и гибкими настройками.
+Архитектурно чистый модуль валидации с разделением данных и логики.
+Версия 3.0 с унифицированными проверками и адаптивными допусками.
 """
 
-from typing import Dict, Any, Tuple, Optional, List, Union, Callable
+from typing import Dict, Any, Tuple, Optional, List, Union
 from enum import Enum
+from dataclasses import dataclass, field
 import re
 from decimal import Decimal, InvalidOperation
+import math
 
+
+# ============================================================================
+# ТИПЫ ДАННЫХ И СТРУКТУРЫ
+# ============================================================================
 
 class ValidationLevel(Enum):
     """Уровни строгости валидации."""
     LENIENT = "lenient"  # Минимальная проверка
     STANDARD = "standard"  # Стандартная проверка (по умолчанию)
     STRICT = "strict"  # Строгая проверка
-    EXPERT = "expert"  # Экспертная проверка с дополнительными правилами
+    EXPERT = "expert"  # Экспертная проверка
 
 
-class ValidationError(Enum):
-    """Типы ошибок валидации."""
-    INVALID_TYPE = "invalid_type"
-    OUT_OF_RANGE = "out_of_range"
-    UNSUPPORTED_VALUE = "unsupported_value"
-    FORMAT_ERROR = "format_error"
-    MISSING_REQUIRED = "missing_required"
-    INVALID_PATTERN = "invalid_pattern"
-    LOGICAL_ERROR = "logical_error"
-    SAFETY_VIOLATION = "safety_violation"
+class ValidationResult:
+    """Результат валидации с поддержкой ошибок и предупреждений."""
+
+    def __init__(self, is_valid: bool = True):
+        self.is_valid = is_valid
+        self.errors: List[Dict[str, Any]] = []
+        self.warnings: List[Dict[str, Any]] = []
+
+    def add_error(self, field: str, message: str, value: Any = None):
+        self.errors.append({'field': field, 'message': message, 'value': value})
+        self.is_valid = False
+
+    def add_warning(self, field: str, message: str, value: Any = None):
+        self.warnings.append({'field': field, 'message': message, 'value': value})
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            'is_valid': self.is_valid,
+            'errors': self.errors,
+            'warnings': self.warnings,
+            'has_errors': len(self.errors) > 0,
+            'has_warnings': len(self.warnings) > 0
+        }
 
 
 # ============================================================================
-# БАЗЫ ДАННЫХ ДЛЯ ВАЛИДАЦИИ
+# МОДЕЛИ ДАННЫХ (вынесены в отдельные структуры)
+# ============================================================================
+
+@dataclass
+class MaterialInfo:
+    """Информация о материале."""
+    name: str
+    aliases: List[str]
+    difficulty_range: Tuple[float, float]
+    typical_speed_range: Tuple[float, float]  # м/мин
+    valid_grades: List[str] = field(default_factory=list)
+    types: List[str] = field(default_factory=list)
+
+
+@dataclass
+class OperationInfo:
+    """Информация об операции."""
+    name: str
+    aliases: List[str]
+    typical_rpm_range: Tuple[float, float]
+    typical_diameter_range: Tuple[float, float]
+    complexity: float = 1.0
+
+
+@dataclass
+class ModeInfo:
+    """Информация о режиме обработки."""
+    name: str
+    feed_multiplier: float
+    speed_multiplier: float
+    description: str = ""
+
+
+@dataclass
+class SafetyRange:
+    """Безопасный диапазон параметра."""
+    min_val: float
+    max_val: float
+    warning_min: Optional[float] = None
+    warning_max: Optional[float] = None
+
+
+# ============================================================================
+# БАЗА ДАННЫХ ДЛЯ ВАЛИДАЦИИ (вынесена, можно загружать из JSON)
 # ============================================================================
 
 class ValidationDatabase:
-    """База данных для валидации с поддержкой конфигурации."""
+    """База данных для валидации с унифицированным доступом."""
 
     def __init__(self):
-        # Поддерживаемые материалы
-        self.materials = {
-            # Основные материалы
-            'сталь': {
-                'types': [
-                    'углеродистая', 'легированная', 'инструментальная',
-                    'конструкционная', 'пружинная', 'быстрорежущая'
-                ],
-                'aliases': ['сталь', 'steel', 'стали', 'железо'],
-                'difficulty_range': (0.8, 1.5),
-                'valid_grades': ['Ст3', 'Ст45', '40Х', '30ХГСА', 'У8', 'Р6М5']
-            },
-            'алюминий': {
-                'types': ['технический', 'дюралюминий', 'силумин', 'чистый'],
-                'aliases': ['алюминий', 'aluminum', 'ал', 'д16', 'ад1'],
-                'difficulty_range': (0.5, 1.0),
-                'valid_grades': ['АД0', 'АД1', 'Д16Т', 'АК4', 'АК8']
-            },
-            'титан': {
-                'types': ['чистый', 'сплав', 'жаропрочный'],
-                'aliases': ['титан', 'titanium', 'тита', 'вт', 'oti'],
-                'difficulty_range': (1.5, 2.0),
-                'valid_grades': ['ВТ1', 'ВТ6', 'ВТ8', 'ОТ4', 'ПТ3М']
-            },
-            'нержавейка': {
-                'types': ['аустенитная', 'ферритная', 'мартенситная', 'дуплекс'],
-                'aliases': ['нержавейка', 'нерж', 'stainless', 'коррозион'],
-                'difficulty_range': (1.2, 1.8),
-                'valid_grades': ['12Х18Н10Т', '304', '316', '321', '430']
-            },
-            'чугун': {
-                'types': ['серый', 'белый', 'ковкий', 'высокопрочный'],
-                'aliases': ['чугун', 'cast iron', 'чугу', 'сч', 'вч'],
-                'difficulty_range': (0.9, 1.4),
-                'valid_grades': ['СЧ20', 'СЧ25', 'ВЧ35', 'ВЧ50', 'КЧ30']
-            },
-            'латунь': {
-                'types': ['деформируемая', 'литейная', 'специальная'],
-                'aliases': ['латунь', 'brass', 'лату', 'лс', 'л'],
-                'difficulty_range': (0.6, 0.9),
-                'valid_grades': ['Л63', 'ЛС59', 'ЛАЖ60', 'ЛМц58']
-            },
-            'медь': {
-                'types': ['техническая', 'электролитическая', 'бескислородная'],
-                'aliases': ['медь', 'copper', 'мед', 'м', 'cu'],
-                'difficulty_range': (0.7, 1.0),
-                'valid_grades': ['М1', 'М2', 'М3', 'М0']
-            },
-            'бронза': {
-                'types': ['оловянная', 'алюминиевая', 'кремнистая', 'бериллиевая'],
-                'aliases': ['бронз', 'bronze', 'бр', 'брс', 'бро'],
-                'difficulty_range': (0.8, 1.2),
-                'valid_grades': ['БрОФ', 'БрАЖ', 'БрКМц', 'БрБ2']
-            },
-            'инконель': {
-                'types': ['жаростойкий', 'жаропрочный', 'коррозионностойкий'],
-                'aliases': ['инконель', 'inconel', 'инкон', 'жаропроч'],
-                'difficulty_range': (1.8, 2.2),
-                'valid_grades': ['718', '625', '600', 'X750']
-            }
-        }
+        self._materials: Dict[str, MaterialInfo] = {}
+        self._operations: Dict[str, OperationInfo] = {}
+        self._modes: Dict[str, ModeInfo] = {}
+        self._safety_ranges: Dict[str, SafetyRange] = {}
 
-        # Поддерживаемые операции
-        self.operations = {
-            'токарка': {
-                'variants': ['точение', 'обтачивание', 'наружное точение', 'растачивание'],
-                'aliases': ['токарка', 'turning', 'токарный'],
-                'complexity': 1.0,
-                'typical_diameter_range': (0.5, 500),  # мм
-                'typical_rpm_range': (50, 5000)  # об/мин
-            },
-            'фрезерование': {
-                'variants': ['торцовое', 'контурное', 'объемное', 'фасонное'],
-                'aliases': ['фрезерование', 'milling', 'фрезеровка', 'фреза'],
-                'complexity': 1.2,
-                'typical_diameter_range': (1, 100),  # мм
-                'typical_rpm_range': (500, 15000)  # об/мин
-            },
-            'сверление': {
-                'variants': ['глубокое', 'многоступенчатое', 'зенкование', 'развертывание'],
-                'aliases': ['сверление', 'drilling', 'сверло', 'отверстие'],
-                'complexity': 0.8,
-                'typical_diameter_range': (0.1, 50),  # мм
-                'typical_rpm_range': (100, 8000)  # об/мин
-            },
-            'растачивание': {
-                'variants': ['тонкое', 'чистовое', 'калибрующее'],
-                'aliases': ['растачивание', 'boring', 'расточка', 'расточной'],
-                'complexity': 1.1,
-                'typical_diameter_range': (5, 500),  # мм
-                'typical_rpm_range': (100, 3000)  # об/мин
-            },
-            'нарезание резьбы': {
-                'variants': ['внутренняя', 'наружная', 'метрическая', 'трубная'],
-                'aliases': ['резьба', 'threading', 'нарезание', 'резьбонарезание'],
-                'complexity': 1.3,
-                'typical_diameter_range': (1, 100),  # мм
-                'typical_rpm_range': (50, 2000)  # об/мин
-            }
-        }
+        self._init_default_data()
 
-        # Поддерживаемые режимы обработки
-        self.modes = {
-            'черновой': {
-                'description': 'Максимальный съём металла',
-                'feed_multiplier': 1.5,
-                'speed_multiplier': 0.8,
-                'surface_quality': 'Ra 12.5-25'
-            },
-            'получистовой': {
-                'description': 'Баланс производительности и качества',
-                'feed_multiplier': 1.0,
-                'speed_multiplier': 1.0,
-                'surface_quality': 'Ra 3.2-6.3'
-            },
-            'чистовой': {
-                'description': 'Максимальное качество поверхности',
-                'feed_multiplier': 0.7,
-                'speed_multiplier': 1.2,
-                'surface_quality': 'Ra 0.8-1.6'
-            },
-            'тонкий': {
-                'description': 'Прецизионная обработка',
-                'feed_multiplier': 0.5,
-                'speed_multiplier': 1.5,
-                'surface_quality': 'Ra 0.1-0.4'
-            }
-        }
+    def _init_default_data(self):
+        """Инициализация данных по умолчанию."""
+        # Материалы
+        self.register_material(MaterialInfo(
+            name="сталь",
+            aliases=["сталь", "steel", "стали", "железо"],
+            difficulty_range=(0.8, 1.5),
+            typical_speed_range=(50, 300),
+            types=["углеродистая", "легированная", "инструментальная"],
+            valid_grades=["Ст3", "Ст45", "40Х", "30ХГСА"]
+        ))
+
+        self.register_material(MaterialInfo(
+            name="алюминий",
+            aliases=["алюминий", "aluminum", "ал", "д16"],
+            difficulty_range=(0.5, 1.0),
+            typical_speed_range=(100, 1000),
+            types=["технический", "дюралюминий", "силумин"],
+            valid_grades=["АД0", "АД1", "Д16Т"]
+        ))
+
+        self.register_material(MaterialInfo(
+            name="титан",
+            aliases=["титан", "titanium", "тита", "вт"],
+            difficulty_range=(1.5, 2.0),
+            typical_speed_range=(10, 60),
+            types=["чистый", "сплав", "жаропрочный"],
+            valid_grades=["ВТ1", "ВТ6", "ВТ8"]
+        ))
+
+        self.register_material(MaterialInfo(
+            name="нержавейка",
+            aliases=["нержавейка", "нерж", "stainless"],
+            difficulty_range=(1.2, 1.8),
+            typical_speed_range=(30, 100),
+            types=["аустенитная", "ферритная", "мартенситная"],
+            valid_grades=["12Х18Н10Т", "304", "316", "321"]
+        ))
+
+        # Операции
+        self.register_operation(OperationInfo(
+            name="токарка",
+            aliases=["точение", "обтачивание", "токарный"],
+            typical_rpm_range=(50, 5000),
+            typical_diameter_range=(0.5, 500),
+            complexity=1.0
+        ))
+
+        self.register_operation(OperationInfo(
+            name="фрезерование",
+            aliases=["фрезеровка", "фреза", "milling"],
+            typical_rpm_range=(500, 15000),
+            typical_diameter_range=(1, 100),
+            complexity=1.2
+        ))
+
+        self.register_operation(OperationInfo(
+            name="сверление",
+            aliases=["сверло", "отверстие", "drilling"],
+            typical_rpm_range=(100, 8000),
+            typical_diameter_range=(0.1, 50),
+            complexity=0.8
+        ))
+
+        # Режимы
+        self.register_mode(ModeInfo(
+            name="черновой",
+            feed_multiplier=1.5,
+            speed_multiplier=0.8,
+            description="Максимальный съём металла"
+        ))
+
+        self.register_mode(ModeInfo(
+            name="получистовой",
+            feed_multiplier=1.0,
+            speed_multiplier=1.0,
+            description="Баланс производительности и качества"
+        ))
+
+        self.register_mode(ModeInfo(
+            name="чистовой",
+            feed_multiplier=0.7,
+            speed_multiplier=1.2,
+            description="Максимальное качество поверхности"
+        ))
 
         # Безопасные диапазоны
-        self.safety_ranges = {
-            'diameter_mm': {
-                'min': 0.05,  # 0.05 мм - микросверла
-                'max': 2000,  # 2000 мм - крупные детали
-                'warning_threshold': 0.1,  # Предупреждение ниже 0.1 мм
-                'danger_threshold': 1500  # Опасность выше 1500 мм
-            },
-            'rpm': {
-                'min': 10,  # 10 об/мин - очень медленно
-                'max': 30000,  # 30000 об/мин - высокоскоростные станки
-                'warning_threshold': 50,  # Предупреждение ниже 50 об/мин
-                'danger_threshold': 20000  # Опасность выше 20000 об/мин
-            },
-            'cutting_speed_m_min': {
-                'min': 1,  # 1 м/мин - очень медленно
-                'max': 2000,  # 2000 м/мин - сверхвысокие скорости
-                'warning_threshold': 10,  # Предупреждение ниже 10 м/мин
-                'danger_threshold': 1500  # Опасность выше 1500 м/мин
-            },
-            'feed_mm_per_rev': {
-                'min': 0.01,  # 0.01 мм/об - очень мелкая подача
-                'max': 5.0,  # 5.0 мм/об - грубая обработка
-                'warning_threshold': 0.05,  # Предупреждение ниже 0.05 мм/об
-                'danger_threshold': 3.0  # Опасность выше 3.0 мм/об
-            }
-        }
+        self.register_safety_range("diameter_mm", SafetyRange(0.05, 2000, 0.1, 1500))
+        self.register_safety_range("rpm", SafetyRange(10, 30000, 50, 20000))
+        self.register_safety_range("cutting_speed_m_min", SafetyRange(1, 2000, 10, 1500))
+        self.register_safety_range("feed_mm_per_rev", SafetyRange(0.01, 5.0, 0.05, 3.0))
+
+    def register_material(self, material: MaterialInfo):
+        """Зарегистрировать новый материал."""
+        self._materials[material.name] = material
+
+    def register_operation(self, operation: OperationInfo):
+        """Зарегистрировать новую операцию."""
+        self._operations[operation.name] = operation
+
+    def register_mode(self, mode: ModeInfo):
+        """Зарегистрировать новый режим."""
+        self._modes[mode.name] = mode
+
+    def register_safety_range(self, param_name: str, safety_range: SafetyRange):
+        """Зарегистрировать безопасный диапазон параметра."""
+        self._safety_ranges[param_name] = safety_range
+
+    def get_material(self, name: str) -> Optional[MaterialInfo]:
+        """Получить информацию о материале по имени или алиасу."""
+        name_lower = name.lower()
+
+        # Прямое совпадение
+        if name_lower in self._materials:
+            return self._materials[name_lower]
+
+        # Поиск по алиасам
+        for material in self._materials.values():
+            if name_lower in material.aliases or any(alias in name_lower for alias in material.aliases):
+                return material
+
+        # Поиск по названию в строке
+        for material in self._materials.values():
+            if material.name in name_lower:
+                return material
+
+        return None
+
+    def get_operation(self, name: str) -> Optional[OperationInfo]:
+        """Получить информацию об операции по имени или алиасу."""
+        name_lower = name.lower()
+
+        if name_lower in self._operations:
+            return self._operations[name_lower]
+
+        for operation in self._operations.values():
+            if name_lower in operation.aliases or any(alias in name_lower for alias in operation.aliases):
+                return operation
+
+        return None
+
+    def get_mode(self, name: str) -> Optional[ModeInfo]:
+        """Получить информацию о режиме."""
+        name_lower = name.lower()
+        return self._modes.get(name_lower)
+
+    def get_safety_range(self, param_name: str) -> Optional[SafetyRange]:
+        """Получить безопасный диапазон параметра."""
+        return self._safety_ranges.get(param_name)
+
+    @property
+    def materials_list(self) -> List[str]:
+        """Список поддерживаемых материалов."""
+        return list(self._materials.keys())
+
+    @property
+    def operations_list(self) -> List[str]:
+        """Список поддерживаемых операций."""
+        return list(self._operations.keys())
+
+    @property
+    def modes_list(self) -> List[str]:
+        """Список поддерживаемых режимов."""
+        return list(self._modes.keys())
+
+
+# ============================================================================
+# УТИЛИТНЫЕ ФУНКЦИИ
+# ============================================================================
+
+def _to_decimal(value: Any) -> Optional[Decimal]:
+    """Конвертировать значение в Decimal безопасно."""
+    if value is None:
+        return None
+
+    try:
+        if isinstance(value, (int, float)):
+            return Decimal(str(value))
+        elif isinstance(value, str):
+            cleaned = value.replace(',', '.').strip()
+            return Decimal(cleaned)
+        elif isinstance(value, Decimal):
+            return value
+        else:
+            return Decimal(str(value))
+    except (InvalidOperation, ValueError, TypeError):
+        return None
+
+
+def _calculate_cutting_speed(diameter_mm: float, rpm: float) -> float:
+    """Рассчитать скорость резания."""
+    return math.pi * diameter_mm * rpm / 1000
+
+
+def _adaptive_tolerance(value: float, base_tolerance: float = 0.1, min_abs: float = 1.0) -> float:
+    """Адаптивный допуск для маленьких значений."""
+    return max(base_tolerance * abs(value), min_abs)
 
 
 # ============================================================================
@@ -201,722 +311,287 @@ class ValidationDatabase:
 # ============================================================================
 
 class Validator:
-    """Основной класс валидации с поддержкой разных уровней строгости."""
+    """Основной класс валидации с архитектурно чистой структурой."""
 
     def __init__(self, level: ValidationLevel = ValidationLevel.STANDARD):
         self.level = level
         self.db = ValidationDatabase()
-        self.last_errors: List[Dict[str, Any]] = []
-        self.warnings: List[Dict[str, Any]] = []
 
-    def clear_errors(self):
-        """Очистить историю ошибок и предупреждений."""
-        self.last_errors.clear()
-        self.warnings.clear()
-
-    def add_error(self, field: str, error_type: ValidationError, message: str, value: Any = None):
-        """Добавить ошибку в историю."""
-        self.last_errors.append({
-            'field': field,
-            'type': error_type,
-            'message': message,
-            'value': value,
-            'level': 'error'
-        })
-
-    def add_warning(self, field: str, message: str, value: Any = None):
-        """Добавить предупреждение в историю."""
-        self.warnings.append({
-            'field': field,
-            'message': message,
-            'value': value,
-            'level': 'warning'
-        })
-
-    def validate_material(self, material: str, check_type: bool = False) -> Tuple[bool, Optional[str]]:
-        """
-        Валидация материала.
-
-        Args:
-            material: Название материала
-            check_type: Проверять ли конкретный тип материала
-
-        Returns:
-            Tuple[bool, Optional[str]]: Результат валидации и сообщение об ошибке
-        """
-        self.clear_errors()
+    def validate_material(self, material: str) -> ValidationResult:
+        """Валидация материала."""
+        result = ValidationResult()
 
         if not material or not isinstance(material, str):
-            self.add_error('material', ValidationError.INVALID_TYPE,
-                           "Материал должен быть строкой", material)
-            return False, "Материал должен быть строкой"
+            result.add_error("material", "Материал должен быть строкой", material)
+            return result
 
-        material_lower = material.lower().strip()
+        material_info = self.db.get_material(material)
+        if not material_info:
+            supported = ", ".join(self.db.materials_list)
+            result.add_error("material", f"Материал '{material}' не поддерживается", material)
+            return result
 
-        # Проверяем базовый материал
-        base_material = None
-        for mat_name, mat_data in self.db.materials.items():
-            if (material_lower == mat_name or
-                    material_lower in mat_data['aliases'] or
-                    any(alias in material_lower for alias in mat_data['aliases'])):
-                base_material = mat_name
-                break
+        # Проверка типа/марки материала для строгих уровней
+        if self.level in [ValidationLevel.STRICT, ValidationLevel.EXPERT]:
+            has_type_or_grade = False
+            material_lower = material.lower()
 
-        if not base_material:
-            # Проверяем, содержит ли строка название материала
-            for mat_name, mat_data in self.db.materials.items():
-                if mat_name in material_lower:
-                    base_material = mat_name
+            # Проверяем тип
+            for mat_type in material_info.types:
+                if mat_type.lower() in material_lower:
+                    has_type_or_grade = True
                     break
 
-        if not base_material:
-            supported = ", ".join(self.db.materials.keys())
-            self.add_error('material', ValidationError.UNSUPPORTED_VALUE,
-                           f"Материал '{material}' не поддерживается", material)
-            return False, f"Материал '{material}' не поддерживается. Доступные: {supported}"
-
-        # Проверяем тип материала если нужно
-        if check_type and self.level in [ValidationLevel.STRICT, ValidationLevel.EXPERT]:
-            mat_data = self.db.materials[base_material]
-            has_valid_type = False
-
-            # Проверяем, содержит ли строка тип материала
-            for mat_type in mat_data['types']:
-                if mat_type in material_lower:
-                    has_valid_type = True
+            # Проверяем марку
+            for grade in material_info.valid_grades:
+                if grade.lower() in material_lower.replace(' ', ''):
+                    has_type_or_grade = True
                     break
 
-            # Проверяем марку/сорт
-            has_valid_grade = False
-            if 'valid_grades' in mat_data:
-                for grade in mat_data['valid_grades']:
-                    if grade.lower() in material_lower.replace(' ', ''):
-                        has_valid_grade = True
-                        break
+            if not has_type_or_grade:
+                result.add_warning("material",
+                                   f"Рекомендуется уточнить тип или марку материала {material_info.name}")
 
-            if not has_valid_type and not has_valid_grade:
-                self.add_warning('material',
-                                 f"Рекомендуется уточнить тип или марку материала {base_material}")
+        return result
 
-        return True, None
+    def validate_operation(self, operation: str) -> ValidationResult:
+        """Валидация операции."""
+        result = ValidationResult()
 
-    def validate_operation(self, operation: str) -> Tuple[bool, Optional[str]]:
-        """
-        Валидация операции.
-
-        Args:
-            operation: Название операции
-
-        Returns:
-            Tuple[bool, Optional[str]]: Результат валидации и сообщение об ошибке
-        """
         if not operation or not isinstance(operation, str):
-            self.add_error('operation', ValidationError.INVALID_TYPE,
-                           "Операция должна быть строкой", operation)
-            return False, "Операция должна быть строкой"
+            result.add_error("operation", "Операция должна быть строкой", operation)
+            return result
 
-        operation_lower = operation.lower().strip()
+        operation_info = self.db.get_operation(operation)
+        if not operation_info:
+            supported = ", ".join(self.db.operations_list)
+            result.add_error("operation", f"Операция '{operation}' не поддерживается", operation)
+            return result
 
-        # Проверяем операцию
-        valid_operation = None
-        for op_name, op_data in self.db.operations.items():
-            if (operation_lower == op_name or
-                    operation_lower in op_data['aliases'] or
-                    any(alias in operation_lower for alias in op_data['aliases'])):
-                valid_operation = op_name
-                break
+        return result
 
-        if not valid_operation:
-            # Проверяем, содержит ли строка название операции
-            for op_name, op_data in self.db.operations.items():
-                if op_name in operation_lower:
-                    valid_operation = op_name
-                    break
+    def validate_mode(self, mode: str) -> ValidationResult:
+        """Валидация режима обработки."""
+        result = ValidationResult()
 
-        if not valid_operation:
-            supported = ", ".join(self.db.operations.keys())
-            self.add_error('operation', ValidationError.UNSUPPORTED_VALUE,
-                           f"Операция '{operation}' не поддерживается", operation)
-            return False, f"Операция '{operation}' не поддерживается. Доступные: {supported}"
-
-        return True, None
-
-    def validate_mode(self, mode: str) -> Tuple[bool, Optional[str]]:
-        """
-        Валидация режима обработки.
-
-        Args:
-            mode: Название режима
-
-        Returns:
-            Tuple[bool, Optional[str]]: Результат валидации и сообщение об ошибке
-        """
         if not mode or not isinstance(mode, str):
-            self.add_error('mode', ValidationError.INVALID_TYPE,
-                           "Режим должен быть строкой", mode)
-            return False, "Режим должен быть строкой"
+            result.add_error("mode", "Режим должен быть строкой", mode)
+            return result
 
-        mode_lower = mode.lower().strip()
+        mode_info = self.db.get_mode(mode)
+        if not mode_info:
+            supported = ", ".join(self.db.modes_list)
+            result.add_error("mode", f"Режим '{mode}' не поддерживается", mode)
+            return result
 
-        if mode_lower not in self.db.modes:
-            supported = ", ".join(self.db.modes.keys())
-            self.add_error('mode', ValidationError.UNSUPPORTED_VALUE,
-                           f"Режим '{mode}' не поддерживается", mode)
-            return False, f"Режим '{mode}' не поддерживается. Доступные: {supported}"
+        return result
 
-        return True, None
+    def validate_number(self, value: Any, param_name: str, safety_range_name: str,
+                        context: Optional[Dict[str, Any]] = None) -> ValidationResult:
+        """Универсальная валидация числового параметра."""
+        result = ValidationResult()
 
-    def validate_diameter(self, diameter: Any, context: Dict[str, Any] = None) -> Tuple[bool, Optional[str]]:
-        """
-        Валидация диаметра с учётом контекста.
+        # Конвертация
+        decimal_value = _to_decimal(value)
+        if decimal_value is None:
+            result.add_error(param_name, f"Параметр {param_name} должен быть числом", value)
+            return result
 
-        Args:
-            diameter: Диаметр для проверки
-            context: Контекст (материал, операция и т.д.)
+        float_value = float(decimal_value)
 
-        Returns:
-            Tuple[bool, Optional[str]]: Результат валидации и сообщение об ошибке
-        """
-        # Пытаемся преобразовать в число
-        try:
-            if isinstance(diameter, str):
-                # Заменяем запятые на точки
-                diameter_str = diameter.replace(',', '.').strip()
-                d = Decimal(diameter_str)
-            else:
-                d = Decimal(str(diameter))
-        except (InvalidOperation, ValueError, TypeError):
-            self.add_error('diameter', ValidationError.INVALID_TYPE,
-                           "Диаметр должен быть числом", diameter)
-            return False, "Диаметр должен быть числом"
+        # Проверка безопасного диапазона
+        safety_range = self.db.get_safety_range(safety_range_name)
+        if not safety_range:
+            result.add_error(param_name, f"Не найден диапазон безопасности для {param_name}", float_value)
+            return result
 
-        # Проверяем диапазон безопасности
-        safety = self.db.safety_ranges['diameter_mm']
-        d_float = float(d)
+        # Проверка минимума и максимума
+        if float_value < safety_range.min_val:
+            result.add_error(param_name,
+                             f"{param_name} слишком мал (мин. {safety_range.min_val})",
+                             float_value)
 
-        if d_float < safety['min']:
-            self.add_error('diameter', ValidationError.SAFETY_VIOLATION,
-                           f"Диаметр слишком мал (мин. {safety['min']} мм)", d_float)
-            return False, f"Диаметр слишком мал. Минимальное значение: {safety['min']} мм"
+        elif float_value > safety_range.max_val:
+            result.add_error(param_name,
+                             f"{param_name} слишком велик (макс. {safety_range.max_val})",
+                             float_value)
 
-        elif d_float > safety['max']:
-            self.add_error('diameter', ValidationError.SAFETY_VIOLATION,
-                           f"Диаметр слишком велик (макс. {safety['max']} мм)", d_float)
-            return False, f"Диаметр слишком велик. Максимальное значение: {safety['max']} мм"
+        # Проверка предупреждений
+        if safety_range.warning_min and float_value < safety_range.warning_min:
+            result.add_warning(param_name,
+                               f"{param_name} очень мал ({float_value})")
 
-        # Проверяем пороги предупреждений
-        if d_float < safety['warning_threshold']:
-            self.add_warning('diameter',
-                             f"Очень маленький диаметр ({d_float} мм). Требуется высокая точность и осторожность.")
+        if safety_range.warning_max and float_value > safety_range.warning_max:
+            result.add_warning(param_name,
+                               f"{param_name} очень велик ({float_value})")
 
-        elif d_float > safety['danger_threshold']:
-            self.add_warning('diameter',
-                             f"Очень большой диаметр ({d_float} мм). Проверьте возможности станка.")
+        # Контекстные проверки
+        if context:
+            # Проверка типичного диапазона для операции
+            if 'operation' in context:
+                operation_info = self.db.get_operation(context['operation'])
+                if operation_info and param_name == 'diameter_mm':
+                    if (float_value < operation_info.typical_diameter_range[0] or
+                            float_value > operation_info.typical_diameter_range[1]):
+                        result.add_warning(param_name,
+                                           f"Диаметр {float_value} мм выходит за типичный диапазон для операции")
 
-        # Проверяем типичный диапазон для операции если есть контекст
-        if context and context.get('operation'):
-            operation = context['operation'].lower()
-            if operation in self.db.operations:
-                op_range = self.db.operations[operation]['typical_diameter_range']
-                if d_float < op_range[0] or d_float > op_range[1]:
-                    self.add_warning('diameter',
-                                     f"Диаметр {d_float} мм выходит за типичный диапазон для {operation} "
-                                     f"({op_range[0]}-{op_range[1]} мм)")
+        return result
 
-        return True, None
+    def validate_diameter(self, diameter: Any, context: Optional[Dict[str, Any]] = None) -> ValidationResult:
+        """Валидация диаметра."""
+        return self.validate_number(diameter, 'diameter_mm', 'diameter_mm', context)
 
     def validate_rpm(self, rpm: Any, diameter: Optional[float] = None,
-                     material: Optional[str] = None) -> Tuple[bool, Optional[str]]:
-        """
-        Валидация оборотов с учётом диаметра и материала.
+                     material: Optional[str] = None) -> ValidationResult:
+        """Валидация оборотов с проверкой скорости резания."""
+        result = self.validate_number(rpm, 'rpm', 'rpm')
 
-        Args:
-            rpm: Обороты для проверки
-            diameter: Диаметр инструмента (опционально)
-            material: Материал (опционально)
+        if not result.is_valid:
+            return result
 
-        Returns:
-            Tuple[bool, Optional[str]]: Результат валидации и сообщение об ошибке
-        """
-        # Пытаемся преобразовать в число
-        try:
-            if isinstance(rpm, str):
-                rpm_str = rpm.replace(',', '.').strip()
-                r = Decimal(rpm_str)
-            else:
-                r = Decimal(str(rpm))
-        except (InvalidOperation, ValueError, TypeError):
-            self.add_error('rpm', ValidationError.INVALID_TYPE,
-                           "Обороты должны быть числом", rpm)
-            return False, "Обороты должны быть числом"
+        float_rpm = float(_to_decimal(rpm))
 
-        # Проверяем диапазон безопасности
-        safety = self.db.safety_ranges['rpm']
-        r_float = float(r)
-
-        if r_float < safety['min']:
-            self.add_error('rpm', ValidationError.SAFETY_VIOLATION,
-                           f"Обороты слишком низкие (мин. {safety['min']} об/мин)", r_float)
-            return False, f"Обороты слишком низкие. Минимальное значение: {safety['min']} об/мин"
-
-        elif r_float > safety['max']:
-            self.add_error('rpm', ValidationError.SAFETY_VIOLATION,
-                           f"Обороты слишком высокие (макс. {safety['max']} об/мин)", r_float)
-            return False, f"Обороты слишком высокие. Максимальное значение: {safety['max']} об/мин"
-
-        # Проверяем пороги предупреждений
-        if r_float < safety['warning_threshold']:
-            self.add_warning('rpm',
-                             f"Очень низкие обороты ({r_float} об/мин). Проверьте правильность ввода.")
-
-        elif r_float > safety['danger_threshold']:
-            self.add_warning('rpm',
-                             f"Очень высокие обороты ({r_float} об/мин). Убедитесь в безопасности.")
-
-        # Проверяем скорость резания если есть диаметр
+        # Проверка скорости резания если есть диаметр
         if diameter and diameter > 0:
-            # Рассчитываем скорость резания: Vc = π × D × n / 1000
-            import math
-            cutting_speed = math.pi * diameter * r_float / 1000
+            vc = _calculate_cutting_speed(diameter, float_rpm)
 
-            # Проверяем безопасный диапазон скорости резания
-            vc_safety = self.db.safety_ranges['cutting_speed_m_min']
+            # Проверка безопасного диапазона Vc
+            vc_result = self.validate_number(vc, 'cutting_speed', 'cutting_speed_m_min')
+            for error in vc_result.errors:
+                result.add_error('rpm', error['message'].replace('cutting_speed', 'скорость резания'), float_rpm)
+            for warning in vc_result.warnings:
+                result.add_warning('rpm', warning['message'].replace('cutting_speed', 'скорость резания'), float_rpm)
 
-            if cutting_speed < vc_safety['min']:
-                self.add_warning('rpm',
-                                 f"Очень низкая скорость резания: {cutting_speed:.1f} м/мин")
-
-            elif cutting_speed > vc_safety['max']:
-                self.add_error('rpm', ValidationError.SAFETY_VIOLATION,
-                               f"Опасная скорость резания: {cutting_speed:.1f} м/мин", r_float)
-                return False, f"Опасная скорость резания: {cutting_speed:.1f} м/мин"
-
-            # Типичные скорости для разных материалов
+            # Проверка типичной скорости для материала
             if material:
-                material_lower = material.lower()
-                typical_speeds = {
-                    'алюминий': (100, 1000),
-                    'сталь': (50, 300),
-                    'титан': (10, 60),
-                    'нержавейка': (30, 100),
-                    'чугун': (40, 120),
-                }
+                material_info = self.db.get_material(material)
+                if material_info:
+                    if vc < material_info.typical_speed_range[0]:
+                        result.add_warning('rpm',
+                                           f"Низкая скорость резания для {material}: {vc:.1f} м/мин")
+                    elif vc > material_info.typical_speed_range[1]:
+                        result.add_warning('rpm',
+                                           f"Высокая скорость резания для {material}: {vc:.1f} м/мин")
 
-                for mat, speed_range in typical_speeds.items():
-                    if mat in material_lower:
-                        if cutting_speed < speed_range[0]:
-                            self.add_warning('rpm',
-                                             f"Низкая скорость резания для {material}: "
-                                             f"{cutting_speed:.1f} м/мин (типично {speed_range[0]}-{speed_range[1]} м/мин)")
-                        elif cutting_speed > speed_range[1]:
-                            self.add_warning('rpm',
-                                             f"Высокая скорость резания для {material}: "
-                                             f"{cutting_speed:.1f} м/мин (типично {speed_range[0]}-{speed_range[1]} м/мин)")
-                        break
+        return result
 
-        return True, None
+    def validate_cutting_speed(self, vc: Any, material: Optional[str] = None) -> ValidationResult:
+        """Валидация скорости резания."""
+        result = self.validate_number(vc, 'cutting_speed', 'cutting_speed_m_min')
 
-    def validate_feed(self, feed: Any, operation: Optional[str] = None) -> Tuple[bool, Optional[str]]:
-        """
-        Валидация подачи.
+        if not result.is_valid:
+            return result
 
-        Args:
-            feed: Подача для проверки
-            operation: Операция (для контекстной проверки)
+        float_vc = float(_to_decimal(vc))
 
-        Returns:
-            Tuple[bool, Optional[str]]: Результат валидации и сообщение об ошибке
-        """
-        try:
-            if isinstance(feed, str):
-                feed_str = feed.replace(',', '.').strip()
-                f = Decimal(feed_str)
-            else:
-                f = Decimal(str(feed))
-        except (InvalidOperation, ValueError, TypeError):
-            self.add_error('feed', ValidationError.INVALID_TYPE,
-                           "Подача должна быть числом", feed)
-            return False, "Подача должна быть числом"
-
-        # Проверяем диапазон безопасности
-        safety = self.db.safety_ranges['feed_mm_per_rev']
-        f_float = float(f)
-
-        if f_float < safety['min']:
-            self.add_error('feed', ValidationError.SAFETY_VIOLATION,
-                           f"Подача слишком мала (мин. {safety['min']} мм/об)", f_float)
-            return False, f"Подача слишком мала. Минимальное значение: {safety['min']} мм/об"
-
-        elif f_float > safety['max']:
-            self.add_error('feed', ValidationError.SAFETY_VIOLATION,
-                           f"Подача слишком велика (макс. {safety['max']} мм/об)", f_float)
-            return False, f"Подача слишком велика. Максимальное значение: {safety['max']} мм/об"
-
-        # Проверяем типичные значения для операции
-        if operation:
-            operation_lower = operation.lower()
-            typical_feeds = {
-                'токарка': (0.05, 0.5),
-                'фрезерование': (0.01, 0.3),
-                'сверление': (0.05, 0.4),
-                'растачивание': (0.03, 0.2),
-                'нарезание резьбы': (0.5, 3.0),
-            }
-
-            for op, feed_range in typical_feeds.items():
-                if op in operation_lower:
-                    if f_float < feed_range[0] or f_float > feed_range[1]:
-                        self.add_warning('feed',
-                                         f"Подача {f_float} мм/об выходит за типичный диапазон для {operation} "
-                                         f"({feed_range[0]}-{feed_range[1]} мм/об)")
-                    break
-
-        return True, None
-
-    def validate_cutting_speed(self, vc: Any, material: Optional[str] = None) -> Tuple[bool, Optional[str]]:
-        """
-        Валидация скорости резания.
-
-        Args:
-            vc: Скорость резания (м/мин)
-            material: Материал (для контекстной проверки)
-
-        Returns:
-            Tuple[bool, Optional[str]]: Результат валидации и сообщение об ошибке
-        """
-        try:
-            if isinstance(vc, str):
-                vc_str = vc.replace(',', '.').strip()
-                v = Decimal(vc_str)
-            else:
-                v = Decimal(str(vc))
-        except (InvalidOperation, ValueError, TypeError):
-            self.add_error('cutting_speed', ValidationError.INVALID_TYPE,
-                           "Скорость резания должна быть числом", vc)
-            return False, "Скорость резания должна быть числом"
-
-        # Проверяем диапазон безопасности
-        safety = self.db.safety_ranges['cutting_speed_m_min']
-        v_float = float(v)
-
-        if v_float < safety['min']:
-            self.add_error('cutting_speed', ValidationError.SAFETY_VIOLATION,
-                           f"Скорость резания слишком низкая (мин. {safety['min']} м/мин)", v_float)
-            return False, f"Скорость резания слишком низкая. Минимальное значение: {safety['min']} м/мин"
-
-        elif v_float > safety['max']:
-            self.add_error('cutting_speed', ValidationError.SAFETY_VIOLATION,
-                           f"Скорость резания слишком высокая (макс. {safety['max']} м/мин)", v_float)
-            return False, f"Скорость резания слишком высокая. Максимальное значение: {safety['max']} м/мин"
-
-        # Проверяем типичные значения для материала
+        # Проверка типичной скорости для материала
         if material:
-            material_lower = material.lower()
-            typical_speeds = {
-                'алюминий': (100, 1000),
-                'сталь': (50, 300),
-                'титан': (10, 60),
-                'нержавейка': (30, 100),
-                'чугун': (40, 120),
-                'латунь': (80, 200),
-                'медь': (60, 180),
-                'бронза': (40, 150),
-                'инконель': (5, 30),
-            }
+            material_info = self.db.get_material(material)
+            if material_info:
+                if float_vc < material_info.typical_speed_range[0]:
+                    result.add_warning('cutting_speed',
+                                       f"Низкая скорость резания для {material}")
+                elif float_vc > material_info.typical_speed_range[1]:
+                    result.add_warning('cutting_speed',
+                                       f"Высокая скорость резания для {material}")
 
-            for mat, speed_range in typical_speeds.items():
-                if mat in material_lower:
-                    if v_float < speed_range[0] or v_float > speed_range[1]:
-                        self.add_warning('cutting_speed',
-                                         f"Скорость резания {v_float} м/мин выходит за типичный диапазон для {material} "
-                                         f"({speed_range[0]}-{speed_range[1]} м/мин)")
-                    break
+        return result
 
-        return True, None
+    def validate_feed(self, feed: Any, operation: Optional[str] = None) -> ValidationResult:
+        """Валидация подачи."""
+        return self.validate_number(feed, 'feed', 'feed_mm_per_rev')
 
-    def validate_full_context(self, context: Dict[str, Any]) -> Tuple[bool, Optional[str]]:
-        """
-        Полная валидация контекста с проверкой логических связей.
+    def validate_context_consistency(self, context: Dict[str, Any]) -> ValidationResult:
+        """Проверка логической согласованности контекста."""
+        result = ValidationResult()
 
-        Args:
-            context: Контекст для валидации
+        # Проверка соответствия Vc, диаметра и RPM
+        if all(k in context for k in ['diameter', 'rpm', 'vc']):
+            try:
+                diameter = float(_to_decimal(context['diameter']))
+                rpm = float(_to_decimal(context['rpm']))
+                vc = float(_to_decimal(context['vc']))
 
-        Returns:
-            Tuple[bool, Optional[str]]: Результат валидации и сообщение об ошибке
-        """
-        self.clear_errors()
+                calculated_vc = _calculate_cutting_speed(diameter, rpm)
 
-        # Обязательные поля
-        required_fields = ['material', 'operation', 'mode', 'diameter']
+                # Адаптивный допуск
+                tolerance = _adaptive_tolerance(vc, 0.1, 0.5)
+
+                if abs(calculated_vc - vc) > tolerance:
+                    result.add_warning('consistency',
+                                       f"Небольшое несоответствие параметров: "
+                                       f"Vc расчётная={calculated_vc:.1f} м/мин, "
+                                       f"Vc введённая={vc:.1f} м/мин")
+            except (TypeError, ValueError):
+                pass
+
+        # Проверка типичных RPM для операции и диаметра
+        if all(k in context for k in ['operation', 'rpm', 'diameter']):
+            operation_info = self.db.get_operation(context['operation'])
+            if operation_info:
+                try:
+                    rpm = float(_to_decimal(context['rpm']))
+                    if (rpm < operation_info.typical_rpm_range[0] or
+                            rpm > operation_info.typical_rpm_range[1]):
+                        result.add_warning('rpm',
+                                           f"Обороты выходят за типичный диапазон для операции")
+                except (TypeError, ValueError):
+                    pass
+
+        return result
+
+    def validate_full_context(self, context: Dict[str, Any]) -> ValidationResult:
+        """Полная валидация контекста."""
+        result = ValidationResult()
+
+        # Валидация обязательных полей
+        required_fields = ['material', 'operation', 'mode']
         for field in required_fields:
             if field not in context:
-                self.add_error(field, ValidationError.MISSING_REQUIRED,
-                               f"Отсутствует обязательное поле: {field}", None)
+                result.add_error(field, f"Отсутствует обязательное поле: {field}")
 
-        if self.last_errors:
-            return False, "Отсутствуют обязательные поля"
+        if not result.is_valid:
+            return result
 
         # Валидация отдельных полей
         validators = [
             ('material', lambda: self.validate_material(context['material'])),
             ('operation', lambda: self.validate_operation(context['operation'])),
             ('mode', lambda: self.validate_mode(context['mode'])),
-            ('diameter', lambda: self.validate_diameter(context['diameter'], context)),
         ]
 
-        # Дополнительные поля если есть
-        if 'rpm' in context:
-            validators.append(('rpm',
-                               lambda: self.validate_rpm(context['rpm'],
-                                                         context.get('diameter'),
-                                                         context.get('material'))))
+        # Условные поля
+        if 'diameter' in context:
+            validators.append(('diameter',
+                               lambda: self.validate_diameter(context['diameter'], context)))
 
-        if 'feed' in context:
-            validators.append(('feed',
-                               lambda: self.validate_feed(context['feed'],
-                                                          context.get('operation'))))
+        if 'rpm' in context:
+            diameter = float(_to_decimal(context.get('diameter', 0))) if 'diameter' in context else None
+            validators.append(('rpm',
+                               lambda: self.validate_rpm(context['rpm'], diameter, context.get('material'))))
 
         if 'vc' in context:
             validators.append(('vc',
-                               lambda: self.validate_cutting_speed(context['vc'],
-                                                                   context.get('material'))))
+                               lambda: self.validate_cutting_speed(context['vc'], context.get('material'))))
 
-        # Выполняем все валидации
+        if 'feed' in context:
+            validators.append(('feed',
+                               lambda: self.validate_feed(context['feed'], context.get('operation'))))
+
+        # Выполнение валидаций
         for field_name, validator in validators:
-            is_valid, error = validator()
-            if not is_valid:
-                # Ошибка уже добавлена в add_error
-                pass
+            field_result = validator()
+            if not field_result.is_valid:
+                for error in field_result.errors:
+                    result.add_error(field_name, error['message'], error.get('value'))
+            for warning in field_result.warnings:
+                result.add_warning(field_name, warning['message'], warning.get('value'))
 
-        # Дополнительные логические проверки
-        if 'diameter' in context and 'rpm' in context and 'vc' in context:
-            # Проверяем согласованность Vc = π × D × n / 1000
-            import math
-            diameter = float(context['diameter'])
-            rpm = float(context['rpm'])
-            vc = float(context['vc'])
+        # Проверка согласованности
+        if result.is_valid:
+            consistency_result = self.validate_context_consistency(context)
+            for warning in consistency_result.warnings:
+                result.add_warning('consistency', warning['message'])
 
-            calculated_vc = math.pi * diameter * rpm / 1000
-            tolerance = 0.1  # 10% допуск
-
-            if abs(calculated_vc - vc) / vc > tolerance:
-                self.add_error('consistency', ValidationError.LOGICAL_ERROR,
-                               f"Несоответствие параметров: Vc расчётная={calculated_vc:.1f}, "
-                               f"Vc введённая={vc:.1f}", None)
-
-        # Проверяем безопасность комбинации параметров
-        if 'material' in context and 'operation' in context and 'diameter' in context and 'rpm' in context:
-            material = context['material'].lower()
-            operation = context['operation'].lower()
-            diameter = float(context['diameter'])
-            rpm = float(context['rpm'])
-
-            # Проверяем типичные диапазоны RPM для операции и диаметра
-            if operation in self.db.operations:
-                typical_rpm_range = self.db.operations[operation]['typical_rpm_range']
-                if rpm < typical_rpm_range[0] or rpm > typical_rpm_range[1]:
-                    self.add_warning('rpm',
-                                     f"Обороты {rpm} об/мин выходят за типичный диапазон для {operation} "
-                                     f"({typical_rpm_range[0]}-{typical_rpm_range[1]} об/мин)")
-
-        if self.last_errors:
-            # Возвращаем первую ошибку
-            error_msg = self.last_errors[0]['message']
-            return False, error_msg
-
-        return True, None
-
-    def get_validation_summary(self) -> Dict[str, Any]:
-        """
-        Получить сводку по результатам валидации.
-
-        Returns:
-            Dict: Сводка валидации
-        """
-        return {
-            'level': self.level.value,
-            'errors': self.last_errors.copy(),
-            'warnings': self.warnings.copy(),
-            'has_errors': len(self.last_errors) > 0,
-            'has_warnings': len(self.warnings) > 0,
-            'is_valid': len(self.last_errors) == 0
-        }
-
-
-# ============================================================================
-# ФУНКЦИИ ДЛЯ ОБРАТНОЙ СОВМЕСТИМОСТИ
-# ============================================================================
-
-# Глобальный экземпляр валидатора
-_default_validator = Validator()
-
-
-def validate_material(material: str) -> Tuple[bool, Optional[str]]:
-    """
-    Валидация материала (обратная совместимость).
-
-    Args:
-        material: Название материала
-
-    Returns:
-        Tuple[bool, Optional[str]]: Результат валидации
-    """
-    return _default_validator.validate_material(material)
-
-
-def validate_operation(operation: str) -> Tuple[bool, Optional[str]]:
-    """
-    Валидация операции (обратная совместимость).
-
-    Args:
-        operation: Название операции
-
-    Returns:
-        Tuple[bool, Optional[str]]: Результат валидации
-    """
-    return _default_validator.validate_operation(operation)
-
-
-def validate_diameter(diameter: Any) -> Tuple[bool, Optional[str]]:
-    """
-    Валидация диаметра (обратная совместимость).
-
-    Args:
-        diameter: Диаметр для проверки
-
-    Returns:
-        Tuple[bool, Optional[str]]: Результат валидации
-    """
-    return _default_validator.validate_diameter(diameter)
-
-
-def validate_rpm(rpm: Any) -> Tuple[bool, Optional[str]]:
-    """
-    Валидация оборотов (обратная совместимость).
-
-    Args:
-        rpm: Обороты для проверки
-
-    Returns:
-        Tuple[bool, Optional[str]]: Результат валидации
-    """
-    return _default_validator.validate_rpm(rpm)
-
-
-def validate_full_context(context: Dict[str, Any]) -> Tuple[bool, Optional[str]]:
-    """
-    Валидация полного контекста (обратная совместимость).
-
-    Args:
-        context: Контекст для проверки
-
-    Returns:
-        Tuple[bool, Optional[str]]: Результат валидации
-    """
-    return _default_validator.validate_full_context(context)
-
-
-def get_safety_ranges() -> Dict[str, Dict[str, float]]:
-    """
-    Получить безопасные диапазоны параметров.
-
-    Returns:
-        Dict: Безопасные диапазоны
-    """
-    return _default_validator.db.safety_ranges.copy()
-
-
-# ============================================================================
-# ТЕСТИРОВАНИЕ
-# ============================================================================
-
-if __name__ == "__main__":
-    print("🧪 Тестирование Validator")
-    print("=" * 60)
-
-    # Создаем валидатор с разными уровнями
-    validators = {
-        'lenient': Validator(ValidationLevel.LENIENT),
-        'standard': Validator(ValidationLevel.STANDARD),
-        'strict': Validator(ValidationLevel.STRICT),
-    }
-
-    # Тестовые данные
-    test_cases = [
-        {
-            'name': 'Корректные данные',
-            'context': {
-                'material': 'сталь 45',
-                'operation': 'токарка',
-                'mode': 'черновой',
-                'diameter': 50,
-                'rpm': 1200,
-                'feed': 0.2,
-                'vc': 188.5
-            }
-        },
-        {
-            'name': 'Некорректный материал',
-            'context': {
-                'material': 'золото',
-                'operation': 'токарка',
-                'mode': 'черновой',
-                'diameter': 50
-            }
-        },
-        {
-            'name': 'Слишком маленький диаметр',
-            'context': {
-                'material': 'алюминий',
-                'operation': 'фрезерование',
-                'mode': 'чистовой',
-                'diameter': 0.01
-            }
-        },
-        {
-            'name': 'Опасные обороты',
-            'context': {
-                'material': 'сталь',
-                'operation': 'сверление',
-                'mode': 'черновой',
-                'diameter': 10,
-                'rpm': 50000
-            }
-        },
-        {
-            'name': 'Несоответствие параметров',
-            'context': {
-                'material': 'титан',
-                'operation': 'растачивание',
-                'mode': 'получистовой',
-                'diameter': 100,
-                'rpm': 1000,
-                'vc': 500  # Не соответствует формуле
-            }
-        }
-    ]
-
-    for test in test_cases:
-        print(f"\n📝 Тест: {test['name']}")
-        print(f"   Данные: {test['context']}")
-
-        for level_name, validator in validators.items():
-            is_valid, error = validator.validate_full_context(test['context'])
-            summary = validator.get_validation_summary()
-
-            print(f"   Уровень {level_name}: {'✅' if is_valid else '❌'} {error}")
-
-            if summary['warnings']:
-                for warning in summary['warnings']:
-                    print(f"     ⚠️ Предупреждение: {warning['message']}")
-
-    print("\n" + "=" * 60)
-    print("📊 Безопасные диапазоны:")
-    safety_ranges = get_safety_ranges()
-    for param, ranges in safety_ranges.items():
-        print(f"\n{param}:")
-        for key, value in ranges.items():
-            print(f"  {key}: {value}")
-
-    print("\n" + "=" * 60)
-    print("✅ Тестирование завершено")
+        return result

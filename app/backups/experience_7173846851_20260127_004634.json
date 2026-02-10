@@ -1,0 +1,42 @@
+{
+  "raw_description": "Сталь диаметр 50 до 7.2 , черновой и чистовой",
+  "user_experience_text": "Дают 2000 оборотов максимум и в 80",
+  "extracted_data": {
+    "material": "Сталь",
+    "machine_type": "Токарный ЧПУ",
+    "operation": "Черновая",
+    "diameter_start": 50.0,
+    "diameter_end": 7.2,
+    "machine_power": 11.0,
+    "tool_material": "Твердый сплав",
+    "tool_radius": 0.8,
+    "length": 50.0,
+    "defaults_used": [
+      "machine_type",
+      "machine_power",
+      "tool_material",
+      "tool_radius",
+      "length"
+    ],
+    "parsing_confidence": 0.5
+  },
+  "user_intent": {
+    "numeric_params": {
+      "rpm": 2000.0
+    },
+    "qualitative_choice": "higher",
+    "reasoning_text": "Дают 2000 оборотов максимум и в 80",
+    "confidence_level": "medium",
+    "comparison_reason": "custom_reason"
+  },
+  "comparison_choice": "custom_reason",
+  "defaults_used": [
+    "machine_type",
+    "machine_power",
+    "tool_material",
+    "tool_radius",
+    "length"
+  ],
+  "timestamp": "2026-01-27T00:46:34.676568",
+  "source": "telegram_smart_v6.1"
+}

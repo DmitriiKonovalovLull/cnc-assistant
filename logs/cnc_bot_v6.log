@@ -1,0 +1,216 @@
+2026-01-26 12:08:26,089 - __main__ - INFO - ✅ База данных инициализирована: C:\projects\cnc-assistant\app\storage\cnc.db
+2026-01-26 12:08:26,547 - aiogram.dispatcher - INFO - Start polling
+2026-01-26 12:08:26,607 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-01-26 12:08:33,966 - aiogram.event - INFO - Update id=897835399 is handled. Duration 183 ms by bot id=8201932079
+2026-01-26 12:08:39,040 - aiogram.event - INFO - Update id=897835400 is handled. Duration 82 ms by bot id=8201932079
+2026-01-26 12:08:42,049 - aiogram.event - INFO - Update id=897835401 is handled. Duration 78 ms by bot id=8201932079
+2026-01-26 12:08:44,910 - __main__ - INFO - Пользователь 7173846851 начал работу
+2026-01-26 12:08:44,910 - aiogram.event - INFO - Update id=897835402 is handled. Duration 83 ms by bot id=8201932079
+2026-01-26 12:08:45,847 - aiogram.event - INFO - Update id=897835403 is handled. Duration 78 ms by bot id=8201932079
+2026-01-26 12:08:50,953 - __main__ - ERROR - Ошибка расчета: Telegram server says - Bad Request: can't parse entities: Unsupported start tag "=" at byte offset 981
+Traceback (most recent call last):
+  File "C:\projects\cnc-assistant\app\bot\telegram_bot.py", line 497, in process_smart_recommendation
+    await message.answer(
+    ...<2 lines>...
+    )
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\methods\base.py", line 82, in emit
+    return await bot(self)
+           ^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\client\bot.py", line 484, in __call__
+    return await self.session(self, method, timeout=request_timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\client\session\base.py", line 259, in __call__
+    return cast(TelegramType, await middleware(bot, method))
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\client\session\aiohttp.py", line 177, in make_request
+    response = self.check_response(
+        bot=bot,
+    ...<2 lines>...
+        content=raw_result,
+    )
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\client\session\base.py", line 121, in check_response
+    raise TelegramBadRequest(method=method, message=description)
+aiogram.exceptions.TelegramBadRequest: Telegram server says - Bad Request: can't parse entities: Unsupported start tag "=" at byte offset 981
+2026-01-26 12:08:51,052 - aiogram.event - INFO - Update id=897835404 is handled. Duration 337 ms by bot id=8201932079
+2026-01-26 12:08:57,363 - aiogram.event - INFO - Update id=897835405 is handled. Duration 78 ms by bot id=8201932079
+2026-01-26 12:08:58,354 - __main__ - ERROR - Ошибка расчета: Telegram server says - Bad Request: can't parse entities: Unsupported start tag "=" at byte offset 981
+Traceback (most recent call last):
+  File "C:\projects\cnc-assistant\app\bot\telegram_bot.py", line 497, in process_smart_recommendation
+    await message.answer(
+    ...<2 lines>...
+    )
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\methods\base.py", line 82, in emit
+    return await bot(self)
+           ^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\client\bot.py", line 484, in __call__
+    return await self.session(self, method, timeout=request_timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\client\session\base.py", line 259, in __call__
+    return cast(TelegramType, await middleware(bot, method))
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\client\session\aiohttp.py", line 177, in make_request
+    response = self.check_response(
+        bot=bot,
+    ...<2 lines>...
+        content=raw_result,
+    )
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\client\session\base.py", line 121, in check_response
+    raise TelegramBadRequest(method=method, message=description)
+aiogram.exceptions.TelegramBadRequest: Telegram server says - Bad Request: can't parse entities: Unsupported start tag "=" at byte offset 981
+2026-01-26 12:08:58,445 - aiogram.event - INFO - Update id=897835406 is handled. Duration 313 ms by bot id=8201932079
+2026-01-26 12:09:00,573 - aiogram.event - INFO - Update id=897835407 is handled. Duration 86 ms by bot id=8201932079
+2026-01-26 12:09:25,907 - aiogram.dispatcher - INFO - Polling stopped
+2026-01-26 12:09:25,908 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-01-26 12:09:25,908 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-01-26 12:09:26,162 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-01-26 22:29:30,618 - __main__ - INFO - ✅ База данных инициализирована: C:\projects\cnc-assistant\app\storage\cnc.db
+2026-01-26 22:29:31,059 - aiogram.dispatcher - INFO - Start polling
+2026-01-26 22:29:31,111 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-01-26 22:29:31,383 - __main__ - INFO - Пользователь 758350745 начал работу
+2026-01-26 22:29:31,383 - aiogram.event - INFO - Update id=897835413 is handled. Duration 212 ms by bot id=8201932079
+2026-01-26 22:29:31,384 - aiogram.event - INFO - Update id=897835410 is handled. Duration 213 ms by bot id=8201932079
+2026-01-26 22:29:31,401 - aiogram.event - INFO - Update id=897835408 is handled. Duration 231 ms by bot id=8201932079
+2026-01-26 22:29:31,431 - aiogram.event - INFO - Update id=897835409 is handled. Duration 261 ms by bot id=8201932079
+2026-01-26 22:29:31,452 - aiogram.event - INFO - Update id=897835412 is handled. Duration 281 ms by bot id=8201932079
+2026-01-26 22:29:31,478 - aiogram.event - INFO - Update id=897835411 is handled. Duration 306 ms by bot id=8201932079
+2026-01-26 22:29:51,691 - aiogram.event - INFO - Update id=897835414 is handled. Duration 161 ms by bot id=8201932079
+2026-01-26 22:30:38,975 - aiogram.event - INFO - Update id=897835415 is handled. Duration 74 ms by bot id=8201932079
+2026-01-26 22:30:40,629 - __main__ - INFO - Пользователь 7173846851 начал работу
+2026-01-26 22:30:40,629 - aiogram.event - INFO - Update id=897835416 is handled. Duration 75 ms by bot id=8201932079
+2026-01-26 22:30:44,712 - aiogram.event - INFO - Update id=897835417 is handled. Duration 78 ms by bot id=8201932079
+2026-01-26 22:31:10,802 - aiogram.event - INFO - Update id=897835418 is handled. Duration 309 ms by bot id=8201932079
+2026-01-26 23:49:00,631 - aiogram.event - INFO - Update id=897835419 is handled. Duration 539 ms by bot id=8201932079
+2026-01-26 23:49:13,388 - __main__ - ERROR - Ошибка сохранения опыта: Object of type ComparisonReason is not JSON serializable
+Traceback (most recent call last):
+  File "C:\projects\cnc-assistant\app\bot\telegram_bot.py", line 1074, in handle_save_experience
+    save_user_decision(
+    ~~~~~~~~~~~~~~~~~~^
+        session=session,
+        ^^^^^^^^^^^^^^^^
+    ...<8 lines>...
+        full_context=decision_data['full_context']
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\projects\cnc-assistant\app\storage\models.py", line 492, in save_user_decision
+    decision = UserDecision(
+        id=create_decision_id(),
+    ...<39 lines>...
+        full_context=full_context or {}
+    )
+  File "<string>", line 4, in __init__
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\orm\state.py", line 596, in _initialize_instance
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\orm\state.py", line 594, in _initialize_instance
+    manager.original_init(*mixed[1:], **kwargs)
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\orm\decl_base.py", line 2182, in _declarative_constructor
+    setattr(self, k, kwargs[k])
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\app\storage\models.py", line 260, in full_context
+    self.full_context_json = json.dumps(value, ensure_ascii=False)
+                             ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Дмитрий\AppData\Local\Python\pythoncore-3.14-64\Lib\json\__init__.py", line 242, in dumps
+    **kw).encode(obj)
+          ~~~~~~^^^^^
+  File "C:\Users\Дмитрий\AppData\Local\Python\pythoncore-3.14-64\Lib\json\encoder.py", line 202, in encode
+    chunks = self.iterencode(o, _one_shot=True)
+  File "C:\Users\Дмитрий\AppData\Local\Python\pythoncore-3.14-64\Lib\json\encoder.py", line 263, in iterencode
+    return _iterencode(o, 0)
+  File "C:\Users\Дмитрий\AppData\Local\Python\pythoncore-3.14-64\Lib\json\encoder.py", line 182, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+                    f'is not JSON serializable')
+TypeError: Object of type ComparisonReason is not JSON serializable
+when serializing dict item 'comparison_reason'
+when serializing dict item 'user_intent'
+2026-01-26 23:49:13,649 - aiogram.event - INFO - Update id=897835420 is handled. Duration 262 ms by bot id=8201932079
+2026-01-26 23:49:18,643 - __main__ - ERROR - Ошибка сохранения опыта: Данные пользовательского ввода не найдены
+Traceback (most recent call last):
+  File "C:\projects\cnc-assistant\app\bot\telegram_bot.py", line 1012, in handle_save_experience
+    raise ValueError("Данные пользовательского ввода не найдены")
+ValueError: Данные пользовательского ввода не найдены
+2026-01-26 23:49:18,852 - aiogram.event - INFO - Update id=897835421 is handled. Duration 209 ms by bot id=8201932079
+2026-01-26 23:50:31,452 - aiogram.dispatcher - INFO - Polling stopped
+2026-01-26 23:50:31,452 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-01-26 23:50:31,452 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-01-26 23:50:31,713 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-01-27 00:09:25,767 - __main__ - INFO - ✅ База данных инициализирована: C:\projects\cnc-assistant\app\storage\cnc.db
+2026-01-27 00:09:26,076 - aiogram.dispatcher - INFO - Start polling
+2026-01-27 00:09:26,160 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-01-27 00:24:57,269 - aiogram.event - INFO - Update id=897835422 is handled. Duration 613 ms by bot id=8201932079
+2026-01-27 00:25:00,855 - aiogram.event - INFO - Update id=897835423 is handled. Duration 399 ms by bot id=8201932079
+2026-01-27 00:44:22,678 - aiogram.event - INFO - Update id=897835424 is handled. Duration 521 ms by bot id=8201932079
+2026-01-27 00:44:29,925 - aiogram.event - INFO - Update id=897835425 is handled. Duration 186 ms by bot id=8201932079
+2026-01-27 00:44:36,709 - aiogram.event - INFO - Update id=897835426 is handled. Duration 114 ms by bot id=8201932079
+2026-01-27 00:44:38,881 - aiogram.event - INFO - Update id=897835427 is handled. Duration 156 ms by bot id=8201932079
+2026-01-27 00:44:42,049 - aiogram.event - INFO - Update id=897835428 is handled. Duration 109 ms by bot id=8201932079
+2026-01-27 00:44:48,197 - aiogram.event - INFO - Update id=897835429 is handled. Duration 111 ms by bot id=8201932079
+2026-01-27 00:45:21,497 - aiogram.event - INFO - Update id=897835430 is handled. Duration 359 ms by bot id=8201932079
+2026-01-27 00:46:33,169 - aiogram.event - INFO - Update id=897835431 is handled. Duration 152 ms by bot id=8201932079
+2026-01-27 00:46:34,684 - __main__ - ERROR - Ошибка БД при сохранении: unsupported operand type(s) for +=: 'NoneType' and 'int'
+Traceback (most recent call last):
+  File "C:\projects\cnc-assistant\app\bot\telegram_bot.py", line 1117, in handle_save_experience
+    success = save_user_decision(
+        session=session,
+    ...<8 lines>...
+        full_context=full_context
+    )
+  File "C:\projects\cnc-assistant\app\storage\models.py", line 541, in save_user_decision
+    update_experience_profile(session, user_id, decision)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\app\storage\models.py", line 555, in update_experience_profile
+    profile.total_decisions += 1
+TypeError: unsupported operand type(s) for +=: 'NoneType' and 'int'
+2026-01-27 00:46:34,686 - __main__ - INFO - Данные сохранены в резервный файл: C:\projects\cnc-assistant\app\backups\experience_7173846851_20260127_004634.json
+2026-01-27 00:46:34,891 - aiogram.event - INFO - Update id=897835432 is handled. Duration 215 ms by bot id=8201932079
+2026-01-27 00:46:37,643 - aiogram.event - INFO - Update id=897835433 is handled. Duration 107 ms by bot id=8201932079
+2026-01-27 00:46:48,625 - aiogram.event - INFO - Update id=897835434 is handled. Duration 106 ms by bot id=8201932079
+2026-01-27 00:46:51,355 - aiogram.event - INFO - Update id=897835435 is handled. Duration 157 ms by bot id=8201932079
+2026-01-27 00:46:53,955 - __main__ - INFO - Пользователь 7173846851 начал работу
+2026-01-27 00:46:53,956 - aiogram.event - INFO - Update id=897835436 is handled. Duration 146 ms by bot id=8201932079
+2026-01-27 00:46:55,540 - aiogram.event - INFO - Update id=897835437 is handled. Duration 156 ms by bot id=8201932079
+2026-01-27 00:46:59,543 - aiogram.event - INFO - Update id=897835438 is handled. Duration 375 ms by bot id=8201932079
+2026-01-27 03:32:50,132 - aiogram.dispatcher - INFO - Polling stopped
+2026-01-27 03:32:50,132 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-01-27 03:32:50,133 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-01-27 03:32:50,384 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-01-28 04:02:30,507 - __main__ - INFO - ✅ База данных инициализирована: C:\projects\cnc-assistant\app\storage\cnc.db
+2026-01-28 04:02:31,095 - aiogram.dispatcher - INFO - Start polling
+2026-01-28 04:02:31,181 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-01-28 04:02:44,762 - aiogram.event - INFO - Update id=897835439 is handled. Duration 200 ms by bot id=8201932079
+2026-01-28 04:02:47,955 - __main__ - ERROR - Ошибка получения решений: (sqlite3.OperationalError) no such column: user_decisions.operation_chain_json
+[SQL: SELECT user_decisions.id AS user_decisions_id, user_decisions.user_id AS user_decisions_user_id, user_decisions.timestamp AS user_decisions_timestamp, user_decisions.machine_id AS user_decisions_machine_id, user_decisions.material_id AS user_decisions_material_id, user_decisions.tool_id AS user_decisions_tool_id, user_decisions.diameter_start_mm AS user_decisions_diameter_start_mm, user_decisions.diameter_end_mm AS user_decisions_diameter_end_mm, user_decisions.length_mm AS user_decisions_length_mm, user_decisions.operation_chain_json AS user_decisions_operation_chain_json, user_decisions.operation_type AS user_decisions_operation_type, user_decisions.is_external AS user_decisions_is_external, user_decisions.tolerance_mm AS user_decisions_tolerance_mm, user_decisions.surface_roughness_ra AS user_decisions_surface_roughness_ra, user_decisions.bot_vc_m_min AS user_decisions_bot_vc_m_min, user_decisions.bot_rpm AS user_decisions_bot_rpm, user_decisions.bot_feed_mm_rev AS user_decisions_bot_feed_mm_rev, user_decisions.bot_ap_mm AS user_decisions_bot_ap_mm, user_decisions.bot_power_kw AS user_decisions_bot_power_kw, user_decisions.passes_strategy_json AS user_decisions_passes_strategy_json, user_decisions.total_passes AS user_decisions_total_passes, user_decisions.user_rpm AS user_decisions_user_rpm, user_decisions.user_feed_mm_rev AS user_decisions_user_feed_mm_rev, user_decisions.user_ap_mm AS user_decisions_user_ap_mm, user_decisions.comparison_choice AS user_decisions_comparison_choice, user_decisions.user_comment AS user_decisions_user_comment, user_decisions.diff_coeff_rpm AS user_decisions_diff_coeff_rpm, user_decisions.diff_coeff_feed AS user_decisions_diff_coeff_feed, user_decisions.diff_coeff_ap AS user_decisions_diff_coeff_ap, user_decisions.result_type AS user_decisions_result_type, user_decisions.result_details AS user_decisions_result_details, user_decisions.tool_life_minutes AS user_decisions_tool_life_minutes, user_decisions.actual_machining_time_min AS user_decisions_actual_machining_time_min, user_decisions.experience_level AS user_decisions_experience_level, user_decisions.variance_adaptation_score AS user_decisions_variance_adaptation_score, user_decisions.was_decision_adaptive AS user_decisions_was_decision_adaptive, user_decisions.full_context_json AS user_decisions_full_context_json, user_decisions.source AS user_decisions_source, user_decisions.session_id AS user_decisions_session_id 
+FROM user_decisions 
+WHERE user_decisions.user_id = ? ORDER BY user_decisions.timestamp DESC
+ LIMIT ? OFFSET ?]
+[parameters: ('7173846851', 5, 0)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-01-28 04:02:47,955 - aiogram.event - INFO - Update id=897835440 is handled. Duration 92 ms by bot id=8201932079
+2026-01-28 04:02:55,660 - aiogram.event - INFO - Update id=897835441 is handled. Duration 94 ms by bot id=8201932079
+2026-01-28 04:03:12,625 - aiogram.event - INFO - Update id=897835442 is handled. Duration 87 ms by bot id=8201932079
+2026-01-28 04:03:44,491 - aiogram.event - INFO - Update id=897835443 is handled. Duration 90 ms by bot id=8201932079
+2026-01-28 04:04:05,876 - aiogram.event - INFO - Update id=897835444 is handled. Duration 525 ms by bot id=8201932079
+2026-01-28 04:04:33,595 - aiogram.event - INFO - Update id=897835445 is handled. Duration 243 ms by bot id=8201932079
+2026-01-28 04:07:48,170 - aiogram.dispatcher - INFO - Polling stopped
+2026-01-28 04:07:48,171 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-01-28 04:07:48,172 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-01-28 04:07:48,435 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 13:54:33,877 - __main__ - INFO - ✅ База данных инициализирована: C:\projects\cnc-assistant\app\storage\cnc.db
+2026-02-10 13:54:34,683 - aiogram.dispatcher - INFO - Start polling
+2026-02-10 13:54:34,936 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 13:54:45,661 - aiogram.event - INFO - Update id=897835446 is handled. Duration 994 ms by bot id=8201932079
+2026-02-10 13:55:20,543 - aiogram.dispatcher - INFO - Polling stopped
+2026-02-10 13:55:20,545 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-02-10 13:55:20,545 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-02-10 13:55:20,811 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 14:00:22,062 - __main__ - INFO - ✅ База данных инициализирована: C:\projects\cnc-assistant\app\storage\cnc.db
+2026-02-10 14:00:22,755 - aiogram.dispatcher - INFO - Start polling
+2026-02-10 14:00:22,963 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 14:00:32,624 - aiogram.event - INFO - Update id=897835447 is handled. Duration 1015 ms by bot id=8201932079
+2026-02-10 14:00:36,642 - aiogram.event - INFO - Update id=897835448 is handled. Duration 304 ms by bot id=8201932079
+2026-02-10 14:01:10,744 - aiogram.dispatcher - INFO - Polling stopped
+2026-02-10 14:01:10,745 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-02-10 14:01:10,745 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)

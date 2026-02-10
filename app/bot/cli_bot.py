@@ -1,546 +1,565 @@
+#!/usr/bin/env python3
 """
-CLI версия для отладки и тестирования.
-Интегрирована с новой системой recommendation.py v4.0.
+CLI интерфейс для CNC Assistant.
+Работает по циклу: вопрос → парсинг ответа → обработка в FSM → следующий вопрос.
 """
 
-import asyncio
+import sys
+import os
 import re
-from typing import Dict
+from typing import Optional, Dict, Any, List, Union
 
-# Импорты из нашего обновленного recommendation.py
-from app.services.recommendation import (
-    calculate_cutting_modes_turning_for_bot,
-    calculate_cutting_modes_milling_for_bot,
-    calculate_cutting_modes_drilling_for_bot
-)
-from app.services.data_collector import save_interaction_with_memory
+# Добавляем корень проекта в путь для импортов
+sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 
-
-async def start_cli_bot():
-    """Запуск бота в командной строке."""
-    print("=" * 60)
-    print("CNC Assistant CLI v3.0")
-    print("Сбор данных для обучения ИИ")
-    print("Поддержка ЧПУ/обычная токарка, диаметры до 800 мм")
-    print("=" * 60)
-
-    user_data = {}
-    current_state = "waiting_material"
-
-    while True:
-        try:
-            # Показываем подсказку в зависимости от состояния
-            prompt = get_state_prompt(current_state, user_data)
-            if prompt:
-                print(prompt)
-
-            # Ввод пользователя
-            user_input = input("\n> ").strip()
-
-            if user_input.lower() in ['exit', 'quit', 'выход']:
-                print("Выход...")
-                break
-
-            if user_input.lower() in ['reset', 'сброс', 'новая']:
-                print("Начинаем новый расчет...")
-                user_data = {}
-                current_state = "waiting_material"
-                continue
-
-            # Обработка состояния
-            next_state, updated_data = await get_next_state_cli(
-                current_state,
-                user_input,
-                user_data
-            )
-
-            user_data = updated_data
-
-            if next_state == "ERROR":
-                print("❌ Произошла ошибка. Начните заново.")
-                user_data = {}
-                current_state = "waiting_material"
-                continue
-            elif next_state == "COMPLETED":
-                # Завершение диалога с RPM
-                await handle_user_choice_state(user_data)
-                print("\n" + "=" * 50)
-                print("Хотите начать новый расчет? (да/нет)")
-                answer = input("> ").strip().lower()
-                if answer in ['да', 'yes', 'y', 'д']:
-                    print("\n" + "-" * 50)
-                    print("Начинаем новый расчет!")
-                    print("-" * 50)
-                    user_data = {}
-                    current_state = "waiting_material"
-                else:
-                    print("Спасибо за использование! До свидания.")
-                    break
-                continue
-            elif next_state:
-                current_state = next_state
-
-                # Специальная логика для отображения рекомендаций
-                if current_state == "waiting_recommendation":
-                    await handle_recommendation_state(user_data)
-                    current_state = "waiting_user_choice"
-                    continue
-
-            else:
-                print("Не понимаю. Попробуйте снова или используйте команды:")
-                print("'exit' - выход, 'reset' - начать заново")
-
-        except KeyboardInterrupt:
-            print("\n\nВыход...")
-            break
-        except ValueError as e:
-            print(f"Ошибка ввода данных: {e}")
-            print("Пожалуйста, введите корректное значение.")
-        except Exception as e:
-            print(f"Неожиданная ошибка: {e}")
-            print("Попробуйте снова: 'reset'")
-            user_data = {}
-            current_state = "waiting_material"
+from app.core.state_machine import StateMachine, AppState
+from app.bot.dialogs import DialogManager
+from app.core.validator import Validator
+from app.domain.models import CNCParameters
 
 
-def get_state_prompt(state: str, user_data: Dict) -> str:
-    """Возвращает подсказку для текущего состояния."""
-    prompts = {
-        "waiting_material": (
-            "\nВыберите материал:\n"
-            "сталь, алюминий, титан, нержавейка, чугун"
-        ),
-        "waiting_operation": (
-            f"\nМатериал: {user_data.get('material')}\n"
-            "Выберите операцию:\n"
-            "токарка, фрезерование, сверление, растачивание"
-        ),
-        "waiting_machine_type": (
-            f"\nМатериал: {user_data.get('material')}\n"
-            f"Операция: {user_data.get('operation')}\n"
-            "Выберите тип станка:\n"
-            "ЧПУ токарка, Обычная токарка, "
-            "ЧПУ фрезер, Обычная фрезер, "
-            "ЧПУ сверление, Обычное сверление"
-        ),
-        "waiting_mode": (
-            f"\nМатериал: {user_data.get('material')}\n"
-            f"Операция: {user_data.get('operation')}\n"
-            f"Тип станка: {user_data.get('machine_type')}\n"
-            "Выберите режим обработки:\n"
-            "черновой, получистовой, чистовой"
-        ),
-        "waiting_tool_diameter": (
-            f"\nМатериал: {user_data.get('material')}\n"
-            f"Операция: {user_data.get('operation')}\n"
-            f"Тип станка: {user_data.get('machine_type')}\n"
-            f"Режим: {user_data.get('mode')}\n"
-            "\nВведите диаметр инструмента в мм:"
-        ),
-        "waiting_turning_start_diameter": (
-            f"\nМатериал: {user_data.get('material')}\n"
-            f"Операция: {user_data.get('operation')}\n"
-            f"Тип станка: {user_data.get('machine_type')}\n"
-            "\nВведите начальный диаметр заготовки в мм (до 800 мм):"
-        ),
-        "waiting_turning_finish_diameter": (
-            f"\nМатериал: {user_data.get('material')}\n"
-            f"Операция: {user_data.get('operation')}\n"
-            f"Тип станка: {user_data.get('machine_type')}\n"
-            f"Начальный диаметр: {user_data.get('start_diameter')} мм\n"
-            "\nВведите конечный диаметр детали в мм:"
-        ),
-        "waiting_turning_tool_type": (
-            "\nВыберите тип токарного инструмента:\n"
-            "проходной (95°), чистовой (95°), канавочный,\n"
-            "резьбовой (60°), отрезной, расточной (90°)"
-        ),
-        "waiting_turning_tool_material": (
-            "\nВыберите материал режущей пластины:\n"
-            "твердый сплав, быстрорежущая сталь, керамика, кубический нитрид бора"
-        ),
-        "waiting_turning_tool_overhang": (
-            "\nВведите вылет инструмента от державки в мм (10-500):"
-        ),
-        "waiting_user_choice": (
-            "\nКакие обороты ВЫ ставите на станке? (введите число):"
-        ),
+class InputParser:
+    """Утилиты для парсинга пользовательского ввода"""
+
+    # Константы для числовых слов
+    NUMBER_WORDS = {
+        'половина': 0.5,
+        'пол': 0.5,
+        'четверть': 0.25,
+        'треть': 0.333,
+        'трети': 0.333,
     }
-    return prompts.get(state, "")
 
+    # Словари для булевых значений
+    POSITIVE_RESPONSES = {'да', 'yes', 'y', 'д', '+', 'true', '1', 'ок', 'ok', 'ага', 'угу'}
+    NEGATIVE_RESPONSES = {'нет', 'no', 'n', 'н', '-', 'false', '0', 'not', 'неа', 'ноуп'}
 
-async def get_next_state_cli(current_state: str, user_input: str, user_data: Dict) -> Tuple[str, Dict]:
-    """Определяет следующее состояние для CLI версии."""
+    @staticmethod
+    def parse_float(input_str: str) -> Optional[float]:
+        """
+        Парсит строку в число с плавающей точкой.
+        Обрабатывает дроби, десятичные числа, целые числа.
 
-    # Обработка выбора материала
-    if current_state == "waiting_material":
-        if user_input in ["сталь", "алюминий", "титан", "нержавейка", "чугун"]:
-            return "waiting_operation", {**user_data, 'material': user_input}
-        else:
-            return "waiting_material", user_data
+        Args:
+            input_str: Строка для парсинга
 
-    # Обработка выбора операции
-    elif current_state == "waiting_operation":
-        if user_input in ["токарка", "фрезерование", "сверление", "растачивание"]:
-            return "waiting_machine_type", {**user_data, 'operation': user_input}
-        else:
-            return "waiting_operation", user_data
+        Returns:
+            Число float или None если не удалось распарсить
+        """
+        if not input_str:
+            return None
 
-    # Обработка выбора типа станка
-    elif current_state == "waiting_machine_type":
-        operation = user_data.get('operation', '')
+        input_str = input_str.strip().replace(',', '.')
 
-        valid_machine_types = []
-        if "токар" in operation.lower():
-            valid_machine_types = ["чпу токарка", "обычная токарка"]
-        elif "фрезер" in operation.lower():
-            valid_machine_types = ["чпу фрезер", "обычная фрезер"]
-        else:
-            valid_machine_types = ["чпу сверление", "обычное сверление"]
-
-        if user_input.lower() in [x.lower() for x in valid_machine_types]:
-            if user_input.lower() == "токарка":
-                return "waiting_turning_start_diameter", {**user_data, 'machine_type': user_input}
-            else:
-                return "waiting_mode", {**user_data, 'machine_type': user_input}
-        else:
-            return "waiting_machine_type", user_data
-
-    # Обработка выбора режима
-    elif current_state == "waiting_mode":
-        if user_input in ["черновой", "получистовой", "чистовой"]:
-            updated_data = {**user_data, 'mode': user_input}
-
-            if user_data.get('operation') in ["фрезерование", "сверление", "растачивание"]:
-                return "waiting_tool_diameter", updated_data
-            else:
-                return "waiting_turning_start_diameter", updated_data
-        else:
-            return "waiting_mode", user_data
-
-    # Обработка ввода диаметра инструмента
-    elif current_state == "waiting_tool_diameter":
-        try:
-            numbers = re.findall(r'\d+(?:\.\d+)?', user_input)
-            if numbers:
-                diameter = float(numbers[0].replace(',', '.'))
-                operation = user_data.get('operation', '')
-
-                if operation == "фрезерование" and 0.1 <= diameter <= 300:
-                    return "waiting_recommendation", {**user_data, 'tool_diameter': diameter}
-                elif operation in ["сверление", "растачивание"] and 0.1 <= diameter <= 100:
-                    return "waiting_recommendation", {**user_data, 'tool_diameter': diameter}
-                else:
-                    return "waiting_tool_diameter", user_data
-            else:
-                return "waiting_tool_diameter", user_data
-        except (ValueError, IndexError):
-            return "waiting_tool_diameter", user_data
-
-    # ========== ТОКАРНЫЕ ПАРАМЕТРЫ ==========
-
-    # Начальный диаметр для токарки
-    elif current_state == "waiting_turning_start_diameter":
-        try:
-            numbers = re.findall(r'\d+(?:\.\d+)?', user_input)
-            if numbers:
-                diameter = float(numbers[0].replace(',', '.'))
-                if 1 <= diameter <= 800:
-                    return "waiting_turning_finish_diameter", {**user_data, 'start_diameter': diameter}
-                else:
-                    return "waiting_turning_start_diameter", user_data
-            else:
-                return "waiting_turning_start_diameter", user_data
-        except (ValueError, IndexError):
-            return "waiting_turning_start_diameter", user_data
-
-    # Конечный диаметр для токарки
-    elif current_state == "waiting_turning_finish_diameter":
-        try:
-            numbers = re.findall(r'\d+(?:\.\d+)?', user_input)
-            if numbers:
-                diameter = float(numbers[0].replace(',', '.'))
-                start_diameter = user_data.get('start_diameter', 0)
-                if 0.1 <= diameter < start_diameter:
-                    return "waiting_turning_tool_type", {**user_data, 'finish_diameter': diameter}
-                else:
-                    return "waiting_turning_finish_diameter", user_data
-            else:
-                return "waiting_turning_finish_diameter", user_data
-        except (ValueError, IndexError):
-            return "waiting_turning_finish_diameter", user_data
-
-    # Тип токарного инструмента
-    elif current_state == "waiting_turning_tool_type":
-        if user_input in ["проходной (95°)", "чистовой (95°)", "канавочный",
-                          "резьбовой (60°)", "отрезной", "расточной (90°)"]:
-            return "waiting_turning_tool_material", {**user_data, 'tool_type': user_input}
-        else:
-            return "waiting_turning_tool_type", user_data
-
-    # Материал токарного инструмента
-    elif current_state == "waiting_turning_tool_material":
-        if user_input in ["твердый сплав", "быстрорежущая сталь", "керамика",
-                          "кубический нитрид бора"]:
-            updated_data = {**user_data, 'tool_material': user_input}
-            return "waiting_turning_tool_overhang", updated_data
-        else:
-            return "waiting_turning_tool_material", user_data
-
-    # Вылет токарного инструмента
-    elif current_state == "waiting_turning_tool_overhang":
-        try:
-            numbers = re.findall(r'\d+(?:\.\d+)?', user_input)
-            if numbers:
-                overhang = float(numbers[0].replace(',', '.'))
-                if 10 <= overhang <= 500:
-                    updated_data = {**user_data, 'tool_overhang': overhang}
-                    return "waiting_mode", updated_data
-                else:
-                    return "waiting_turning_tool_overhang", user_data
-            else:
-                return "waiting_turning_tool_overhang", user_data
-        except (ValueError, IndexError):
-            return "waiting_turning_tool_overhang", user_data
-
-    # Расчет рекомендаций
-    elif current_state == "waiting_recommendation":
-        try:
-            operation = user_data.get('operation')
-            machine_type = user_data.get('machine_type', '')
-
-            # Маппинг machine_type
-            if "чпу" in machine_type.lower():
-                if "токар" in machine_type.lower():
-                    machine_type_key = "чпу_токарка"
-                elif "фрезер" in machine_type.lower():
-                    machine_type_key = "чпу_фрезер"
-                else:
-                    machine_type_key = "чпу_сверление"
-            else:
-                if "токар" in machine_type.lower():
-                    machine_type_key = "обычная_токарка"
-                elif "фрезер" in machine_type.lower():
-                    machine_type_key = "обычная_фрезер"
-                else:
-                    machine_type_key = "обычное_сверление"
-
-            if operation == 'токарка':
-                recommendations = calculate_cutting_modes_turning_for_bot(
-                    material=user_data.get('material'),
-                    machine_type=machine_type_key,
-                    mode=user_data.get('mode'),
-                    start_diameter=user_data.get('start_diameter', 0),
-                    finish_diameter=user_data.get('finish_diameter', 0),
-                    tool_type=user_data.get('tool_type', 'проходной (95°)'),
-                    tool_material=user_data.get('tool_material', 'твердый сплав'),
-                    tool_overhang=user_data.get('tool_overhang', 50.0)
-                )
-            elif operation == 'фрезерование':
-                recommendations = calculate_cutting_modes_milling_for_bot(
-                    material=user_data.get('material'),
-                    machine_type=machine_type_key,
-                    mode=user_data.get('mode'),
-                    tool_diameter=user_data.get('tool_diameter', 0)
-                )
-            elif operation in ['сверление', 'растачивание']:
-                recommendations = calculate_cutting_modes_drilling_for_bot(
-                    material=user_data.get('material'),
-                    machine_type=machine_type_key,
-                    mode=user_data.get('mode'),
-                    tool_diameter=user_data.get('tool_diameter', 0)
-                )
-            else:
-                recommendations = {}
-
-            if not recommendations or not recommendations.get('is_valid', False):
-                print(f"Не удалось рассчитать рекомендации для {operation}")
-                return "ERROR", user_data
-
-            return "waiting_user_choice", {**user_data, 'recommendation': recommendations}
-
-        except Exception as e:
-            print(f"Ошибка расчета рекомендаций: {e}")
-            return "ERROR", user_data
-
-    # Обработка ввода оборотов пользователем
-    elif current_state == "waiting_user_choice":
-        numbers = re.findall(r'\d+(?:\.\d+)?', user_input)
-        if numbers:
+        # 1. Пробуем распарсить дробь вида "1/2", "3/4" и т.д.
+        if '/' in input_str:
             try:
-                user_rpm = float(numbers[0].replace(',', '.'))
-                if 10 <= user_rpm <= 30000:
-                    updated_data = {**user_data, 'user_rpm': user_rpm}
-
-                    # Рассчитываем отклонение
-                    recommended_rpm = user_data.get('recommendation', {}).get('rpm', 0)
-                    if recommended_rpm > 0:
-                        deviation = abs(user_rpm - recommended_rpm) / recommended_rpm
-                        updated_data['deviation'] = deviation
-
-                    return "COMPLETED", updated_data
-            except (ValueError, IndexError):
+                parts = input_str.split('/')
+                if len(parts) == 2:
+                    numerator = float(parts[0].strip())
+                    denominator = float(parts[1].strip())
+                    if denominator != 0:
+                        return numerator / denominator
+            except (ValueError, ZeroDivisionError):
                 pass
-        return "waiting_user_choice", user_data
 
-    else:
-        return None, user_data
+        # 2. Пробуем распарсить как обычное число
+        try:
+            # Убираем лишние символы (например, "мм", "м/мин" и т.д.)
+            clean_str = re.sub(r'[^\d\.\-]', '', input_str)
+            if clean_str:
+                return float(clean_str)
+        except ValueError:
+            pass
+
+        # 3. Пробуем распарсить числовые слова
+        if input_str.lower() in InputParser.NUMBER_WORDS:
+            return InputParser.NUMBER_WORDS[input_str.lower()]
+
+        return None
+
+    @staticmethod
+    def parse_integer(input_str: str) -> Optional[int]:
+        """
+        Парсит строку в целое число.
+
+        Args:
+            input_str: Строка для парсинга
+
+        Returns:
+            Целое число или None если не удалось распарсить
+        """
+        float_value = InputParser.parse_float(input_str)
+        if float_value is not None and float_value.is_integer():
+            return int(float_value)
+        return None
+
+    @staticmethod
+    def parse_choice(input_str: str, choices: List[str]) -> Optional[int]:
+        """
+        Парсит выбор из списка вариантов.
+
+        Args:
+            input_str: Ввод пользователя
+            choices: Список доступных вариантов
+
+        Returns:
+            Индекс выбранного варианта (0-based) или None
+        """
+        if not input_str or not choices:
+            return None
+
+        input_str = input_str.strip()
+
+        # 1. Если введен номер (1, 2, 3...)
+        if input_str.isdigit():
+            idx = int(input_str) - 1
+            if 0 <= idx < len(choices):
+                return idx
+
+        # 2. Если введен текст - ищем совпадение
+        input_lower = input_str.lower()
+        for i, choice in enumerate(choices):
+            if choice.lower().startswith(input_lower):
+                return i
+
+        return None
+
+    @staticmethod
+    def parse_boolean(input_str: str) -> Optional[bool]:
+        """
+        Парсит строку в булево значение.
+
+        Args:
+            input_str: Строка для парсинга
+
+        Returns:
+            True/False или None если не удалось распарсить
+        """
+        if not input_str:
+            return None
+
+        input_lower = input_str.strip().lower()
+
+        if input_lower in InputParser.POSITIVE_RESPONSES:
+            return True
+        elif input_lower in InputParser.NEGATIVE_RESPONSES:
+            return False
+
+        return None
 
 
-async def handle_recommendation_state(user_data: Dict):
-    """Обработка состояния рекомендаций."""
-    try:
-        operation = user_data.get('operation')
-        recommendations = user_data.get('recommendation', {})
+class CLIBot:
+    """Основной класс CLI бота"""
 
-        if not recommendations:
-            print("Не удалось получить рекомендации")
-            return
+    # Словарь соответствия типов вопросов методам парсинга
+    PARSE_METHODS = {
+        "choice": "parse_choice",
+        "number": "parse_float",  # Для чисел с плавающей точкой
+        "float": "parse_float",
+        "integer": "parse_integer",
+        "material": lambda x: x.upper(),
+        "tool_material": lambda x: x,
+        "yes_no": "parse_boolean",
+        "boolean": "parse_boolean",
+        "string": lambda x: x,
+        "text": lambda x: x,
+    }
 
-        print("\n" + "=" * 60)
-        print("РЕКОМЕНДАЦИИ:")
-        print("=" * 60)
+    def __init__(self):
+        self.state_machine = StateMachine()
+        self.dialog_manager = DialogManager()
+        self.validator = Validator()
+        self.parser = InputParser()
 
-        if operation == 'токарка':
-            print(f"Материал: {user_data.get('material')}")
-            print(f"Тип станка: {user_data.get('machine_type')}")
-            print(f"Режим: {user_data.get('mode')}")
-            print(f"Диаметры: {user_data.get('start_diameter')} → {user_data.get('finish_diameter')} мм")
-            print(f"Тип инструмента: {user_data.get('tool_type')}")
-            print(f"Материал пластины: {user_data.get('tool_material')}")
-            print(f"Вылет: {user_data.get('tool_overhang')} мм")
-            print("-" * 40)
-            print(f"Средний диаметр: {recommendations.get('avg_diameter', 0)} мм")
-            print(f"Глубина резания: {recommendations.get('depth_of_cut', 0)} мм")
-            print(f"Скорость резания (Vc): {recommendations.get('vc', 0)} м/мин")
-            print(f"Обороты (n): {recommendations.get('rpm', 0)} об/мин")
-            print(f"Подача (f): {recommendations.get('feed', 0)} мм/об")
-            print(f"Скорость подачи: {recommendations.get('feed_rate', 0)} мм/мин")
-            if recommendations.get('power'):
-                print(f"Мощность: {recommendations.get('power')} кВт")
-            print(f"Скорость съема: {recommendations.get('removal_rate', 0)} см³/мин")
-
-        elif operation == 'фрезерование':
-            print(f"Материал: {user_data.get('material')}")
-            print(f"Тип станка: {user_data.get('machine_type')}")
-            print(f"Режим: {user_data.get('mode')}")
-            print(f"Диаметр фрезы: {user_data.get('tool_diameter')} мм")
-            print("-" * 40)
-            print(f"Скорость резания (Vc): {recommendations.get('vc', 0)} м/мин")
-            print(f"Обороты (n): {recommendations.get('rpm', 0)} об/мин")
-            print(f"Подача на зуб (fz): {recommendations.get('feed_per_tooth', 0)} мм/зуб")
-            print(f"Подача (F): {recommendations.get('feed', 0)} мм/мин")
-            print(f"Глубина резания (ap): {recommendations.get('ap', 0)} мм")
-            print(f"Количество зубьев: {recommendations.get('teeth_count', 4)}")
-            print(f"Скорость съема: {recommendations.get('removal_rate', 0)} см³/мин")
-
-        elif operation in ['сверление', 'растачивание']:
-            print(f"Материал: {user_data.get('material')}")
-            print(f"Тип станка: {user_data.get('machine_type')}")
-            print(f"Режим: {user_data.get('mode')}")
-            print(f"Диаметр инструмента: {user_data.get('tool_diameter')} мм")
-            print("-" * 40)
-            print(f"Скорость резания (Vc): {recommendations.get('vc', 0)} м/мин")
-            print(f"Обороты (n): {recommendations.get('rpm', 0)} об/мин")
-            print(f"Подача (f): {recommendations.get('feed', 0)} мм/об")
-            print(f"Скорость подачи: {recommendations.get('feed_rate', 0)} мм/мин")
-
-        warnings = recommendations.get('warnings', [])
-        if warnings:
-            print("\n⚠️  ВНИМАНИЕ:")
-            for warning in warnings[:3]:
-                print(f"  • {warning}")
-
-        print("=" * 60)
-
-    except Exception as e:
-        print(f"Ошибка при отображении рекомендаций: {e}")
-
-
-def calculate_deviation_score(user_rpm: float, recommended_rpm: float) -> float:
-    """Рассчитывает отклонение пользовательского выбора от рекомендации."""
-    if recommended_rpm == 0:
-        return 0
-    return abs(user_rpm - recommended_rpm) / recommended_rpm
-
-
-async def handle_user_choice_state(user_data: Dict):
-    """Обработка выбора пользователя и сохранение результатов."""
-    try:
-        user_rpm = user_data.get('user_rpm')
-        if not user_rpm:
-            print("Ошибка: не найдены обороты пользователя")
-            return
-
-        recommendations = user_data.get('recommendation', {})
-        recommended_rpm = recommendations.get('rpm', 0)
-
-        if recommended_rpm == 0:
-            print("Ошибка: не найдены рекомендуемые обороты")
-            return
-
-        deviation = calculate_deviation_score(user_rpm, recommended_rpm)
-
-        # Сохраняем в базу
-        interaction_data = {
-            'user_id': 'cli_user',
-            'material': user_data.get('material'),
-            'operation': user_data.get('operation'),
-            'machine_type': user_data.get('machine_type'),
-            'mode': user_data.get('mode'),
-            'recommended_rpm': float(recommended_rpm),
-            'recommended_vc': float(recommendations.get('vc', 0)),
-            'user_rpm': float(user_rpm),
-            'deviation_score': deviation,
-            'context': {
-                'source': 'cli',
-                'bot_version': '3.0',
-                'timestamp': asyncio.get_event_loop().time()
-            }
+        # Специальные команды
+        self.special_commands = {
+            'назад': ['/назад', 'back', 'b', 'назад'],
+            'сброс': ['/сброс', 'reset', 'r', 'сброс'],
+            'выход': ['/выход', 'exit', 'quit', 'q', 'выход'],
+            'помощь': ['/помощь', 'help', 'h', 'помощь'],
+            'статус': ['/статус', 'status', 's', 'статус'],
         }
 
-        # Добавляем специфичные параметры
-        if user_data.get('operation') == 'токарка':
-            interaction_data.update({
-                'start_diameter': float(user_data.get('start_diameter', 0)),
-                'finish_diameter': float(user_data.get('finish_diameter', 0)),
-                'tool_type': user_data.get('tool_type', ''),
-                'tool_material': user_data.get('tool_material', ''),
-                'tool_overhang': float(user_data.get('tool_overhang', 0)),
-                'feed': float(recommendations.get('feed', 0))
-            })
-        elif user_data.get('operation') in ['фрезерование', 'сверление', 'растачивание']:
-            interaction_data.update({
-                'tool_diameter': float(user_data.get('tool_diameter', 0)),
-                'feed': float(recommendations.get('feed', 0))
-            })
+        # Для удобства создаем обратный словарь
+        self.command_map = {}
+        for cmd_type, aliases in self.special_commands.items():
+            for alias in aliases:
+                self.command_map[alias.lower()] = cmd_type
 
-        success = save_interaction_with_memory(interaction_data)
+    def _parse_user_input(self, user_input: str, question_type: str, choices: List[str] = None) -> Any:
+        """
+        Парсит ответ пользователя в зависимости от типа вопроса.
 
-        if success:
-            deviation_percent = deviation * 100
-            if deviation_percent < 10:
-                reaction = "✅ Отличное совпадение!"
-            elif deviation_percent < 25:
-                reaction = "⚠️  Небольшое отклонение"
-            else:
-                reaction = "🔄 Значительное отклонение"
+        Args:
+            user_input: Строка ввода от пользователя
+            question_type: Тип вопроса (определяет как парсить)
+            choices: Список вариантов для вопросов типа choice
 
-            print(f"\n{reaction}")
-            print(f"🎯 Рекомендация ИИ: {int(recommended_rpm)} об/мин")
-            print(f"👨‍🔧 Ваш выбор: {int(user_rpm)} об/мин")
-            print(f"📊 Отклонение: {deviation_percent:.1f}%")
-            print("✓ Данные сохранены для обучения ИИ!")
+        Returns:
+            Парсированное значение или словарь с командой
+        """
+        user_input = user_input.strip()
+        if not user_input:
+            return None
+
+        user_input_lower = user_input.lower()
+
+        # Проверка на специальные команды
+        if user_input_lower in self.command_map:
+            return {'command': self.command_map[user_input_lower]}
+
+        # Получаем метод парсинга для данного типа вопроса
+        parse_method = self.PARSE_METHODS.get(question_type)
+
+        if parse_method is None:
+            # По умолчанию возвращаем как строку
+            return user_input
+
+        # Вызываем соответствующий метод парсинга
+        if parse_method == "parse_choice":
+            return self.parser.parse_choice(user_input, choices)
+        elif parse_method == "parse_float":
+            return self.parser.parse_float(user_input)
+        elif parse_method == "parse_integer":
+            return self.parser.parse_integer(user_input)
+        elif parse_method == "parse_boolean":
+            return self.parser.parse_boolean(user_input)
+        elif callable(parse_method):
+            return parse_method(user_input)
         else:
-            print("⚠️  Не удалось сохранить данные в базу")
+            # Если метод указан как строка, но не найден
+            return user_input
 
-    except ValueError:
-        print("Ошибка: некорректные данные")
-    except KeyError as e:
-        print(f"Ошибка: отсутствует параметр {e}")
+    def _display_choices(self, choices: List[str], show_numbers: bool = True):
+        """
+        Отображает варианты выбора.
+
+        Args:
+            choices: Список вариантов
+            show_numbers: Показывать ли номера перед вариантами
+        """
+        if not choices:
+            return
+
+        print("\nВарианты:")
+        for i, choice in enumerate(choices, 1 if show_numbers else 0):
+            if show_numbers:
+                print(f"  {i}. {choice}")
+            else:
+                print(f"  - {choice}")
+
+        if show_numbers:
+            print("  (или введите значение вручную)")
+
+    def _display_help(self, context: Dict[str, Any] = None):
+        """Показать справку по командам и текущий статус"""
+        print("\n" + "=" * 50)
+        print("СПРАВКА ПО КОМАНДАМ:")
+        print("-" * 50)
+
+        for cmd_type, aliases in self.special_commands.items():
+            main_cmd = aliases[0]
+            other_cmds = ", ".join(aliases[1:3])  # Показываем только 2-3 алиаса
+            print(f"{main_cmd:15} - {self._get_command_description(cmd_type)}")
+            if other_cmds:
+                print(f"                 Алиасы: {other_cmds}")
+
+        print("-" * 50)
+        print("ФОРМАТЫ ВВОДА:")
+        print("-" * 50)
+        print("Числа: 100, 5, 0.5, 12.5")
+        print("Дроби: 1/2, 3/4, 0.75")
+        print("Слова: половина, четверть")
+        print("Да/Нет: да, нет, y, n")
+
+        # Показываем текущий статус, если есть контекст
+        if context:
+            print("-" * 50)
+            print("ТЕКУЩИЙ ПРОГРЕСС:")
+            if context.get('material'):
+                print(f"Материал: {context['material']}")
+            if context.get('tool_diameter'):
+                print(f"Диаметр фрезы: {context['tool_diameter']}мм")
+            if context.get('tool_type'):
+                print(f"Тип фрезы: {context['tool_type']}")
+
+        print("=" * 50 + "\n")
+
+    def _get_command_description(self, cmd_type: str) -> str:
+        """Получить описание команды"""
+        descriptions = {
+            'назад': 'Вернуться к предыдущему вопросу',
+            'сброс': 'Начать заново',
+            'помощь': 'Показать эту справку',
+            'статус': 'Показать текущий прогресс',
+            'выход': 'Завершить работу',
+        }
+        return descriptions.get(cmd_type, '')
+
+    def _display_status(self):
+        """Показать текущий статус сбора данных"""
+        try:
+            context = self.state_machine.get_context()
+            progress = self.state_machine.get_progress()
+
+            print("\n" + "=" * 50)
+            print("ТЕКУЩИЙ СТАТУС:")
+            print("-" * 50)
+            print(f"Прогресс: {progress}")
+
+            if context:
+                filled_fields = []
+                if context.get('material'):
+                    filled_fields.append(f"Материал: {context['material']}")
+                if context.get('tool_diameter'):
+                    filled_fields.append(f"Фреза: {context['tool_diameter']}мм")
+                if context.get('tool_type'):
+                    filled_fields.append(f"Тип: {context['tool_type']}")
+                if context.get('operation_type'):
+                    filled_fields.append(f"Операция: {context['operation_type']}")
+
+                if filled_fields:
+                    print("Уже указано:")
+                    for field in filled_fields:
+                        print(f"  • {field}")
+                else:
+                    print("Данные еще не введены")
+
+            print("=" * 50 + "\n")
+        except Exception as e:
+            print(f"Не удалось получить статус: {e}")
+
+    def _show_examples_for_type(self, question_type: str):
+        """Показать примеры ввода для определенного типа вопроса"""
+        examples = {
+            "number": "Пример: 0.5, 1/2, 10, 12.5",
+            "float": "Пример: 0.5, 1/2, 10.5, 3.14",
+            "integer": "Пример: 1, 5, 10, 100",
+            "yes_no": "Пример: да/нет, y/n",
+            "boolean": "Пример: да/нет, true/false",
+            "material": "Пример: АЛЮМИНИЙ, СТАЛЬ45, Д16Т",
+            "choice": "Введите номер или текст варианта",
+        }
+
+        if question_type in examples:
+            print(f"Подсказка: {examples[question_type]}")
+
+    def run(self):
+        """Основной цикл работы CLI бота"""
+        print("=" * 60)
+        print("ДОБРО ПОЖАЛОВАТЬ В CNC ASSISTANT")
+        print("=" * 60)
+        print("Я помогу подобрать режимы резания для фрезерования.")
+        print("Для справки введите /помощь\n")
+
+        while True:
+            try:
+                # 1. Получаем текущий вопрос от FSM
+                current_state = self.state_machine.get_current_state()
+
+                if current_state == AppState.COMPLETED:
+                    # Все данные собраны, можно показывать результат
+                    self._show_results()
+                    if not self._ask_to_continue():
+                        break
+                    continue
+
+                # 2. Получаем вопрос и его тип
+                context = self.state_machine.get_context()
+                question_data = self.dialog_manager.get_question(current_state, context)
+
+                if not question_data:
+                    print("Ошибка: не найден вопрос для состояния", current_state)
+                    break
+
+                question_text = question_data["question"]
+                question_type = question_data.get("type", "text")
+                choices = question_data.get("choices", [])
+                help_text = question_data.get("help", "")
+
+                # Проверяем, что тип вопроса поддерживается
+                if question_type not in self.PARSE_METHODS:
+                    print(f"Предупреждение: тип вопроса '{question_type}' не поддерживается, используем текстовый ввод")
+
+                # 3. Показываем вопрос пользователю
+                print("\n" + "=" * 50)
+                print(f"Вопрос {self.state_machine.get_progress()}:")
+                print("-" * 50)
+                print(question_text)
+
+                # Если есть подсказка - показываем её
+                if help_text:
+                    print(f"\n[ℹ] {help_text}")
+
+                # Если есть варианты выбора - показываем их
+                if choices:
+                    self._display_choices(choices)
+
+                # 4. Читаем ввод пользователя
+                user_input = input("\nВаш ответ: ").strip()
+
+                if not user_input:
+                    print("Ввод не может быть пустым. Пожалуйста, введите значение.")
+                    continue
+
+                # 5. Парсим ввод
+                parsed_input = self._parse_user_input(user_input, question_type, choices)
+
+                # 6. Обрабатываем специальные команды
+                if isinstance(parsed_input, dict) and 'command' in parsed_input:
+                    self._handle_command(parsed_input['command'], context)
+                    continue
+
+                # 7. Валидируем ввод
+                validation_result = self.validator.validate_input(
+                    current_state, parsed_input, context
+                )
+
+                if not validation_result["valid"]:
+                    print(f"Ошибка: {validation_result.get('message', 'Некорректный ввод')}")
+                    if validation_result.get("suggestion"):
+                        print(f"Подсказка: {validation_result['suggestion']}")
+
+                    # Показываем примеры для данного типа ввода
+                    self._show_examples_for_type(question_type)
+                    continue
+
+                # 8. Передаем валидные данные в FSM
+                success = self.state_machine.process_input(
+                    current_state,
+                    validation_result["value"],
+                    context
+                )
+
+                if not success:
+                    print("Ошибка обработки ввода. Попробуйте еще раз.")
+
+            except KeyboardInterrupt:
+                print("\n\nПрервано пользователем.")
+                if self._ask_to_exit():
+                    break
+            except Exception as e:
+                print(f"\nПроизошла ошибка: {e}")
+                import traceback
+                traceback.print_exc()
+                print("Попробуйте еще раз или введите /сброс для начала заново.")
+
+    def _handle_command(self, command: str, context: Dict[str, Any]):
+        """Обработка специальных команд"""
+        if command == 'exit':
+            print("\nДо свидания!")
+            sys.exit(0)
+        elif command == 'help':
+            self._display_help(context)
+        elif command == 'status':
+            self._display_status()
+        elif command == 'back':
+            if self.state_machine.can_go_back():
+                self.state_machine.go_back()
+                print("Вернулись к предыдущему вопросу.")
+            else:
+                print("Нельзя вернуться назад (начало диалога).")
+        elif command == 'reset':
+            self.state_machine.reset()
+            print("Начинаем заново.")
+        else:
+            print(f"Неизвестная команда: {command}")
+
+    def _show_results(self):
+        """Показать результаты расчета"""
+        print("\n" + "=" * 60)
+        print("РЕЗУЛЬТАТЫ РАСЧЕТА")
+        print("=" * 60)
+
+        try:
+            params = self.state_machine.get_parameters()
+
+            # Безопасный доступ к атрибутам
+            print(f"\nМатериал: {getattr(params.material, 'name', 'не указан')} "
+                  f"({getattr(params.material, 'code', 'N/A')})")
+            print(f"Инструмент: {getattr(params.tool, 'diameter', 'не указан')}мм, "
+                  f"{getattr(params.tool, 'type', 'не указан')}")
+            print(f"Материал инструмента: {getattr(params.tool, 'material', 'не указан')}")
+
+            print("\nРЕКОМЕНДУЕМЫЕ РЕЖИМЫ:")
+            print("-" * 40)
+
+            if hasattr(params.operation, 'mode') and params.operation.mode:
+                mode = params.operation.mode
+                print(f"Скорость резания (Vc): {getattr(mode, 'cutting_speed', 'N/A')} м/мин")
+                print(f"Подача на зуб (fz): {getattr(mode, 'feed_per_tooth', 'N/A')} мм/зуб")
+                print(f"Обороты (n): {getattr(mode, 'spindle_speed', 'N/A')} об/мин")
+                print(f"Подача (vf): {getattr(mode, 'feed_rate', 'N/A')} мм/мин")
+
+            if hasattr(params.operation, 'passes') and params.operation.passes:
+                print(f"\nСТРАТЕГИЯ ПРОХОДОВ:")
+                for i, pass_info in enumerate(params.operation.passes, 1):
+                    pass_type = getattr(pass_info, 'type', 'проход')
+                    depth = getattr(pass_info, 'depth', 'N/A')
+                    print(f"{i}. {pass_type}: ap={depth}мм")
+
+            print("\nДОПОЛНИТЕЛЬНО:")
+            print(f"Опыт оператора: {getattr(params.operator, 'experience_level', 'не указан')}")
+            print(f"Сложность: {getattr(params.operation, 'complexity', 'не указан')}")
+
+            # Сравнение с пользовательскими значениями, если они были введены
+            try:
+                comparison = self.state_machine.get_comparison()
+                if comparison:
+                    print(f"\nСРАВНЕНИЕ:")
+                    print(f"Совпадение: {getattr(comparison, 'match_percentage', 0):.1f}%")
+                    if hasattr(comparison, 'differences') and comparison.differences:
+                        print("Различия:")
+                        for diff in comparison.differences:
+                            print(f"  - {diff}")
+            except:
+                pass  # Игнорируем ошибки сравнения
+
+        except AttributeError as e:
+            print(f"Ошибка при выводе результатов: {e}")
+            print("Пожалуйста, проверьте структуру данных.")
+
+    def _ask_to_continue(self) -> bool:
+        """Спросить, хочет ли пользователь начать новый расчет"""
+        while True:
+            response = input("\nХотите начать новый расчет? (да/нет): ").strip().lower()
+            if self.parser.parse_boolean(response) is True:
+                self.state_machine.reset()
+                print("\n" + "=" * 50)
+                print("НАЧИНАЕМ НОВЫЙ РАСЧЕТ")
+                print("=" * 50)
+                return True
+            elif self.parser.parse_boolean(response) is False:
+                return False
+            else:
+                print("Пожалуйста, ответьте 'да' или 'нет'")
+
+    def _ask_to_exit(self) -> bool:
+        """Спросить, хочет ли пользователь выйти"""
+        while True:
+            response = input("\nВы точно хотите выйти? (да/нет): ").strip().lower()
+            parsed = self.parser.parse_boolean(response)
+            if parsed is True:
+                return True
+            elif parsed is False:
+                print("Продолжаем работу...")
+                return False
+            else:
+                print("Пожалуйста, ответьте 'да' или 'нет'")
+
+
+def main():
+    """Точка входа в CLI приложение"""
+    try:
+        bot = CLIBot()
+        bot.run()
     except Exception as e:
-        print(f"Ошибка при сохранении данных: {e}")
+        print(f"Критическая ошибка: {e}")
+        import traceback
+        traceback.print_exc()
+        sys.exit(1)
 
 
 if __name__ == "__main__":
-    asyncio.run(start_cli_bot())
+    main()

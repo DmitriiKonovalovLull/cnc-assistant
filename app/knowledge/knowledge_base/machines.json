@@ -1,0 +1,28 @@
+{
+  "machines": [
+    {
+      "machine_type": "токарный ЧПУ",
+      "power_kw": 11.0,
+      "max_rpm": 3000.0,
+      "typical_power_kw": 11.0
+    },
+    {
+      "machine_type": "токарный ручной",
+      "power_kw": 7.5,
+      "max_rpm": 2000.0,
+      "typical_power_kw": 7.5
+    },
+    {
+      "machine_type": "фрезерный ЧПУ",
+      "power_kw": 15.0,
+      "max_rpm": 8000.0,
+      "typical_power_kw": 15.0
+    },
+    {
+      "machine_type": "фрезерный ручной",
+      "power_kw": 5.5,
+      "max_rpm": 3000.0,
+      "typical_power_kw": 5.5
+    }
+  ]
+}

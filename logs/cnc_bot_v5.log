@@ -1,2 +1,73 @@
 2026-01-25 19:16:58,550 - __main__ - ERROR - ❌ Ошибка инициализации БД: (sqlite3.OperationalError) unable to open database file
 (Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-01-25 19:20:45,181 - __main__ - ERROR - ❌ Ошибка инициализации БД: (sqlite3.OperationalError) unable to open database file
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-01-25 19:28:14,497 - __main__ - INFO - ✅ База данных инициализирована: C:\projects\cnc-assistant\app\storage\cnc.db
+2026-01-25 19:28:14,797 - __main__ - INFO - Запуск бота: @cnc_123_bot
+2026-01-25 19:28:14,875 - __main__ - INFO - Вебхук удален
+2026-01-25 19:28:14,875 - aiogram.dispatcher - INFO - Start polling
+2026-01-25 19:28:14,952 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-01-25 19:28:23,945 - aiogram.event - INFO - Update id=897835377 is not handled. Duration 3 ms by bot id=8201932079
+2026-01-25 19:28:36,724 - aiogram.event - INFO - Update id=897835378 is not handled. Duration 3 ms by bot id=8201932079
+2026-01-25 19:28:54,086 - aiogram.dispatcher - INFO - Polling stopped
+2026-01-25 19:28:54,087 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-01-25 19:28:54,087 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-01-25 19:28:54,340 - __main__ - INFO - Сессия бота закрыта
+2026-01-25 19:28:54,341 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-01-25 19:28:57,802 - __main__ - INFO - ✅ База данных инициализирована: C:\projects\cnc-assistant\app\storage\cnc.db
+2026-01-25 19:28:58,089 - __main__ - INFO - Запуск бота: @cnc_123_bot
+2026-01-25 19:28:58,174 - __main__ - INFO - Вебхук удален
+2026-01-25 19:28:58,174 - aiogram.dispatcher - INFO - Start polling
+2026-01-25 19:28:58,251 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-01-25 19:29:11,828 - aiogram.event - INFO - Update id=897835379 is not handled. Duration 3 ms by bot id=8201932079
+2026-01-25 19:32:01,964 - aiogram.dispatcher - INFO - Polling stopped
+2026-01-25 19:32:01,965 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-01-25 19:32:01,965 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-01-25 19:32:02,222 - __main__ - INFO - Сессия бота закрыта
+2026-01-25 19:32:02,222 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-01-26 06:40:12,356 - __main__ - INFO - ✅ База данных инициализирована: C:\projects\cnc-assistant\app\storage\cnc.db
+2026-01-26 06:40:12,603 - __main__ - INFO - Запуск бота: @cnc_123_bot
+2026-01-26 06:40:12,680 - __main__ - INFO - Вебхук удален
+2026-01-26 06:40:12,680 - aiogram.dispatcher - INFO - Start polling
+2026-01-26 06:40:12,755 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-01-26 06:40:51,297 - aiogram.event - INFO - Update id=897835380 is not handled. Duration 4 ms by bot id=8201932079
+2026-01-26 06:44:18,850 - aiogram.dispatcher - INFO - Polling stopped
+2026-01-26 06:44:18,851 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-01-26 06:44:18,851 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-01-26 06:44:19,113 - __main__ - INFO - Сессия бота закрыта
+2026-01-26 06:44:19,114 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-01-26 09:51:29,234 - __main__ - INFO - ✅ База данных инициализирована: C:\projects\cnc-assistant\app\storage\cnc.db
+2026-01-26 09:51:29,508 - __main__ - INFO - Запуск бота: @cnc_123_bot
+2026-01-26 09:51:29,589 - __main__ - INFO - Вебхук удален
+2026-01-26 09:51:29,590 - aiogram.dispatcher - INFO - Start polling
+2026-01-26 09:51:29,668 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-01-26 09:51:29,783 - aiogram.event - INFO - Update id=897835381 is not handled. Duration 10 ms by bot id=8201932079
+2026-01-26 09:52:03,728 - aiogram.event - INFO - Update id=897835382 is not handled. Duration 4 ms by bot id=8201932079
+2026-01-26 09:52:57,846 - aiogram.dispatcher - INFO - Polling stopped
+2026-01-26 09:52:57,848 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-01-26 09:52:57,848 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-01-26 09:52:58,111 - __main__ - INFO - Сессия бота закрыта
+2026-01-26 09:52:58,112 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-01-26 10:52:52,755 - __main__ - INFO - ✅ База данных инициализирована: C:\projects\cnc-assistant\app\storage\cnc.db
+2026-01-26 10:52:52,995 - aiogram.dispatcher - INFO - Start polling
+2026-01-26 10:52:53,066 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-01-26 10:52:58,881 - aiogram.event - INFO - Update id=897835383 is handled. Duration 236 ms by bot id=8201932079
+2026-01-26 10:53:03,516 - aiogram.event - INFO - Update id=897835384 is handled. Duration 103 ms by bot id=8201932079
+2026-01-26 10:53:04,745 - aiogram.event - INFO - Update id=897835385 is handled. Duration 81 ms by bot id=8201932079
+2026-01-26 10:53:11,774 - aiogram.event - INFO - Update id=897835386 is handled. Duration 96 ms by bot id=8201932079
+2026-01-26 10:53:18,134 - aiogram.event - INFO - Update id=897835387 is handled. Duration 75 ms by bot id=8201932079
+2026-01-26 10:53:21,788 - aiogram.event - INFO - Update id=897835388 is handled. Duration 101 ms by bot id=8201932079
+2026-01-26 10:53:25,554 - aiogram.event - INFO - Update id=897835389 is handled. Duration 116 ms by bot id=8201932079
+2026-01-26 10:53:40,179 - aiogram.event - INFO - Update id=897835390 is handled. Duration 220 ms by bot id=8201932079
+2026-01-26 10:53:42,888 - aiogram.event - INFO - Update id=897835391 is handled. Duration 102 ms by bot id=8201932079
+2026-01-26 10:53:57,611 - aiogram.event - INFO - Update id=897835392 is handled. Duration 111 ms by bot id=8201932079
+2026-01-26 10:54:00,298 - aiogram.event - INFO - Update id=897835393 is handled. Duration 80 ms by bot id=8201932079
+2026-01-26 10:54:04,149 - aiogram.event - INFO - Update id=897835394 is handled. Duration 96 ms by bot id=8201932079
+2026-01-26 10:54:09,262 - aiogram.event - INFO - Update id=897835395 is handled. Duration 83 ms by bot id=8201932079
+2026-01-26 10:54:16,448 - aiogram.event - INFO - Update id=897835396 is handled. Duration 190 ms by bot id=8201932079
+2026-01-26 10:54:31,190 - aiogram.event - INFO - Update id=897835397 is handled. Duration 180 ms by bot id=8201932079
+2026-01-26 10:54:49,532 - aiogram.event - INFO - Update id=897835398 is handled. Duration 108 ms by bot id=8201932079
+2026-01-26 12:04:31,460 - aiogram.dispatcher - INFO - Polling stopped
+2026-01-26 12:04:31,462 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-01-26 12:04:31,462 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-01-26 12:04:31,728 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'

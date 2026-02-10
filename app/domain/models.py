@@ -1,230 +1,260 @@
 """
-Модели данных для сбора практических решений операторов.
-Главная цель: сохранять РАЗНИЦУ между рекомендацией бота и реальными действиями пользователя.
+Модели данных для CNC Assistant.
+Основные сущности системы.
 """
 
-from dataclasses import dataclass, asdict
-from typing import Optional, Dict, Any, Literal
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Optional, List, Dict, Any
 from datetime import datetime
-import json
 
 
-@dataclass
-class MachineSpecs:
-    """Характеристики станка"""
-    machine_type: Literal["cnc_lathe", "manual_lathe", "milling", "other"] = "cnc_lathe"
-    machine_model: Optional[str] = None
-    machine_power_kw: float = 15.0  # кВт, по умолчанию средний станок
-    max_rpm: Optional[float] = None  # макс обороты станка
-    manufacturer: Optional[str] = None
+# ============= ENUMS =============
 
-    # Физические ограничения станка
-    max_cutting_depth_mm: Optional[float] = None  # макс глубина резания для этого станка
-    max_tool_overhang_mm: Optional[float] = None  # максимальный вылет инструмента
-
-
-@dataclass
-class MaterialData:
-    """Данные о материале"""
-    material_type: Literal["steel", "aluminum", "stainless_steel", "titanium", "copper", "brass", "other"]
-    material_grade: Optional[str] = None  # марка стали, алюминия и т.д.
-    hardness_hb: Optional[float] = None  # твердость по Бринеллю
-    tensile_strength_mpa: Optional[float] = None  # предел прочности
-    is_heat_treated: bool = False  # термообработанный или нет
+class MaterialGroup(Enum):
+    """Группы материалов по обрабатываемости"""
+    CARBON_STEEL = "carbon_steel"
+    ALLOY_STEEL = "alloy_steel"
+    STAINLESS_STEEL = "stainless_steel"
+    TOOL_STEEL = "tool_steel"
+    CAST_IRON = "cast_iron"
+    ALUMINUM = "aluminum"
+    COPPER = "copper"
+    TITANIUM = "titanium"
+    HEAT_RESISTANT = "heat_resistant"
+    HARD_TO_CUT = "hard_to_cut"
+    OTHER = "other"
 
 
-@dataclass
-class ToolData:
-    """Данные об инструменте"""
-    tool_type: Literal["turning_80", "turning_55", "milling", "boring", "grooving", "threading", "other"]
-    insert_material: Literal["carbide", "hss", "ceramic", "cbn", "diamond", "unknown"] = "carbide"
-    insert_grade: Optional[str] = None  # марка твердого сплава
-    insert_radius_mm: float = 0.8  # радиус при вершине
-    tool_overhang_mm: float = 30.0  # вылет инструмента, мм
-    tool_holder_type: Optional[str] = None  # тип державки
-    is_coolant_used: bool = True  # используется СОЖ или нет
+class MachineType(Enum):
+    """Типы токарных станков"""
+    CONVENTIONAL = "conventional"
+    CNC_TURNING = "cnc_turning"
+    SWISS_TYPE = "swiss_type"
+    VERTICAL_LATHE = "vertical_lathe"
+    MULTI_AXIS = "multi_axis"
 
 
-@dataclass
-class GeometryData:
-    """Геометрические параметры обработки"""
-    diameter_start_mm: float  # начальный диаметр
-    diameter_end_mm: float  # конечный диаметр
-    length_mm: float  # длина обработки
-
-    # Рассчитываемые поля
-    @property
-    def total_stock_mm(self) -> float:
-        """Общий припуск на сторону"""
-        return (self.diameter_start_mm - self.diameter_end_mm) / 2
-
-    @property
-    def total_stock_volume_mm3(self) -> float:
-        """Объем снимаемого материала"""
-        avg_diameter = (self.diameter_start_mm + self.diameter_end_mm) / 2
-        return self.total_stock_mm * avg_diameter * 3.14159 * self.length_mm
+class ToolMaterial(Enum):
+    """Материал режущей части инструмента"""
+    HSS = "hss"
+    CARBIDE = "carbide"
+    CERAMIC = "ceramic"
+    CBN = "cbn"
+    DIAMOND = "diamond"
+    PCD = "pcd"
 
 
-@dataclass
-class OperationData:
-    """Данные об операции"""
-    operation_type: Literal["roughing", "finishing", "semi_finishing", "grooving", "threading", "boring"]
-    is_external: bool = True  # наружная или внутренняя обработка
-    tolerance_mm: Optional[float] = None  # допуск на размер
-    surface_roughness_ra: Optional[float] = None  # требуемая шероховатость
+class ToolCoating(Enum):
+    """Покрытия инструмента"""
+    NONE = "none"
+    TIN = "tin"
+    TIALN = "tialn"
+    ALCRN = "alcrn"
+    DIAMOND_COATED = "diamond_coated"
 
 
-@dataclass
-class BotRecommendation:
-    """Рекомендация бота (только базовые, табличные значения)"""
-    cutting_speed_vc_m_min: float  # скорость резания, м/мин
-    spindle_rpm: float  # обороты шпинделя, об/мин
-    feed_per_rev_mm: float  # подача на оборот, мм/об
-    depth_of_cut_ap_mm: float  # глубина резания, мм
-    estimated_power_kw: float  # расчетная мощность, кВт
+class OperationType(Enum):
+    """Типы токарных операций"""
+    ROUGH_TURNING = "rough_turning"
+    FINISH_TURNING = "finish_turning"
+    FACING = "facing"
+    GROOVING = "grooving"
+    THREADING = "threading"
+    DRILLING = "drilling"
+    BORING = "boring"
+    PARTING = "parting"
+    KNURLING = "knurling"
+    CHAMFERING = "chamfering"
 
-    # Стратегия проходов
-    passes_strategy: Dict[str, Any]  # как разбито на проходы
-    total_passes: int  # общее количество проходов
+
+class CuttingMode(Enum):
+    """Режимы резания (стратегии)"""
+    AGGRESSIVE = "aggressive"
+    STANDARD = "standard"
+    CONSERVATIVE = "conservative"
+    FINISHING = "finishing"
+    HARD_MACHINING = "hard_machining"
 
 
-@dataclass
-class UserActual:
-    """Фактические параметры, которые поставил оператор"""
-    spindle_rpm: float  # реальные обороты
-    feed_per_rev_mm: float  # реальная подача
-    depth_of_cut_ap_mm: float  # реальная глубина резания
+class SurfaceFinish(Enum):
+    """Качество поверхности"""
+    ROUGH = "rough"  # Ra > 6.3 μm
+    NORMAL = "normal"  # Ra = 3.2-6.3 μm
+    FINE = "fine"  # Ra = 1.6-3.2 μm
+    VERY_FINE = "very_fine"  # Ra = 0.8-1.6 μm
+    MIRROR = "mirror"  # Ra < 0.8 μm
 
-    # Как пользователь отнесся к рекомендации
-    comparison_choice: Literal["lower", "same", "higher", "manual"] = "manual"
-    user_comment: Optional[str] = None  # комментарий оператора
 
+# ============= DOMAIN MODELS =============
 
 @dataclass
-class OperationResult:
-    """Результат операции (заполняется после обработки)"""
-    result_type: Literal["ok", "chatter", "tool_wear", "breakage", "surface_issue", "dimension_issue", "unknown"]
-    result_details: Optional[str] = None  # детали результата
-    tool_life_minutes: Optional[float] = None  # стойкость инструмента
-    actual_machining_time_min: Optional[float] = None  # фактическое время обработки
+class Material:
+    """Материал заготовки"""
+    id: str = field(default_factory=lambda: f"mat_{datetime.now().timestamp()}")
+    name: str
+    group: MaterialGroup
+    hardness_hb: Optional[float] = None
+    tensile_strength: Optional[float] = None
+    thermal_conductivity: Optional[float] = None
+    normalized_name: Optional[str] = None
+    standard: Optional[str] = None
+    description: Optional[str] = None
+    cutting_speed_range: Optional[Dict[str, float]] = None  # мин-макс скорость резания
 
+    def __post_init__(self):
+        if self.cutting_speed_range is None:
+            self.cutting_speed_range = self._get_default_speed_range()
 
-@dataclass
-class UserDecisionRecord:
-    """
-    ОСНОВНАЯ ЗАПИСЬ - решение оператора.
-    Это "золото" для обучения ИИ.
-    """
-    # Идентификаторы
-    record_id: str  # UUID или timestamp-based ID
-    user_id: str  # идентификатор пользователя
-    timestamp: datetime
-
-    # Контекст (что обрабатываем)
-    machine: MachineSpecs
-    material: MaterialData
-    tool: ToolData
-    geometry: GeometryData
-    operation: OperationData
-
-    # Рекомендация vs Реальность
-    bot_recommendation: BotRecommendation
-    user_actual: UserActual
-
-    # Коэффициенты сравнения
-    difference_coeff_rpm: float  # коэффициент отличия по оборотам
-    difference_coeff_feed: float  # коэффициент отличия по подаче
-    difference_coeff_ap: float  # коэффициент отличия по глубине резания
-
-    # Результат
-    operation_result: Optional[OperationResult] = None
-
-    # Метаданные для анализа
-    experience_level: Literal["beginner", "intermediate", "expert", "unknown"] = "unknown"
-    variance_adaptation_score: float = 0.0  # оценка адаптивности оператора
-    was_decision_adaptive: bool = False  # было ли решение адаптивным к условиям
-
-    def to_dict(self) -> Dict[str, Any]:
-        """Конвертация в словарь для сохранения в БД"""
-        data = asdict(self)
-        data['timestamp'] = self.timestamp.isoformat()
-        return data
-
-    def to_json(self) -> str:
-        """Конвертация в JSON строку"""
-        return json.dumps(self.to_dict(), ensure_ascii=False, indent=2)
-
-    @classmethod
-    def calculate_differences(cls, bot: BotRecommendation, user: UserActual) -> Dict[str, float]:
-        """Расчет коэффициентов отличия"""
-        return {
-            'difference_coeff_rpm': user.spindle_rpm / bot.spindle_rpm if bot.spindle_rpm > 0 else 1.0,
-            'difference_coeff_feed': user.feed_per_rev_mm / bot.feed_per_rev_mm if bot.feed_per_rev_mm > 0 else 1.0,
-            'difference_coeff_ap': user.depth_of_cut_ap_mm / bot.depth_of_cut_ap_mm if bot.depth_of_cut_ap_mm > 0 else 1.0,
+    def _get_default_speed_range(self) -> Dict[str, float]:
+        """Получить диапазон скоростей по умолчанию для группы материала"""
+        ranges = {
+            MaterialGroup.CARBON_STEEL: {"min": 100, "max": 300},
+            MaterialGroup.STAINLESS_STEEL: {"min": 80, "max": 200},
+            MaterialGroup.ALUMINUM: {"min": 200, "max": 500},
+            MaterialGroup.TITANIUM: {"min": 30, "max": 80},
+            MaterialGroup.CAST_IRON: {"min": 80, "max": 200},
         }
+        return ranges.get(self.group, {"min": 50, "max": 200})
 
 
 @dataclass
-class ExperienceProfile:
-    """Профиль опыта оператора (динамически обновляемый)"""
-    user_id: str
-    total_decisions: int = 0
-    adaptive_decisions: int = 0  # решения с изменением параметров под условия
-
-    # Коэффициенты предпочтений (средние по истории)
-    avg_rpm_coeff: float = 1.0  # среднее отношение user/bot по оборотам
-    avg_feed_coeff: float = 1.0  # среднее отношение user/bot по подаче
-    avg_ap_coeff: float = 1.0  # среднее отношение user/bot по глубине
-
-    # Адаптивность (меняет ли параметры при изменении условий)
-    material_adaptation_score: float = 0.0  # 0-1, меняет ли при смене материала
-    diameter_adaptation_score: float = 0.0  # 0-1, меняет ли при смене диаметра
-    operation_adaptation_score: float = 0.0  # 0-1, меняет ли при смене операции
+class CuttingTool:
+    """Режущий инструмент"""
+    id: str = field(default_factory=lambda: f"tool_{datetime.now().timestamp()}")
+    identifier: str
+    type: str
+    material: ToolMaterial
+    coating: ToolCoating
+    geometry: Dict[str, Any]
+    manufacturer: Optional[str] = None
+    normalized_code: Optional[str] = None
+    recommended_params: Dict[str, Any] = field(default_factory=dict)
 
     @property
-    def overall_experience_score(self) -> float:
-        """Общая оценка опыта (0-100)"""
-        # Вес адаптивности выше, чем просто стабильность
-        adaptation = (self.material_adaptation_score +
-                      self.diameter_adaptation_score +
-                      self.operation_adaptation_score) / 3
+    def tool_angle(self) -> float:
+        """Угол при вершине инструмента"""
+        return self.geometry.get('tool_angle', 80.0)
 
-        # Количество решений тоже важно
-        volume_score = min(self.total_decisions / 50, 1.0)  # максимум при 50+ решениях
-
-        return (adaptation * 0.7 + volume_score * 0.3) * 100
+    @property
+    def nose_radius(self) -> float:
+        """Радиус при вершине"""
+        return self.geometry.get('nose_radius', 0.8)
 
 
-# Утилитарные функции для работы с моделями
-def create_record_id() -> str:
-    """Создание уникального ID записи"""
-    from datetime import datetime
-    import uuid
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    unique = str(uuid.uuid4())[:8]
-    return f"decision_{timestamp}_{unique}"
+@dataclass
+class Machine:
+    """Станок"""
+    id: str = field(default_factory=lambda: f"machine_{datetime.now().timestamp()}")
+    name: str
+    type: MachineType
+    manufacturer: Optional[str] = None
+    model: Optional[str] = None
+    power_kw: Optional[float] = None
+    max_rpm: Optional[float] = None
+    torque_nm: Optional[float] = None
+    chuck_size: Optional[float] = None
+    axis_travel: Dict[str, float] = field(default_factory=dict)
+    control_system: Optional[str] = None
+
+    def can_handle_power(self, required_power_kw: float) -> bool:
+        """Проверка, может ли станок обеспечить требуемую мощность"""
+        if self.power_kw is None:
+            return True  # Неизвестная мощность, предполагаем что может
+        return required_power_kw <= self.power_kw * 0.8  # 80% от номинала
 
 
-def validate_physical_limits(record: UserDecisionRecord) -> list[str]:
-    """
-    Валидация физических ограничений.
-    Возвращает список предупреждений.
-    """
-    warnings = []
+@dataclass
+class CuttingParameters:
+    """Параметры резания для одной операции"""
+    cutting_speed_vc: float  # м/мин
+    spindle_speed_n: float  # об/мин
+    feed_per_rev_f: float  # мм/об
+    feed_per_tooth_fz: Optional[float] = None  # мм/зуб
+    depth_of_cut_ap: float  # мм
+    width_of_cut_ae: Optional[float] = None  # мм
+    material_removal_rate: Optional[float] = None  # см³/мин
 
-    # Проверка глубины резания
-    if record.user_actual.depth_of_cut_ap_mm > 10:
-        warnings.append(
-            f"Глубина резания {record.user_actual.depth_of_cut_ap_mm} мм превышает типичные значения (2-6 мм для стали)")
+    @property
+    def is_valid(self) -> bool:
+        """Проверка валидности параметров"""
+        return all([
+            self.cutting_speed_vc > 0,
+            self.spindle_speed_n > 0,
+            self.feed_per_rev_f > 0,
+            self.depth_of_cut_ap > 0
+        ])
 
-    # Проверка мощности
-    if record.bot_recommendation.estimated_power_kw > record.machine.machine_power_kw:
-        warnings.append(
-            f"Расчетная мощность {record.bot_recommendation.estimated_power_kw} кВт превышает мощность станка {record.machine.machine_power_kw} кВт")
+    def calculate_mrr(self, diameter: float) -> float:
+        """Расчет объема снимаемого материала"""
+        # MRR = π × D × ap × f × n / 1000
+        return (3.14159 * diameter * self.depth_of_cut_ap *
+                self.feed_per_rev_f * self.spindle_speed_n) / 1000
 
-    # Проверка количества проходов
-    if record.bot_recommendation.total_passes > 20:
-        warnings.append(
-            f"Количество проходов {record.bot_recommendation.total_passes} очень большое, проверьте стратегию")
 
-    return warnings
+@dataclass
+class Operation:
+    """Токарная операция"""
+    id: str = field(default_factory=lambda: f"op_{datetime.now().timestamp()}")
+    type: OperationType
+    material: Material
+    tool: CuttingTool
+    machine: Machine
+    cutting_params: CuttingParameters
+    diameter: float  # мм
+    length: Optional[float] = None  # мм
+    surface_finish_required: Optional[float] = None  # Ra
+    operation_notes: Optional[str] = None
+    timestamp: datetime = field(default_factory=datetime.now)
+
+    @property
+    def is_finishing(self) -> bool:
+        """Является ли операция чистовой"""
+        return self.type in [OperationType.FINISH_TURNING, OperationType.FACING]
+
+    @property
+    def is_roughing(self) -> bool:
+        """Является ли операция черновой"""
+        return self.type == OperationType.ROUGH_TURNING
+
+
+@dataclass
+class ProcessPlan:
+    """Технологический процесс"""
+    id: str = field(default_factory=lambda: f"plan_{datetime.now().timestamp()}")
+    operations: List[Operation]
+    total_machining_time: Optional[float] = None
+    total_material_removed: Optional[float] = None
+    plan_notes: Optional[str] = None
+    created_at: datetime = field(default_factory=datetime.now)
+    modified_at: datetime = field(default_factory=datetime.now)
+
+    def add_operation(self, operation: Operation):
+        """Добавить операцию к процессу"""
+        self.operations.append(operation)
+        self.modified_at = datetime.now()
+
+
+@dataclass
+class UserContext:
+    """Контекст пользователя/оператора"""
+    operator_id: str
+    preferred_machines: List[str]
+    preferred_tools: List[str]
+    working_shift: Optional[str] = None
+    fatigue_level: Optional[float] = None
+    last_operation: Optional[Operation] = None
+    experience_level: Optional[str] = None
+
+
+@dataclass
+class CalculationResult:
+    """Результат расчета режимов резания"""
+    parameters: CuttingParameters
+    warnings: List[str] = field(default_factory=list)
+    suggestions: List[str] = field(default_factory=list)
+    confidence: float = 0.8  # Уверенность в расчете (0-1)
+
+    def is_safe(self) -> bool:
+        """Безопасны ли рассчитанные параметры"""
+        return len(self.warnings) == 0

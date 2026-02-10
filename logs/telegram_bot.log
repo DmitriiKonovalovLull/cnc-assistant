@@ -1,0 +1,1660 @@
+2026-02-10 14:02:32,414 - __main__ - INFO - 🚀 Инициализация сервисов...
+2026-02-10 14:02:32,414 - __main__ - INFO - 📚 Загрузка базы знаний...
+2026-02-10 14:02:32,414 - app.services.knowledge_service - INFO - Loading knowledge base...
+2026-02-10 14:02:32,416 - app.services.knowledge_service - INFO - Knowledge base loaded: 4 materials, 2 tools, 3 machines
+2026-02-10 14:02:32,416 - __main__ - INFO - 📸 Инициализация парсера изображений...
+2026-02-10 14:02:32,416 - app.core.image_parser - WARNING - OCR not available. Image parsing will be limited.
+2026-02-10 14:02:32,416 - __main__ - INFO - 📨 Инициализация обработчика сообщений...
+2026-02-10 14:02:32,431 - __main__ - ERROR - Критическая ошибка: (sqlite3.OperationalError) unable to open database file
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+Traceback (most recent call last):
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 143, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3309, in raw_connection
+    return self.pool.connect()
+           ~~~~~~~~~~~~~~~~~^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 447, in connect
+    return _ConnectionFairy._checkout(self)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 1264, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 711, in checkout
+    rec = pool._do_get()
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 177, in _do_get
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 175, in _do_get
+    return self._create_connection()
+           ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 388, in _create_connection
+    return _ConnectionRecord(self)
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 673, in __init__
+    self.__connect()
+    ~~~~~~~~~~~~~~^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 899, in __connect
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 895, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\create.py", line 661, in connect
+    return dialect.connect(*cargs, **cparams)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+sqlite3.OperationalError: unable to open database file
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\projects\cnc-assistant\app\bot\telegram_bot.py", line 588, in main
+    await initialize_services()
+  File "C:\projects\cnc-assistant\app\bot\telegram_bot.py", line 567, in initialize_services
+    init_orm_database(DB_URL)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "C:\projects\cnc-assistant\app\storage\models.py", line 1040, in init_orm_database
+    Base.metadata.create_all(engine)
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\sql\schema.py", line 5928, in create_all
+    bind._run_ddl_visitor(
+    ~~~~~~~~~~~~~~~~~~~~~^
+        ddl.SchemaGenerator, self, checkfirst=checkfirst, tables=tables
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3259, in _run_ddl_visitor
+    with self.begin() as conn:
+         ~~~~~~~~~~^^
+  File "C:\Users\Дмитрий\AppData\Local\Python\pythoncore-3.14-64\Lib\contextlib.py", line 141, in __enter__
+    return next(self.gen)
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3249, in begin
+    with self.connect() as conn:
+         ~~~~~~~~~~~~^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3285, in connect
+    return self._connection_cls(self)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 145, in __init__
+    Connection._handle_dbapi_exception_noconnection(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        err, dialect, engine
+        ^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 2448, in _handle_dbapi_exception_noconnection
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 143, in __init__
+    self._dbapi_connection = engine.raw_connection()
+                             ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 3309, in raw_connection
+    return self.pool.connect()
+           ~~~~~~~~~~~~~~~~~^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 447, in connect
+    return _ConnectionFairy._checkout(self)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 1264, in _checkout
+    fairy = _ConnectionRecord.checkout(pool)
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 711, in checkout
+    rec = pool._do_get()
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 177, in _do_get
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\pool\impl.py", line 175, in _do_get
+    return self._create_connection()
+           ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 388, in _create_connection
+    return _ConnectionRecord(self)
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 673, in __init__
+    self.__connect()
+    ~~~~~~~~~~~~~~^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 899, in __connect
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\pool\base.py", line 895, in __connect
+    self.dbapi_connection = connection = pool._invoke_creator(self)
+                                         ~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\create.py", line 661, in connect
+    return dialect.connect(*cargs, **cparams)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 630, in connect
+    return self.loaded_dbapi.connect(*cargs, **cparams)  # type: ignore[no-any-return]  # NOQA: E501
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) unable to open database file
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-02-10 14:03:12,614 - __main__ - INFO - 🚀 Инициализация сервисов...
+2026-02-10 14:03:12,614 - __main__ - INFO - 📚 Загрузка базы знаний...
+2026-02-10 14:03:12,614 - app.services.knowledge_service - INFO - Loading knowledge base...
+2026-02-10 14:03:12,615 - app.services.knowledge_service - INFO - Knowledge base loaded: 4 materials, 2 tools, 3 machines
+2026-02-10 14:03:12,615 - __main__ - INFO - 📸 Инициализация парсера изображений...
+2026-02-10 14:03:12,615 - app.core.image_parser - WARNING - OCR not available. Image parsing will be limited.
+2026-02-10 14:03:12,615 - __main__ - INFO - 📨 Инициализация обработчика сообщений...
+2026-02-10 14:03:12,631 - app.core.image_parser - WARNING - OCR not available. Image parsing will be limited.
+2026-02-10 14:03:12,631 - __main__ - INFO - ✅ Все сервисы инициализированы
+2026-02-10 14:03:13,313 - aiogram.dispatcher - INFO - Start polling
+2026-02-10 14:03:13,522 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 14:03:38,587 - aiogram.dispatcher - INFO - Polling stopped
+2026-02-10 14:03:38,588 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-02-10 14:03:38,588 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-02-10 14:03:38,839 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 14:04:50,545 - __main__ - INFO - 🚀 Инициализация сервисов...
+2026-02-10 14:04:50,546 - __main__ - INFO - 📚 Загрузка базы знаний...
+2026-02-10 14:04:50,546 - app.services.knowledge_service - INFO - Loading knowledge base...
+2026-02-10 14:04:50,546 - app.services.knowledge_service - INFO - Knowledge base loaded: 4 materials, 2 tools, 3 machines
+2026-02-10 14:04:50,546 - __main__ - INFO - 📸 Инициализация парсера изображений...
+2026-02-10 14:04:50,546 - __main__ - INFO - 📨 Инициализация обработчика сообщений...
+2026-02-10 14:04:50,564 - __main__ - INFO - ✅ Все сервисы инициализированы
+2026-02-10 14:04:51,281 - aiogram.dispatcher - INFO - Start polling
+2026-02-10 14:04:51,506 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 14:05:05,836 - aiogram.event - INFO - Update id=897835449 is handled. Duration 2195 ms by bot id=8201932079
+2026-02-10 14:06:19,524 - aiogram.dispatcher - INFO - Polling stopped
+2026-02-10 14:06:19,525 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-02-10 14:06:19,525 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-02-10 14:06:19,787 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 14:09:11,566 - __main__ - INFO - 🚀 Инициализация сервисов...
+2026-02-10 14:09:11,567 - __main__ - INFO - 🗄️ Инициализация пула соединений БД...
+2026-02-10 14:09:11,583 - app.services.database_pool - INFO - Database pool initialized: pool_size=5, max_overflow=10
+2026-02-10 14:09:11,586 - __main__ - INFO - 💾 Инициализация репозитория контекста...
+2026-02-10 14:09:11,589 - __main__ - INFO - 📚 Загрузка базы знаний...
+2026-02-10 14:09:11,590 - app.services.knowledge_service - INFO - Loading knowledge base...
+2026-02-10 14:09:11,590 - app.services.knowledge_service - INFO - Knowledge base loaded: 4 materials, 2 tools, 3 machines
+2026-02-10 14:09:11,590 - __main__ - INFO - 📸 Инициализация парсера изображений...
+2026-02-10 14:09:11,590 - __main__ - INFO - 📨 Инициализация обработчика сообщений...
+2026-02-10 14:09:11,590 - __main__ - INFO - ✅ Все сервисы инициализированы
+2026-02-10 14:09:12,349 - aiogram.dispatcher - INFO - Start polling
+2026-02-10 14:09:12,577 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 14:09:32,057 - aiogram.event - INFO - Update id=897835450 is handled. Duration 1044 ms by bot id=8201932079
+2026-02-10 14:09:56,913 - aiogram.event - INFO - Update id=897835451 is handled. Duration 344 ms by bot id=8201932079
+2026-02-10 14:10:44,913 - aiogram.dispatcher - INFO - Polling stopped
+2026-02-10 14:10:44,914 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-02-10 14:10:44,914 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-02-10 14:10:45,172 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 14:12:45,498 - __main__ - INFO - 🚀 Инициализация сервисов...
+2026-02-10 14:12:45,498 - __main__ - INFO - 🗄️ Инициализация пула соединений БД...
+2026-02-10 14:12:45,513 - app.services.database_pool - INFO - Database pool initialized: pool_size=5, max_overflow=10
+2026-02-10 14:12:45,517 - __main__ - INFO - 💾 Инициализация репозитория контекста...
+2026-02-10 14:12:45,518 - __main__ - INFO - 📚 Загрузка базы знаний...
+2026-02-10 14:12:45,518 - app.services.knowledge_service - INFO - Loading knowledge base...
+2026-02-10 14:12:45,518 - app.services.knowledge_service - INFO - Knowledge base loaded: 4 materials, 2 tools, 3 machines
+2026-02-10 14:12:45,518 - __main__ - INFO - 📸 Инициализация парсера изображений...
+2026-02-10 14:12:45,518 - __main__ - INFO - 📨 Инициализация обработчика сообщений...
+2026-02-10 14:12:45,518 - __main__ - INFO - ✅ Все сервисы инициализированы
+2026-02-10 14:12:46,218 - aiogram.dispatcher - INFO - Start polling
+2026-02-10 14:12:46,432 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 14:13:00,144 - aiogram.event - INFO - Update id=897835452 is handled. Duration 998 ms by bot id=8201932079
+2026-02-10 14:13:28,073 - app.services.machine_saver - INFO - Saved unknown machine: gamma (ID: 1)
+2026-02-10 14:13:28,073 - app.bot.handler - INFO - Saved unknown machine: gamma
+2026-02-10 14:13:28,316 - aiogram.event - INFO - Update id=897835453 is handled. Duration 256 ms by bot id=8201932079
+2026-02-10 14:13:45,457 - aiogram.event - INFO - Update id=897835454 is handled. Duration 401 ms by bot id=8201932079
+2026-02-10 14:15:09,156 - aiogram.dispatcher - INFO - Polling stopped
+2026-02-10 14:15:09,157 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-02-10 14:15:09,157 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-02-10 14:15:09,411 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 14:15:43,899 - __main__ - INFO - 🚀 Инициализация сервисов...
+2026-02-10 14:15:43,899 - __main__ - INFO - 🗄️ Инициализация пула соединений БД...
+2026-02-10 14:15:43,913 - app.services.database_pool - INFO - Database pool initialized: pool_size=5, max_overflow=10
+2026-02-10 14:15:43,917 - __main__ - INFO - 💾 Инициализация репозитория контекста...
+2026-02-10 14:15:43,918 - __main__ - INFO - 📚 Загрузка базы знаний...
+2026-02-10 14:15:43,918 - app.services.knowledge_service - INFO - Loading knowledge base...
+2026-02-10 14:15:43,918 - app.services.knowledge_service - INFO - Knowledge base loaded: 4 materials, 2 tools, 3 machines
+2026-02-10 14:15:43,918 - __main__ - INFO - 📸 Инициализация парсера изображений...
+2026-02-10 14:15:43,919 - __main__ - INFO - 📨 Инициализация обработчика сообщений...
+2026-02-10 14:15:43,919 - __main__ - INFO - ✅ Все сервисы инициализированы
+2026-02-10 14:15:43,954 - __main__ - INFO - 🚀 Инициализация сервисов...
+2026-02-10 14:15:43,954 - __main__ - INFO - 🗄️ Инициализация пула соединений БД...
+2026-02-10 14:15:43,968 - app.services.database_pool - INFO - Database pool initialized: pool_size=5, max_overflow=10
+2026-02-10 14:15:43,971 - __main__ - INFO - 💾 Инициализация репозитория контекста...
+2026-02-10 14:15:43,972 - __main__ - INFO - 📚 Загрузка базы знаний...
+2026-02-10 14:15:43,972 - app.services.knowledge_service - INFO - Loading knowledge base...
+2026-02-10 14:15:43,972 - app.services.knowledge_service - INFO - Knowledge base loaded: 4 materials, 2 tools, 3 machines
+2026-02-10 14:15:43,972 - __main__ - INFO - 📸 Инициализация парсера изображений...
+2026-02-10 14:15:43,972 - __main__ - INFO - 📨 Инициализация обработчика сообщений...
+2026-02-10 14:15:43,973 - __main__ - INFO - ✅ Все сервисы инициализированы
+2026-02-10 14:15:44,678 - aiogram.dispatcher - INFO - Start polling
+2026-02-10 14:15:44,725 - aiogram.dispatcher - INFO - Start polling
+2026-02-10 14:15:44,912 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 14:15:44,960 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 14:15:45,192 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-02-10 14:15:45,193 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-02-10 14:15:49,433 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-02-10 14:15:49,433 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-02-10 14:15:50,680 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-02-10 14:15:50,680 - aiogram.dispatcher - WARNING - Sleep for 1.424326 seconds and try again... (tryings = 1, bot id = 8201932079)
+2026-02-10 14:15:55,340 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-02-10 14:15:55,340 - aiogram.dispatcher - WARNING - Sleep for 1.384123 seconds and try again... (tryings = 1, bot id = 8201932079)
+2026-02-10 14:15:56,968 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-02-10 14:15:56,968 - aiogram.dispatcher - WARNING - Sleep for 1.739491 seconds and try again... (tryings = 2, bot id = 8201932079)
+2026-02-10 14:16:01,945 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-02-10 14:16:01,945 - aiogram.dispatcher - WARNING - Sleep for 1.600474 seconds and try again... (tryings = 2, bot id = 8201932079)
+2026-02-10 14:16:03,791 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-02-10 14:16:03,791 - aiogram.dispatcher - WARNING - Sleep for 2.317530 seconds and try again... (tryings = 3, bot id = 8201932079)
+2026-02-10 14:16:09,349 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-02-10 14:16:09,350 - aiogram.dispatcher - WARNING - Sleep for 2.172906 seconds and try again... (tryings = 3, bot id = 8201932079)
+2026-02-10 14:16:11,767 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-02-10 14:16:11,767 - aiogram.dispatcher - WARNING - Sleep for 2.964982 seconds and try again... (tryings = 4, bot id = 8201932079)
+2026-02-10 14:16:14,970 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-02-10 14:16:14,970 - aiogram.dispatcher - WARNING - Sleep for 2.770319 seconds and try again... (tryings = 4, bot id = 8201932079)
+2026-02-10 14:16:17,981 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-02-10 14:16:17,981 - aiogram.dispatcher - WARNING - Sleep for 3.844996 seconds and try again... (tryings = 5, bot id = 8201932079)
+2026-02-10 14:16:22,074 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-02-10 14:16:22,075 - aiogram.dispatcher - WARNING - Sleep for 3.699571 seconds and try again... (tryings = 5, bot id = 8201932079)
+2026-02-10 14:16:26,019 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-02-10 14:16:26,019 - aiogram.dispatcher - WARNING - Sleep for 5.212548 seconds and try again... (tryings = 6, bot id = 8201932079)
+2026-02-10 14:16:26,613 - aiogram.dispatcher - INFO - Connection established (tryings = 6, bot id = 8201932079)
+2026-02-10 14:16:27,646 - aiogram.event - INFO - Update id=897835455 is handled. Duration 1032 ms by bot id=8201932079
+2026-02-10 14:16:31,482 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-02-10 14:16:31,482 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-02-10 14:16:35,181 - aiogram.dispatcher - INFO - Connection established (tryings = 1, bot id = 8201932079)
+2026-02-10 14:16:35,519 - aiogram.event - INFO - Update id=897835456 is handled. Duration 337 ms by bot id=8201932079
+2026-02-10 14:16:35,735 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-02-10 14:16:35,736 - aiogram.dispatcher - WARNING - Sleep for 4.903585 seconds and try again... (tryings = 7, bot id = 8201932079)
+2026-02-10 14:16:40,882 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-02-10 14:16:40,882 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-02-10 14:16:45,132 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-02-10 14:16:45,132 - aiogram.dispatcher - WARNING - Sleep for 5.120522 seconds and try again... (tryings = 8, bot id = 8201932079)
+2026-02-10 14:16:50,507 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-02-10 14:16:50,507 - aiogram.dispatcher - WARNING - Sleep for 1.405901 seconds and try again... (tryings = 1, bot id = 8201932079)
+2026-02-10 14:16:54,118 - aiogram.dispatcher - INFO - Polling stopped
+2026-02-10 14:16:54,120 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-02-10 14:16:54,120 - aiogram.dispatcher - WARNING - Sleep for 1.916650 seconds and try again... (tryings = 2, bot id = 8201932079)
+2026-02-10 14:16:54,121 - aiogram.dispatcher - INFO - Polling stopped
+2026-02-10 14:16:54,122 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-02-10 14:16:54,123 - aiogram.dispatcher - WARNING - Sleep for 4.827946 seconds and try again... (tryings = 9, bot id = 8201932079)
+2026-02-10 14:16:54,383 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 14:16:54,383 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 14:18:06,162 - __main__ - INFO - 🚀 Инициализация сервисов...
+2026-02-10 14:18:06,162 - __main__ - INFO - 🗄️ Инициализация пула соединений БД...
+2026-02-10 14:18:06,179 - app.services.database_pool - INFO - Database pool initialized: pool_size=5, max_overflow=10
+2026-02-10 14:18:06,183 - __main__ - INFO - 💾 Инициализация репозитория контекста...
+2026-02-10 14:18:06,187 - __main__ - INFO - 📚 Загрузка базы знаний...
+2026-02-10 14:18:06,187 - app.services.knowledge_service - INFO - Loading knowledge base...
+2026-02-10 14:18:06,188 - app.services.knowledge_service - INFO - Knowledge base loaded: 4 materials, 2 tools, 3 machines
+2026-02-10 14:18:06,188 - __main__ - INFO - 📸 Инициализация парсера изображений...
+2026-02-10 14:18:06,188 - __main__ - INFO - 📨 Инициализация обработчика сообщений...
+2026-02-10 14:18:06,188 - __main__ - INFO - ✅ Все сервисы инициализированы
+2026-02-10 14:18:07,023 - aiogram.dispatcher - INFO - Start polling
+2026-02-10 14:18:07,256 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 14:18:16,093 - aiogram.event - INFO - Update id=897835457 is handled. Duration 1434 ms by bot id=8201932079
+2026-02-10 14:18:31,734 - app.services.machine_saver - INFO - Machine gamma already exists in DB: 1
+2026-02-10 14:18:31,735 - app.bot.handler - INFO - Saved unknown machine: gamma
+2026-02-10 14:18:32,108 - aiogram.event - INFO - Update id=897835458 is handled. Duration 382 ms by bot id=8201932079
+2026-02-10 14:19:07,599 - app.services.machine_saver - INFO - Saved unknown machine: вылетом 100 диаметр (ID: 2)
+2026-02-10 14:19:07,599 - app.bot.handler - INFO - Saved unknown machine: вылетом 100 диаметр
+2026-02-10 14:19:07,884 - aiogram.event - INFO - Update id=897835459 is handled. Duration 290 ms by bot id=8201932079
+2026-02-10 14:19:25,478 - aiogram.event - INFO - Update id=897835460 is handled. Duration 366 ms by bot id=8201932079
+2026-02-10 14:19:33,765 - app.services.machine_saver - INFO - Saved unknown machine: до 50 (ID: 3)
+2026-02-10 14:19:33,765 - app.bot.handler - INFO - Saved unknown machine: до 50
+2026-02-10 14:19:34,819 - aiogram.event - INFO - Update id=897835461 is handled. Duration 1058 ms by bot id=8201932079
+2026-02-10 14:20:23,223 - aiogram.event - INFO - Update id=897835462 is handled. Duration 1269 ms by bot id=8201932079
+2026-02-10 14:22:43,805 - aiogram.dispatcher - INFO - Polling stopped
+2026-02-10 14:22:43,806 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-02-10 14:22:43,806 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-02-10 14:22:44,057 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 14:25:09,729 - __main__ - INFO - 🚀 Инициализация сервисов...
+2026-02-10 14:25:09,730 - __main__ - INFO - 🗄️ Инициализация пула соединений БД...
+2026-02-10 14:25:09,744 - app.services.database_pool - INFO - Database pool initialized: pool_size=5, max_overflow=10
+2026-02-10 14:25:09,748 - __main__ - INFO - 💾 Инициализация репозитория контекста...
+2026-02-10 14:25:09,749 - __main__ - INFO - 📚 Загрузка базы знаний...
+2026-02-10 14:25:09,749 - app.services.knowledge_service - INFO - Loading knowledge base...
+2026-02-10 14:25:09,749 - app.services.knowledge_service - INFO - Knowledge base loaded: 4 materials, 2 tools, 3 machines
+2026-02-10 14:25:09,749 - __main__ - INFO - 📸 Инициализация парсера изображений...
+2026-02-10 14:25:09,749 - __main__ - INFO - 📨 Инициализация обработчика сообщений...
+2026-02-10 14:25:09,749 - __main__ - INFO - ✅ Все сервисы инициализированы
+2026-02-10 14:25:10,443 - aiogram.dispatcher - INFO - Start polling
+2026-02-10 14:25:10,652 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 14:25:26,694 - aiogram.event - INFO - Update id=897835463 is handled. Duration 1110 ms by bot id=8201932079
+2026-02-10 14:25:59,237 - aiogram.event - INFO - Update id=897835464 is handled. Duration 747 ms by bot id=8201932079
+2026-02-10 14:27:18,465 - aiogram.dispatcher - INFO - Polling stopped
+2026-02-10 14:27:18,466 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-02-10 14:27:18,466 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-02-10 14:27:18,723 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 14:27:22,264 - __main__ - INFO - 🚀 Инициализация сервисов...
+2026-02-10 14:27:22,265 - __main__ - INFO - 🗄️ Инициализация пула соединений БД...
+2026-02-10 14:27:22,278 - app.services.database_pool - INFO - Database pool initialized: pool_size=5, max_overflow=10
+2026-02-10 14:27:22,282 - __main__ - INFO - 💾 Инициализация репозитория контекста...
+2026-02-10 14:27:22,283 - __main__ - INFO - 📚 Загрузка базы знаний...
+2026-02-10 14:27:22,283 - app.services.knowledge_service - INFO - Loading knowledge base...
+2026-02-10 14:27:22,283 - app.services.knowledge_service - INFO - Knowledge base loaded: 4 materials, 2 tools, 3 machines
+2026-02-10 14:27:22,283 - __main__ - INFO - 📸 Инициализация парсера изображений...
+2026-02-10 14:27:22,283 - __main__ - INFO - 📨 Инициализация обработчика сообщений...
+2026-02-10 14:27:22,283 - __main__ - INFO - ✅ Все сервисы инициализированы
+2026-02-10 14:27:23,035 - aiogram.dispatcher - INFO - Start polling
+2026-02-10 14:27:23,263 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 14:27:30,168 - aiogram.event - INFO - Update id=897835465 is not handled. Duration 17 ms by bot id=8201932079
+2026-02-10 14:27:30,168 - aiogram.event - ERROR - Cause exception while process update id=897835465 by bot id=8201932079
+UnboundLocalError: cannot access local variable 'datetime' where it is not associated with a value
+Traceback (most recent call last):
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\dispatcher.py", line 320, in _process_update
+    response = await self.feed_update(bot, update, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\dispatcher.py", line 164, in feed_update
+    response = await self.update.wrap_outer_middleware(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\middlewares\error.py", line 27, in __call__
+    return await handler(event, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\middlewares\user_context.py", line 58, in __call__
+    return await handler(event, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\fsm\middleware.py", line 43, in __call__
+    return await handler(event, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\event\telegram.py", line 126, in trigger
+    return await wrapped_inner(event, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\event\handler.py", line 71, in call
+    return await wrapped()
+           ^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\dispatcher.py", line 283, in _listen_update
+    return await self.propagate_event(update_type=update_type, event=event, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\router.py", line 161, in propagate_event
+    return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\router.py", line 153, in _wrapped
+    return await self._propagate_event(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\router.py", line 181, in _propagate_event
+    response = await observer.trigger(event, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\event\telegram.py", line 126, in trigger
+    return await wrapped_inner(event, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\event\handler.py", line 71, in call
+    return await wrapped()
+           ^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\app\bot\telegram_bot.py", line 458, in handle_message
+    context.session_id = f"session_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+                                    ^^^^^^^^
+UnboundLocalError: cannot access local variable 'datetime' where it is not associated with a value
+2026-02-10 14:27:39,890 - aiogram.event - INFO - Update id=897835466 is not handled. Duration 1 ms by bot id=8201932079
+2026-02-10 14:27:39,890 - aiogram.event - ERROR - Cause exception while process update id=897835466 by bot id=8201932079
+UnboundLocalError: cannot access local variable 'datetime' where it is not associated with a value
+Traceback (most recent call last):
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\dispatcher.py", line 320, in _process_update
+    response = await self.feed_update(bot, update, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\dispatcher.py", line 164, in feed_update
+    response = await self.update.wrap_outer_middleware(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\middlewares\error.py", line 27, in __call__
+    return await handler(event, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\middlewares\user_context.py", line 58, in __call__
+    return await handler(event, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\fsm\middleware.py", line 43, in __call__
+    return await handler(event, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\event\telegram.py", line 126, in trigger
+    return await wrapped_inner(event, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\event\handler.py", line 71, in call
+    return await wrapped()
+           ^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\dispatcher.py", line 283, in _listen_update
+    return await self.propagate_event(update_type=update_type, event=event, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\router.py", line 161, in propagate_event
+    return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\router.py", line 153, in _wrapped
+    return await self._propagate_event(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\router.py", line 181, in _propagate_event
+    response = await observer.trigger(event, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\event\telegram.py", line 126, in trigger
+    return await wrapped_inner(event, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\event\handler.py", line 71, in call
+    return await wrapped()
+           ^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\app\bot\telegram_bot.py", line 458, in handle_message
+    context.session_id = f"session_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+                                    ^^^^^^^^
+UnboundLocalError: cannot access local variable 'datetime' where it is not associated with a value
+2026-02-10 14:27:42,026 - aiogram.event - INFO - Update id=897835467 is not handled. Duration 1 ms by bot id=8201932079
+2026-02-10 14:27:42,026 - aiogram.event - ERROR - Cause exception while process update id=897835467 by bot id=8201932079
+UnboundLocalError: cannot access local variable 'datetime' where it is not associated with a value
+Traceback (most recent call last):
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\dispatcher.py", line 320, in _process_update
+    response = await self.feed_update(bot, update, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\dispatcher.py", line 164, in feed_update
+    response = await self.update.wrap_outer_middleware(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\middlewares\error.py", line 27, in __call__
+    return await handler(event, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\middlewares\user_context.py", line 58, in __call__
+    return await handler(event, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\fsm\middleware.py", line 43, in __call__
+    return await handler(event, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\event\telegram.py", line 126, in trigger
+    return await wrapped_inner(event, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\event\handler.py", line 71, in call
+    return await wrapped()
+           ^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\dispatcher.py", line 283, in _listen_update
+    return await self.propagate_event(update_type=update_type, event=event, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\router.py", line 161, in propagate_event
+    return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\router.py", line 153, in _wrapped
+    return await self._propagate_event(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\router.py", line 181, in _propagate_event
+    response = await observer.trigger(event, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\event\telegram.py", line 126, in trigger
+    return await wrapped_inner(event, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\event\handler.py", line 71, in call
+    return await wrapped()
+           ^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\app\bot\telegram_bot.py", line 458, in handle_message
+    context.session_id = f"session_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+                                    ^^^^^^^^
+UnboundLocalError: cannot access local variable 'datetime' where it is not associated with a value
+2026-02-10 14:28:19,861 - aiogram.dispatcher - INFO - Polling stopped
+2026-02-10 14:28:19,862 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-02-10 14:28:19,862 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-02-10 14:28:20,124 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 14:28:23,617 - __main__ - INFO - 🚀 Инициализация сервисов...
+2026-02-10 14:28:23,618 - __main__ - INFO - 🗄️ Инициализация пула соединений БД...
+2026-02-10 14:28:23,631 - app.services.database_pool - INFO - Database pool initialized: pool_size=5, max_overflow=10
+2026-02-10 14:28:23,634 - __main__ - INFO - 💾 Инициализация репозитория контекста...
+2026-02-10 14:28:23,635 - __main__ - INFO - 📚 Загрузка базы знаний...
+2026-02-10 14:28:23,635 - app.services.knowledge_service - INFO - Loading knowledge base...
+2026-02-10 14:28:23,636 - app.services.knowledge_service - INFO - Knowledge base loaded: 4 materials, 2 tools, 3 machines
+2026-02-10 14:28:23,636 - __main__ - INFO - 📸 Инициализация парсера изображений...
+2026-02-10 14:28:23,636 - __main__ - INFO - 📨 Инициализация обработчика сообщений...
+2026-02-10 14:28:23,636 - __main__ - INFO - ✅ Все сервисы инициализированы
+2026-02-10 14:28:24,331 - aiogram.dispatcher - INFO - Start polling
+2026-02-10 14:28:24,545 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 14:28:29,573 - aiogram.event - INFO - Update id=897835468 is handled. Duration 1073 ms by bot id=8201932079
+2026-02-10 14:28:42,090 - aiogram.event - INFO - Update id=897835469 is handled. Duration 304 ms by bot id=8201932079
+2026-02-10 14:31:34,899 - aiogram.dispatcher - INFO - Polling stopped
+2026-02-10 14:31:34,900 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-02-10 14:31:34,900 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-02-10 14:32:59,364 - __main__ - INFO - 🚀 Инициализация сервисов...
+2026-02-10 14:32:59,364 - __main__ - INFO - 🗄️ Инициализация пула соединений БД...
+2026-02-10 14:32:59,388 - app.services.database_pool - INFO - Database pool initialized: pool_size=5, max_overflow=10
+2026-02-10 14:32:59,395 - __main__ - INFO - 💾 Инициализация репозитория контекста...
+2026-02-10 14:32:59,396 - __main__ - INFO - 📚 Загрузка базы знаний...
+2026-02-10 14:32:59,397 - app.services.knowledge_service - INFO - Loading knowledge base...
+2026-02-10 14:32:59,397 - app.services.knowledge_service - INFO - Knowledge base loaded: 4 materials, 2 tools, 3 machines
+2026-02-10 14:32:59,397 - __main__ - INFO - 📸 Инициализация парсера изображений...
+2026-02-10 14:32:59,397 - __main__ - INFO - 📨 Инициализация обработчика сообщений...
+2026-02-10 14:32:59,398 - __main__ - INFO - ✅ Все сервисы инициализированы
+2026-02-10 14:33:00,173 - aiogram.dispatcher - INFO - Start polling
+2026-02-10 14:33:00,414 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 14:33:07,300 - __main__ - ERROR - Error handling message: 'MessageHandler' object has no attribute 'intent_parser'
+Traceback (most recent call last):
+  File "C:\projects\cnc-assistant\app\bot\telegram_bot.py", line 611, in handle_message
+    result = await handler.process_message(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+    )
+    ^
+  File "C:\projects\cnc-assistant\app\bot\handler.py", line 98, in process_message
+    intent_result = self.intent_parser.parse(user_text)
+                    ^^^^^^^^^^^^^^^^^^
+AttributeError: 'MessageHandler' object has no attribute 'intent_parser'
+2026-02-10 14:33:08,307 - aiogram.event - INFO - Update id=897835470 is handled. Duration 1024 ms by bot id=8201932079
+2026-02-10 14:33:14,022 - aiogram.event - INFO - Update id=897835471 is handled. Duration 334 ms by bot id=8201932079
+2026-02-10 14:34:05,810 - app.core.image_parser - ERROR - Error parsing tool image: tesseract is not installed or it's not in your PATH. See README file for more information.
+Traceback (most recent call last):
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\pytesseract\pytesseract.py", line 275, in run_tesseract
+    proc = subprocess.Popen(cmd_args, **subprocess_args())
+  File "C:\Users\Дмитрий\AppData\Local\Python\pythoncore-3.14-64\Lib\subprocess.py", line 1038, in __init__
+    self._execute_child(args, executable, preexec_fn, close_fds,
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                        pass_fds, cwd, env,
+                        ^^^^^^^^^^^^^^^^^^^
+    ...<5 lines>...
+                        gid, gids, uid, umask,
+                        ^^^^^^^^^^^^^^^^^^^^^^
+                        start_new_session, process_group)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Дмитрий\AppData\Local\Python\pythoncore-3.14-64\Lib\subprocess.py", line 1552, in _execute_child
+    hp, ht, pid, tid = _winapi.CreateProcess(executable, args,
+                       ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+                             # no special security
+                             ^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+                             cwd,
+                             ^^^^
+                             startupinfo)
+                             ^^^^^^^^^^^^
+FileNotFoundError: [WinError 2] Не удается найти указанный файл
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\projects\cnc-assistant\app\core\image_parser.py", line 60, in parse_tool_image
+    extracted_text = pytesseract.image_to_string(image, lang='eng+rus')
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\pytesseract\pytesseract.py", line 486, in image_to_string
+    return {
+           ~
+    ...<2 lines>...
+        Output.STRING: lambda: run_and_get_output(*args),
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    }[output_type]()
+    ~~~~~~~~~~~~~~^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\pytesseract\pytesseract.py", line 489, in <lambda>
+    Output.STRING: lambda: run_and_get_output(*args),
+                           ~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\pytesseract\pytesseract.py", line 352, in run_and_get_output
+    run_tesseract(**kwargs)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\pytesseract\pytesseract.py", line 280, in run_tesseract
+    raise TesseractNotFoundError()
+pytesseract.pytesseract.TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+2026-02-10 14:34:06,166 - aiogram.event - INFO - Update id=897835472 is handled. Duration 914 ms by bot id=8201932079
+2026-02-10 14:35:19,415 - aiogram.dispatcher - INFO - Polling stopped
+2026-02-10 14:35:19,416 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-02-10 14:35:19,416 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-02-10 14:35:19,667 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 14:35:23,404 - __main__ - INFO - 🚀 Инициализация сервисов...
+2026-02-10 14:35:23,404 - __main__ - INFO - 🗄️ Инициализация пула соединений БД...
+2026-02-10 14:35:23,420 - app.services.database_pool - INFO - Database pool initialized: pool_size=5, max_overflow=10
+2026-02-10 14:35:23,424 - __main__ - INFO - 💾 Инициализация репозитория контекста...
+2026-02-10 14:35:23,425 - __main__ - INFO - 📚 Загрузка базы знаний...
+2026-02-10 14:35:23,425 - app.services.knowledge_service - INFO - Loading knowledge base...
+2026-02-10 14:35:23,426 - app.services.knowledge_service - INFO - Knowledge base loaded: 4 materials, 2 tools, 3 machines
+2026-02-10 14:35:23,426 - __main__ - INFO - 📸 Инициализация парсера изображений...
+2026-02-10 14:35:23,426 - __main__ - INFO - 📨 Инициализация обработчика сообщений...
+2026-02-10 14:35:23,426 - __main__ - INFO - ✅ Все сервисы инициализированы
+2026-02-10 14:35:24,171 - aiogram.dispatcher - INFO - Start polling
+2026-02-10 14:35:24,397 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 14:37:14,038 - app.core.image_parser - ERROR - Error parsing tool image: tesseract is not installed or it's not in your PATH. See README file for more information.
+Traceback (most recent call last):
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\pytesseract\pytesseract.py", line 275, in run_tesseract
+    proc = subprocess.Popen(cmd_args, **subprocess_args())
+  File "C:\Users\Дмитрий\AppData\Local\Python\pythoncore-3.14-64\Lib\subprocess.py", line 1038, in __init__
+    self._execute_child(args, executable, preexec_fn, close_fds,
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                        pass_fds, cwd, env,
+                        ^^^^^^^^^^^^^^^^^^^
+    ...<5 lines>...
+                        gid, gids, uid, umask,
+                        ^^^^^^^^^^^^^^^^^^^^^^
+                        start_new_session, process_group)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Дмитрий\AppData\Local\Python\pythoncore-3.14-64\Lib\subprocess.py", line 1552, in _execute_child
+    hp, ht, pid, tid = _winapi.CreateProcess(executable, args,
+                       ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+                             # no special security
+                             ^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+                             cwd,
+                             ^^^^
+                             startupinfo)
+                             ^^^^^^^^^^^^
+FileNotFoundError: [WinError 2] Не удается найти указанный файл
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\projects\cnc-assistant\app\core\image_parser.py", line 60, in parse_tool_image
+    extracted_text = pytesseract.image_to_string(image, lang='eng+rus')
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\pytesseract\pytesseract.py", line 486, in image_to_string
+    return {
+           ~
+    ...<2 lines>...
+        Output.STRING: lambda: run_and_get_output(*args),
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    }[output_type]()
+    ~~~~~~~~~~~~~~^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\pytesseract\pytesseract.py", line 489, in <lambda>
+    Output.STRING: lambda: run_and_get_output(*args),
+                           ~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\pytesseract\pytesseract.py", line 352, in run_and_get_output
+    run_tesseract(**kwargs)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\pytesseract\pytesseract.py", line 280, in run_tesseract
+    raise TesseractNotFoundError()
+pytesseract.pytesseract.TesseractNotFoundError: tesseract is not installed or it's not in your PATH. See README file for more information.
+2026-02-10 14:37:14,375 - aiogram.event - INFO - Update id=897835473 is handled. Duration 1813 ms by bot id=8201932079
+2026-02-10 14:38:55,944 - aiogram.dispatcher - INFO - Polling stopped
+2026-02-10 14:38:55,945 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-02-10 14:38:55,945 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-02-10 14:38:59,249 - __main__ - INFO - 🚀 Инициализация сервисов...
+2026-02-10 14:38:59,249 - __main__ - INFO - 🗄️ Инициализация пула соединений БД...
+2026-02-10 14:38:59,263 - app.services.database_pool - INFO - Database pool initialized: pool_size=5, max_overflow=10
+2026-02-10 14:38:59,266 - __main__ - INFO - 💾 Инициализация репозитория контекста...
+2026-02-10 14:38:59,267 - __main__ - INFO - 📚 Загрузка базы знаний...
+2026-02-10 14:38:59,267 - app.services.knowledge_service - INFO - Loading knowledge base...
+2026-02-10 14:38:59,267 - app.services.knowledge_service - INFO - Knowledge base loaded: 4 materials, 2 tools, 3 machines
+2026-02-10 14:38:59,267 - __main__ - INFO - 📸 Инициализация парсера изображений...
+2026-02-10 14:38:59,267 - app.core.image_parser - WARNING - Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-10 14:38:59,267 - __main__ - INFO - 📨 Инициализация обработчика сообщений...
+2026-02-10 14:38:59,267 - app.core.image_parser - WARNING - Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-10 14:38:59,268 - __main__ - INFO - ✅ Все сервисы инициализированы
+2026-02-10 14:38:59,981 - aiogram.dispatcher - INFO - Start polling
+2026-02-10 14:39:00,197 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 14:40:46,928 - aiogram.dispatcher - INFO - Polling stopped
+2026-02-10 14:40:46,929 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-02-10 14:40:46,929 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-02-10 14:40:47,189 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 14:40:50,431 - __main__ - INFO - 🚀 Инициализация сервисов...
+2026-02-10 14:40:50,431 - __main__ - INFO - 🗄️ Инициализация пула соединений БД...
+2026-02-10 14:40:50,445 - app.services.database_pool - INFO - Database pool initialized: pool_size=5, max_overflow=10
+2026-02-10 14:40:50,448 - __main__ - INFO - 💾 Инициализация репозитория контекста...
+2026-02-10 14:40:50,449 - __main__ - INFO - 📚 Загрузка базы знаний...
+2026-02-10 14:40:50,449 - app.services.knowledge_service - INFO - Loading knowledge base...
+2026-02-10 14:40:50,449 - app.services.knowledge_service - INFO - Knowledge base loaded: 4 materials, 2 tools, 3 machines
+2026-02-10 14:40:50,449 - __main__ - INFO - 📸 Инициализация парсера изображений...
+2026-02-10 14:40:50,449 - app.core.image_parser - WARNING - Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-10 14:40:50,449 - __main__ - INFO - 📨 Инициализация обработчика сообщений...
+2026-02-10 14:40:50,449 - app.core.image_parser - WARNING - Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-10 14:40:50,449 - __main__ - INFO - ✅ Все сервисы инициализированы
+2026-02-10 14:40:51,139 - aiogram.dispatcher - INFO - Start polling
+2026-02-10 14:40:51,354 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 14:41:18,184 - aiogram.event - INFO - Update id=897835474 is handled. Duration 1144 ms by bot id=8201932079
+2026-02-10 14:41:23,016 - app.bot.handler - INFO - Intent detected: meta_capabilities (confidence: 0.90)
+2026-02-10 14:41:23,368 - aiogram.event - INFO - Update id=897835475 is handled. Duration 353 ms by bot id=8201932079
+2026-02-10 14:41:57,204 - app.services.work_manager - ERROR - Error listing works: (sqlite3.OperationalError) no such column: user_decisions.operation_chain_json
+[SQL: SELECT user_decisions.id AS user_decisions_id, user_decisions.user_id AS user_decisions_user_id, user_decisions.timestamp AS user_decisions_timestamp, user_decisions.machine_id AS user_decisions_machine_id, user_decisions.material_id AS user_decisions_material_id, user_decisions.tool_id AS user_decisions_tool_id, user_decisions.diameter_start_mm AS user_decisions_diameter_start_mm, user_decisions.diameter_end_mm AS user_decisions_diameter_end_mm, user_decisions.length_mm AS user_decisions_length_mm, user_decisions.operation_chain_json AS user_decisions_operation_chain_json, user_decisions.operation_type AS user_decisions_operation_type, user_decisions.is_external AS user_decisions_is_external, user_decisions.tolerance_mm AS user_decisions_tolerance_mm, user_decisions.surface_roughness_ra AS user_decisions_surface_roughness_ra, user_decisions.bot_vc_m_min AS user_decisions_bot_vc_m_min, user_decisions.bot_rpm AS user_decisions_bot_rpm, user_decisions.bot_feed_mm_rev AS user_decisions_bot_feed_mm_rev, user_decisions.bot_ap_mm AS user_decisions_bot_ap_mm, user_decisions.bot_power_kw AS user_decisions_bot_power_kw, user_decisions.passes_strategy_json AS user_decisions_passes_strategy_json, user_decisions.total_passes AS user_decisions_total_passes, user_decisions.user_rpm AS user_decisions_user_rpm, user_decisions.user_feed_mm_rev AS user_decisions_user_feed_mm_rev, user_decisions.user_ap_mm AS user_decisions_user_ap_mm, user_decisions.comparison_choice AS user_decisions_comparison_choice, user_decisions.user_comment AS user_decisions_user_comment, user_decisions.diff_coeff_rpm AS user_decisions_diff_coeff_rpm, user_decisions.diff_coeff_feed AS user_decisions_diff_coeff_feed, user_decisions.diff_coeff_ap AS user_decisions_diff_coeff_ap, user_decisions.result_type AS user_decisions_result_type, user_decisions.result_details AS user_decisions_result_details, user_decisions.tool_life_minutes AS user_decisions_tool_life_minutes, user_decisions.actual_machining_time_min AS user_decisions_actual_machining_time_min, user_decisions.experience_level AS user_decisions_experience_level, user_decisions.variance_adaptation_score AS user_decisions_variance_adaptation_score, user_decisions.was_decision_adaptive AS user_decisions_was_decision_adaptive, user_decisions.full_context_json AS user_decisions_full_context_json, user_decisions.source AS user_decisions_source, user_decisions.session_id AS user_decisions_session_id 
+FROM user_decisions 
+WHERE user_decisions.user_id = ? AND user_decisions.session_id LIKE ? ORDER BY user_decisions.timestamp DESC
+ LIMIT ? OFFSET ?]
+[parameters: ('7173846851', 'work_%', 10, 0)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+Traceback (most recent call last):
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.OperationalError: no such column: user_decisions.operation_chain_json
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\projects\cnc-assistant\app\services\work_manager.py", line 164, in list_works
+    ).order_by(UserDecision.timestamp.desc()).limit(limit).all()
+                                                           ~~~^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\orm\query.py", line 2704, in all
+    return self._iter().all()  # type: ignore
+           ~~~~~~~~~~^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\orm\query.py", line 2857, in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                                  ~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+        params,
+        ^^^^^^^
+        execution_options={"_sa_orm_load_options": self.load_options},
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2351, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2249, in _execute_internal
+    result: Result[Any] = compile_state_cls.orm_execute_statement(
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self,
+        ^^^^^
+    ...<4 lines>...
+        conn,
+        ^^^^^
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\orm\context.py", line 306, in orm_execute_statement
+    result = conn.execute(
+        statement, params or {}, execution_options=execution_options
+    )
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1419, in execute
+    return meth(
+        self,
+        distilled_parameters,
+        execution_options or NO_OPTIONS,
+    )
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\sql\elements.py", line 527, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self, distilled_params, execution_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1641, in _execute_clauseelement
+    ret = self._execute_context(
+        dialect,
+    ...<8 lines>...
+        cache_hit=cache_hit,
+    )
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        dialect, context, statement, parameters
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        e, str_statement, effective_parameters, cursor, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 2363, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) no such column: user_decisions.operation_chain_json
+[SQL: SELECT user_decisions.id AS user_decisions_id, user_decisions.user_id AS user_decisions_user_id, user_decisions.timestamp AS user_decisions_timestamp, user_decisions.machine_id AS user_decisions_machine_id, user_decisions.material_id AS user_decisions_material_id, user_decisions.tool_id AS user_decisions_tool_id, user_decisions.diameter_start_mm AS user_decisions_diameter_start_mm, user_decisions.diameter_end_mm AS user_decisions_diameter_end_mm, user_decisions.length_mm AS user_decisions_length_mm, user_decisions.operation_chain_json AS user_decisions_operation_chain_json, user_decisions.operation_type AS user_decisions_operation_type, user_decisions.is_external AS user_decisions_is_external, user_decisions.tolerance_mm AS user_decisions_tolerance_mm, user_decisions.surface_roughness_ra AS user_decisions_surface_roughness_ra, user_decisions.bot_vc_m_min AS user_decisions_bot_vc_m_min, user_decisions.bot_rpm AS user_decisions_bot_rpm, user_decisions.bot_feed_mm_rev AS user_decisions_bot_feed_mm_rev, user_decisions.bot_ap_mm AS user_decisions_bot_ap_mm, user_decisions.bot_power_kw AS user_decisions_bot_power_kw, user_decisions.passes_strategy_json AS user_decisions_passes_strategy_json, user_decisions.total_passes AS user_decisions_total_passes, user_decisions.user_rpm AS user_decisions_user_rpm, user_decisions.user_feed_mm_rev AS user_decisions_user_feed_mm_rev, user_decisions.user_ap_mm AS user_decisions_user_ap_mm, user_decisions.comparison_choice AS user_decisions_comparison_choice, user_decisions.user_comment AS user_decisions_user_comment, user_decisions.diff_coeff_rpm AS user_decisions_diff_coeff_rpm, user_decisions.diff_coeff_feed AS user_decisions_diff_coeff_feed, user_decisions.diff_coeff_ap AS user_decisions_diff_coeff_ap, user_decisions.result_type AS user_decisions_result_type, user_decisions.result_details AS user_decisions_result_details, user_decisions.tool_life_minutes AS user_decisions_tool_life_minutes, user_decisions.actual_machining_time_min AS user_decisions_actual_machining_time_min, user_decisions.experience_level AS user_decisions_experience_level, user_decisions.variance_adaptation_score AS user_decisions_variance_adaptation_score, user_decisions.was_decision_adaptive AS user_decisions_was_decision_adaptive, user_decisions.full_context_json AS user_decisions_full_context_json, user_decisions.source AS user_decisions_source, user_decisions.session_id AS user_decisions_session_id 
+FROM user_decisions 
+WHERE user_decisions.user_id = ? AND user_decisions.session_id LIKE ? ORDER BY user_decisions.timestamp DESC
+ LIMIT ? OFFSET ?]
+[parameters: ('7173846851', 'work_%', 10, 0)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-02-10 14:41:57,570 - aiogram.event - INFO - Update id=897835476 is handled. Duration 368 ms by bot id=8201932079
+2026-02-10 14:42:05,538 - app.bot.handler - INFO - Intent detected: help (confidence: 0.90)
+2026-02-10 14:42:05,836 - aiogram.event - INFO - Update id=897835477 is handled. Duration 298 ms by bot id=8201932079
+2026-02-10 14:43:01,358 - app.bot.handler - INFO - Intent detected: engineering (confidence: 0.40)
+2026-02-10 14:43:01,717 - aiogram.event - INFO - Update id=897835478 is handled. Duration 360 ms by bot id=8201932079
+2026-02-10 14:50:02,498 - app.bot.handler - INFO - Intent detected: greeting (confidence: 0.95)
+2026-02-10 14:50:03,182 - aiogram.event - INFO - Update id=897835479 is handled. Duration 684 ms by bot id=8201932079
+2026-02-10 14:50:30,215 - aiogram.dispatcher - INFO - Polling stopped
+2026-02-10 14:50:30,216 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-02-10 14:50:30,216 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-02-10 14:50:30,481 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 14:50:55,950 - __main__ - INFO - 🚀 Инициализация сервисов...
+2026-02-10 14:50:55,950 - __main__ - INFO - 🗄️ Инициализация пула соединений БД...
+2026-02-10 14:50:55,964 - app.services.database_pool - INFO - Database pool initialized: pool_size=5, max_overflow=10
+2026-02-10 14:50:55,968 - __main__ - INFO - 💾 Инициализация репозитория контекста...
+2026-02-10 14:50:55,969 - __main__ - INFO - 📚 Загрузка базы знаний...
+2026-02-10 14:50:55,969 - app.services.knowledge_service - INFO - Loading knowledge base...
+2026-02-10 14:50:55,969 - app.services.knowledge_service - INFO - Knowledge base loaded: 4 materials, 2 tools, 3 machines
+2026-02-10 14:50:55,969 - __main__ - INFO - 📸 Инициализация парсера изображений...
+2026-02-10 14:50:55,969 - app.core.image_parser - WARNING - Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-10 14:50:55,969 - __main__ - INFO - 📨 Инициализация обработчика сообщений...
+2026-02-10 14:50:55,969 - app.core.image_parser - WARNING - Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-10 14:50:55,969 - __main__ - INFO - ✅ Все сервисы инициализированы
+2026-02-10 14:50:56,664 - aiogram.dispatcher - INFO - Start polling
+2026-02-10 14:50:56,878 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 14:53:05,531 - aiogram.dispatcher - INFO - Polling stopped
+2026-02-10 14:53:05,532 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-02-10 14:53:05,532 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-02-10 14:53:05,786 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 14:53:09,455 - __main__ - INFO - 🚀 Инициализация сервисов...
+2026-02-10 14:53:09,455 - __main__ - INFO - 🗄️ Инициализация пула соединений БД...
+2026-02-10 14:53:09,469 - app.services.database_pool - INFO - Database pool initialized: pool_size=5, max_overflow=10
+2026-02-10 14:53:09,472 - __main__ - INFO - 💾 Инициализация репозитория контекста...
+2026-02-10 14:53:09,473 - __main__ - INFO - 📚 Загрузка базы знаний...
+2026-02-10 14:53:09,473 - app.services.knowledge_service - INFO - Loading knowledge base...
+2026-02-10 14:53:09,474 - app.services.knowledge_service - INFO - Knowledge base loaded: 4 materials, 2 tools, 3 machines
+2026-02-10 14:53:09,474 - __main__ - INFO - 📸 Инициализация парсера изображений...
+2026-02-10 14:53:09,474 - app.core.image_parser - WARNING - ⚠️ Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-10 14:53:09,474 - app.core.image_parser - INFO - 💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH
+2026-02-10 14:53:09,474 - __main__ - WARNING - ⚠️ OCR недоступен (Tesseract не найден или не настроен)
+2026-02-10 14:53:09,474 - __main__ - INFO - 📨 Инициализация обработчика сообщений...
+2026-02-10 14:53:09,474 - app.core.image_parser - WARNING - ⚠️ Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-10 14:53:09,474 - app.core.image_parser - INFO - 💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH
+2026-02-10 14:53:09,474 - __main__ - INFO - ✅ Все сервисы инициализированы
+2026-02-10 14:53:10,188 - aiogram.dispatcher - INFO - Start polling
+2026-02-10 14:53:10,406 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 14:53:31,015 - aiogram.event - INFO - Update id=897835480 is handled. Duration 951 ms by bot id=8201932079
+2026-02-10 14:54:13,393 - app.core.conversation_orchestrator - INFO - Intent detected: engineering (confidence: 0.40)
+2026-02-10 14:54:13,393 - app.bot.handler - INFO - Orchestrator decision: mode=project, action=project_mode, fsm_enabled=False
+2026-02-10 14:54:13,641 - aiogram.event - INFO - Update id=897835481 is handled. Duration 251 ms by bot id=8201932079
+2026-02-10 14:55:12,249 - app.core.conversation_orchestrator - INFO - Intent detected: engineering (confidence: 0.40)
+2026-02-10 14:55:12,249 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=clarify_intent, fsm_enabled=False
+2026-02-10 14:55:12,563 - aiogram.event - INFO - Update id=897835482 is handled. Duration 314 ms by bot id=8201932079
+2026-02-10 15:00:49,191 - aiogram.dispatcher - INFO - Polling stopped
+2026-02-10 15:00:49,192 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-02-10 15:00:49,192 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-02-10 15:00:49,452 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 15:00:52,802 - __main__ - INFO - 🚀 Инициализация сервисов...
+2026-02-10 15:00:52,802 - __main__ - INFO - 🗄️ Инициализация пула соединений БД...
+2026-02-10 15:00:52,817 - app.services.database_pool - INFO - Database pool initialized: pool_size=5, max_overflow=10
+2026-02-10 15:00:52,821 - __main__ - INFO - 💾 Инициализация репозитория контекста...
+2026-02-10 15:00:52,822 - __main__ - INFO - 📚 Загрузка базы знаний...
+2026-02-10 15:00:52,822 - app.services.knowledge_service - INFO - Loading knowledge base...
+2026-02-10 15:00:52,822 - app.services.knowledge_service - INFO - Knowledge base loaded: 4 materials, 2 tools, 3 machines
+2026-02-10 15:00:52,822 - __main__ - INFO - 📸 Инициализация парсера изображений...
+2026-02-10 15:00:52,822 - app.core.image_parser - WARNING - ⚠️ Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-10 15:00:52,822 - app.core.image_parser - INFO - 💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH
+2026-02-10 15:00:52,822 - __main__ - WARNING - ⚠️ OCR недоступен (Tesseract не найден или не настроен)
+2026-02-10 15:00:52,822 - __main__ - INFO - 📨 Инициализация обработчика сообщений...
+2026-02-10 15:00:52,822 - app.core.image_parser - WARNING - ⚠️ Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-10 15:00:52,823 - app.core.image_parser - INFO - 💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH
+2026-02-10 15:00:52,824 - app.services.standard_service - INFO - Loaded 0 standards
+2026-02-10 15:00:52,824 - __main__ - INFO - ✅ Все сервисы инициализированы
+2026-02-10 15:00:53,555 - aiogram.dispatcher - INFO - Start polling
+2026-02-10 15:00:53,777 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 15:01:10,794 - aiogram.event - INFO - Update id=897835483 is handled. Duration 946 ms by bot id=8201932079
+2026-02-10 15:01:37,807 - app.core.conversation_orchestrator - INFO - Intent detected: work_management (confidence: 0.85)
+2026-02-10 15:01:37,808 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=work_management, fsm_enabled=False
+2026-02-10 15:01:37,811 - app.services.work_manager - ERROR - Error listing works: (sqlite3.OperationalError) no such column: user_decisions.operation_chain_json
+[SQL: SELECT user_decisions.id AS user_decisions_id, user_decisions.user_id AS user_decisions_user_id, user_decisions.timestamp AS user_decisions_timestamp, user_decisions.machine_id AS user_decisions_machine_id, user_decisions.material_id AS user_decisions_material_id, user_decisions.tool_id AS user_decisions_tool_id, user_decisions.diameter_start_mm AS user_decisions_diameter_start_mm, user_decisions.diameter_end_mm AS user_decisions_diameter_end_mm, user_decisions.length_mm AS user_decisions_length_mm, user_decisions.operation_chain_json AS user_decisions_operation_chain_json, user_decisions.operation_type AS user_decisions_operation_type, user_decisions.is_external AS user_decisions_is_external, user_decisions.tolerance_mm AS user_decisions_tolerance_mm, user_decisions.surface_roughness_ra AS user_decisions_surface_roughness_ra, user_decisions.bot_vc_m_min AS user_decisions_bot_vc_m_min, user_decisions.bot_rpm AS user_decisions_bot_rpm, user_decisions.bot_feed_mm_rev AS user_decisions_bot_feed_mm_rev, user_decisions.bot_ap_mm AS user_decisions_bot_ap_mm, user_decisions.bot_power_kw AS user_decisions_bot_power_kw, user_decisions.passes_strategy_json AS user_decisions_passes_strategy_json, user_decisions.total_passes AS user_decisions_total_passes, user_decisions.user_rpm AS user_decisions_user_rpm, user_decisions.user_feed_mm_rev AS user_decisions_user_feed_mm_rev, user_decisions.user_ap_mm AS user_decisions_user_ap_mm, user_decisions.comparison_choice AS user_decisions_comparison_choice, user_decisions.user_comment AS user_decisions_user_comment, user_decisions.diff_coeff_rpm AS user_decisions_diff_coeff_rpm, user_decisions.diff_coeff_feed AS user_decisions_diff_coeff_feed, user_decisions.diff_coeff_ap AS user_decisions_diff_coeff_ap, user_decisions.result_type AS user_decisions_result_type, user_decisions.result_details AS user_decisions_result_details, user_decisions.tool_life_minutes AS user_decisions_tool_life_minutes, user_decisions.actual_machining_time_min AS user_decisions_actual_machining_time_min, user_decisions.experience_level AS user_decisions_experience_level, user_decisions.variance_adaptation_score AS user_decisions_variance_adaptation_score, user_decisions.was_decision_adaptive AS user_decisions_was_decision_adaptive, user_decisions.full_context_json AS user_decisions_full_context_json, user_decisions.source AS user_decisions_source, user_decisions.session_id AS user_decisions_session_id 
+FROM user_decisions 
+WHERE user_decisions.user_id = ? AND user_decisions.session_id LIKE ? ORDER BY user_decisions.timestamp DESC
+ LIMIT ? OFFSET ?]
+[parameters: ('7173846851', 'work_%', 1000, 0)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+Traceback (most recent call last):
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.OperationalError: no such column: user_decisions.operation_chain_json
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\projects\cnc-assistant\app\services\work_manager.py", line 164, in list_works
+    ).order_by(UserDecision.timestamp.desc()).limit(limit).all()
+                                                           ~~~^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\orm\query.py", line 2704, in all
+    return self._iter().all()  # type: ignore
+           ~~~~~~~~~~^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\orm\query.py", line 2857, in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                                  ~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+        params,
+        ^^^^^^^
+        execution_options={"_sa_orm_load_options": self.load_options},
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2351, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2249, in _execute_internal
+    result: Result[Any] = compile_state_cls.orm_execute_statement(
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self,
+        ^^^^^
+    ...<4 lines>...
+        conn,
+        ^^^^^
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\orm\context.py", line 306, in orm_execute_statement
+    result = conn.execute(
+        statement, params or {}, execution_options=execution_options
+    )
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1419, in execute
+    return meth(
+        self,
+        distilled_parameters,
+        execution_options or NO_OPTIONS,
+    )
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\sql\elements.py", line 527, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self, distilled_params, execution_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1641, in _execute_clauseelement
+    ret = self._execute_context(
+        dialect,
+    ...<8 lines>...
+        cache_hit=cache_hit,
+    )
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        dialect, context, statement, parameters
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        e, str_statement, effective_parameters, cursor, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 2363, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) no such column: user_decisions.operation_chain_json
+[SQL: SELECT user_decisions.id AS user_decisions_id, user_decisions.user_id AS user_decisions_user_id, user_decisions.timestamp AS user_decisions_timestamp, user_decisions.machine_id AS user_decisions_machine_id, user_decisions.material_id AS user_decisions_material_id, user_decisions.tool_id AS user_decisions_tool_id, user_decisions.diameter_start_mm AS user_decisions_diameter_start_mm, user_decisions.diameter_end_mm AS user_decisions_diameter_end_mm, user_decisions.length_mm AS user_decisions_length_mm, user_decisions.operation_chain_json AS user_decisions_operation_chain_json, user_decisions.operation_type AS user_decisions_operation_type, user_decisions.is_external AS user_decisions_is_external, user_decisions.tolerance_mm AS user_decisions_tolerance_mm, user_decisions.surface_roughness_ra AS user_decisions_surface_roughness_ra, user_decisions.bot_vc_m_min AS user_decisions_bot_vc_m_min, user_decisions.bot_rpm AS user_decisions_bot_rpm, user_decisions.bot_feed_mm_rev AS user_decisions_bot_feed_mm_rev, user_decisions.bot_ap_mm AS user_decisions_bot_ap_mm, user_decisions.bot_power_kw AS user_decisions_bot_power_kw, user_decisions.passes_strategy_json AS user_decisions_passes_strategy_json, user_decisions.total_passes AS user_decisions_total_passes, user_decisions.user_rpm AS user_decisions_user_rpm, user_decisions.user_feed_mm_rev AS user_decisions_user_feed_mm_rev, user_decisions.user_ap_mm AS user_decisions_user_ap_mm, user_decisions.comparison_choice AS user_decisions_comparison_choice, user_decisions.user_comment AS user_decisions_user_comment, user_decisions.diff_coeff_rpm AS user_decisions_diff_coeff_rpm, user_decisions.diff_coeff_feed AS user_decisions_diff_coeff_feed, user_decisions.diff_coeff_ap AS user_decisions_diff_coeff_ap, user_decisions.result_type AS user_decisions_result_type, user_decisions.result_details AS user_decisions_result_details, user_decisions.tool_life_minutes AS user_decisions_tool_life_minutes, user_decisions.actual_machining_time_min AS user_decisions_actual_machining_time_min, user_decisions.experience_level AS user_decisions_experience_level, user_decisions.variance_adaptation_score AS user_decisions_variance_adaptation_score, user_decisions.was_decision_adaptive AS user_decisions_was_decision_adaptive, user_decisions.full_context_json AS user_decisions_full_context_json, user_decisions.source AS user_decisions_source, user_decisions.session_id AS user_decisions_session_id 
+FROM user_decisions 
+WHERE user_decisions.user_id = ? AND user_decisions.session_id LIKE ? ORDER BY user_decisions.timestamp DESC
+ LIMIT ? OFFSET ?]
+[parameters: ('7173846851', 'work_%', 1000, 0)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-02-10 15:01:37,822 - app.services.work_manager - ERROR - Error getting work: (sqlite3.OperationalError) no such column: user_decisions.operation_chain_json
+[SQL: SELECT user_decisions.id AS user_decisions_id, user_decisions.user_id AS user_decisions_user_id, user_decisions.timestamp AS user_decisions_timestamp, user_decisions.machine_id AS user_decisions_machine_id, user_decisions.material_id AS user_decisions_material_id, user_decisions.tool_id AS user_decisions_tool_id, user_decisions.diameter_start_mm AS user_decisions_diameter_start_mm, user_decisions.diameter_end_mm AS user_decisions_diameter_end_mm, user_decisions.length_mm AS user_decisions_length_mm, user_decisions.operation_chain_json AS user_decisions_operation_chain_json, user_decisions.operation_type AS user_decisions_operation_type, user_decisions.is_external AS user_decisions_is_external, user_decisions.tolerance_mm AS user_decisions_tolerance_mm, user_decisions.surface_roughness_ra AS user_decisions_surface_roughness_ra, user_decisions.bot_vc_m_min AS user_decisions_bot_vc_m_min, user_decisions.bot_rpm AS user_decisions_bot_rpm, user_decisions.bot_feed_mm_rev AS user_decisions_bot_feed_mm_rev, user_decisions.bot_ap_mm AS user_decisions_bot_ap_mm, user_decisions.bot_power_kw AS user_decisions_bot_power_kw, user_decisions.passes_strategy_json AS user_decisions_passes_strategy_json, user_decisions.total_passes AS user_decisions_total_passes, user_decisions.user_rpm AS user_decisions_user_rpm, user_decisions.user_feed_mm_rev AS user_decisions_user_feed_mm_rev, user_decisions.user_ap_mm AS user_decisions_user_ap_mm, user_decisions.comparison_choice AS user_decisions_comparison_choice, user_decisions.user_comment AS user_decisions_user_comment, user_decisions.diff_coeff_rpm AS user_decisions_diff_coeff_rpm, user_decisions.diff_coeff_feed AS user_decisions_diff_coeff_feed, user_decisions.diff_coeff_ap AS user_decisions_diff_coeff_ap, user_decisions.result_type AS user_decisions_result_type, user_decisions.result_details AS user_decisions_result_details, user_decisions.tool_life_minutes AS user_decisions_tool_life_minutes, user_decisions.actual_machining_time_min AS user_decisions_actual_machining_time_min, user_decisions.experience_level AS user_decisions_experience_level, user_decisions.variance_adaptation_score AS user_decisions_variance_adaptation_score, user_decisions.was_decision_adaptive AS user_decisions_was_decision_adaptive, user_decisions.full_context_json AS user_decisions_full_context_json, user_decisions.source AS user_decisions_source, user_decisions.session_id AS user_decisions_session_id 
+FROM user_decisions 
+WHERE user_decisions.user_id = ? AND user_decisions.session_id = ?
+ LIMIT ? OFFSET ?]
+[parameters: ('7173846851', 'work_W001', 1, 0)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+Traceback (most recent call last):
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.OperationalError: no such column: user_decisions.operation_chain_json
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\projects\cnc-assistant\app\services\work_manager.py", line 124, in get_work
+    ).first()
+      ~~~~~^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\orm\query.py", line 2759, in first
+    return self.limit(1)._iter().first()  # type: ignore
+           ~~~~~~~~~~~~~~~~~~~^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\orm\query.py", line 2857, in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                                  ~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+        params,
+        ^^^^^^^
+        execution_options={"_sa_orm_load_options": self.load_options},
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2351, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2249, in _execute_internal
+    result: Result[Any] = compile_state_cls.orm_execute_statement(
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self,
+        ^^^^^
+    ...<4 lines>...
+        conn,
+        ^^^^^
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\orm\context.py", line 306, in orm_execute_statement
+    result = conn.execute(
+        statement, params or {}, execution_options=execution_options
+    )
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1419, in execute
+    return meth(
+        self,
+        distilled_parameters,
+        execution_options or NO_OPTIONS,
+    )
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\sql\elements.py", line 527, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self, distilled_params, execution_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1641, in _execute_clauseelement
+    ret = self._execute_context(
+        dialect,
+    ...<8 lines>...
+        cache_hit=cache_hit,
+    )
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        dialect, context, statement, parameters
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        e, str_statement, effective_parameters, cursor, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 2363, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) no such column: user_decisions.operation_chain_json
+[SQL: SELECT user_decisions.id AS user_decisions_id, user_decisions.user_id AS user_decisions_user_id, user_decisions.timestamp AS user_decisions_timestamp, user_decisions.machine_id AS user_decisions_machine_id, user_decisions.material_id AS user_decisions_material_id, user_decisions.tool_id AS user_decisions_tool_id, user_decisions.diameter_start_mm AS user_decisions_diameter_start_mm, user_decisions.diameter_end_mm AS user_decisions_diameter_end_mm, user_decisions.length_mm AS user_decisions_length_mm, user_decisions.operation_chain_json AS user_decisions_operation_chain_json, user_decisions.operation_type AS user_decisions_operation_type, user_decisions.is_external AS user_decisions_is_external, user_decisions.tolerance_mm AS user_decisions_tolerance_mm, user_decisions.surface_roughness_ra AS user_decisions_surface_roughness_ra, user_decisions.bot_vc_m_min AS user_decisions_bot_vc_m_min, user_decisions.bot_rpm AS user_decisions_bot_rpm, user_decisions.bot_feed_mm_rev AS user_decisions_bot_feed_mm_rev, user_decisions.bot_ap_mm AS user_decisions_bot_ap_mm, user_decisions.bot_power_kw AS user_decisions_bot_power_kw, user_decisions.passes_strategy_json AS user_decisions_passes_strategy_json, user_decisions.total_passes AS user_decisions_total_passes, user_decisions.user_rpm AS user_decisions_user_rpm, user_decisions.user_feed_mm_rev AS user_decisions_user_feed_mm_rev, user_decisions.user_ap_mm AS user_decisions_user_ap_mm, user_decisions.comparison_choice AS user_decisions_comparison_choice, user_decisions.user_comment AS user_decisions_user_comment, user_decisions.diff_coeff_rpm AS user_decisions_diff_coeff_rpm, user_decisions.diff_coeff_feed AS user_decisions_diff_coeff_feed, user_decisions.diff_coeff_ap AS user_decisions_diff_coeff_ap, user_decisions.result_type AS user_decisions_result_type, user_decisions.result_details AS user_decisions_result_details, user_decisions.tool_life_minutes AS user_decisions_tool_life_minutes, user_decisions.actual_machining_time_min AS user_decisions_actual_machining_time_min, user_decisions.experience_level AS user_decisions_experience_level, user_decisions.variance_adaptation_score AS user_decisions_variance_adaptation_score, user_decisions.was_decision_adaptive AS user_decisions_was_decision_adaptive, user_decisions.full_context_json AS user_decisions_full_context_json, user_decisions.source AS user_decisions_source, user_decisions.session_id AS user_decisions_session_id 
+FROM user_decisions 
+WHERE user_decisions.user_id = ? AND user_decisions.session_id = ?
+ LIMIT ? OFFSET ?]
+[parameters: ('7173846851', 'work_W001', 1, 0)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-02-10 15:01:37,829 - app.services.work_manager - ERROR - Error creating work: (sqlite3.OperationalError) table user_decisions has no column named operation_chain_json
+[SQL: INSERT INTO user_decisions (id, user_id, timestamp, machine_id, material_id, tool_id, diameter_start_mm, diameter_end_mm, length_mm, operation_chain_json, operation_type, is_external, tolerance_mm, surface_roughness_ra, bot_vc_m_min, bot_rpm, bot_feed_mm_rev, bot_ap_mm, bot_power_kw, passes_strategy_json, total_passes, user_rpm, user_feed_mm_rev, user_ap_mm, comparison_choice, user_comment, diff_coeff_rpm, diff_coeff_feed, diff_coeff_ap, result_type, result_details, tool_life_minutes, actual_machining_time_min, experience_level, variance_adaptation_score, was_decision_adaptive, full_context_json, source, session_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: ('work_7173846851_W001_20260210_150137', '7173846851', '2026-02-10 12:01:37.828859', None, None, None, None, None, None, '[]', 'saved_work', 1, None, None, None, None, None, None, None, '{}', None, 0.0, 0.0, 0.0, 'custom', None, None, None, None, None, None, None, None, 'unknown', 0.0, 0, '{"work_number": "W001", "description": "Работа от 10.02.2026 15:01", "context": {"overall_confidence": 0.0, "user_id": "7173846851", "session_id": "session_20260210_150109", "assumptions_made": [], "defaults_used": [], "dialog_history": []}, "is_saved_work": true}', 'telegram', 'work_W001')]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+Traceback (most recent call last):
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.OperationalError: table user_decisions has no column named operation_chain_json
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\projects\cnc-assistant\app\services\work_manager.py", line 96, in create_work
+    self.db_session.commit()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2030, in commit
+    trans.commit(_to_root=True)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "<string>", line 2, in commit
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\orm\state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 1311, in commit
+    self._prepare_impl()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "<string>", line 2, in _prepare_impl
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\orm\state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 1286, in _prepare_impl
+    self.session.flush()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 4331, in flush
+    self._flush(objects)
+    ~~~~~~~~~~~^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 4466, in _flush
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 4427, in _flush
+    flush_context.execute()
+    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\orm\unitofwork.py", line 466, in execute
+    rec.execute(self)
+    ~~~~~~~~~~~^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\orm\unitofwork.py", line 642, in execute
+    util.preloaded.orm_persistence.save_obj(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self.mapper,
+        ^^^^^^^^^^^^
+        uow.states_for_mapper_hierarchy(self.mapper, False, False),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        uow,
+        ^^^^
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\orm\persistence.py", line 93, in save_obj
+    _emit_insert_statements(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        base_mapper,
+        ^^^^^^^^^^^^
+    ...<3 lines>...
+        insert,
+        ^^^^^^^
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\orm\persistence.py", line 1048, in _emit_insert_statements
+    result = connection.execute(
+        statement, multiparams, execution_options=execution_options
+    )
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1419, in execute
+    return meth(
+        self,
+        distilled_parameters,
+        execution_options or NO_OPTIONS,
+    )
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\sql\elements.py", line 527, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self, distilled_params, execution_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1641, in _execute_clauseelement
+    ret = self._execute_context(
+        dialect,
+    ...<8 lines>...
+        cache_hit=cache_hit,
+    )
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        dialect, context, statement, parameters
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        e, str_statement, effective_parameters, cursor, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 2363, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) table user_decisions has no column named operation_chain_json
+[SQL: INSERT INTO user_decisions (id, user_id, timestamp, machine_id, material_id, tool_id, diameter_start_mm, diameter_end_mm, length_mm, operation_chain_json, operation_type, is_external, tolerance_mm, surface_roughness_ra, bot_vc_m_min, bot_rpm, bot_feed_mm_rev, bot_ap_mm, bot_power_kw, passes_strategy_json, total_passes, user_rpm, user_feed_mm_rev, user_ap_mm, comparison_choice, user_comment, diff_coeff_rpm, diff_coeff_feed, diff_coeff_ap, result_type, result_details, tool_life_minutes, actual_machining_time_min, experience_level, variance_adaptation_score, was_decision_adaptive, full_context_json, source, session_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: ('work_7173846851_W001_20260210_150137', '7173846851', '2026-02-10 12:01:37.828859', None, None, None, None, None, None, '[]', 'saved_work', 1, None, None, None, None, None, None, None, '{}', None, 0.0, 0.0, 0.0, 'custom', None, None, None, None, None, None, None, None, 'unknown', 0.0, 0, '{"work_number": "W001", "description": "Работа от 10.02.2026 15:01", "context": {"overall_confidence": 0.0, "user_id": "7173846851", "session_id": "session_20260210_150109", "assumptions_made": [], "defaults_used": [], "dialog_history": []}, "is_saved_work": true}', 'telegram', 'work_W001')]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-02-10 15:01:38,122 - aiogram.event - INFO - Update id=897835484 is handled. Duration 317 ms by bot id=8201932079
+2026-02-10 15:02:56,539 - aiogram.dispatcher - INFO - Polling stopped
+2026-02-10 15:02:56,540 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-02-10 15:02:56,540 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-02-10 15:02:56,804 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 15:03:00,097 - __main__ - INFO - 🚀 Инициализация сервисов...
+2026-02-10 15:03:00,097 - __main__ - INFO - 🗄️ Инициализация пула соединений БД...
+2026-02-10 15:03:00,108 - app.services.database_pool - INFO - Database pool initialized: pool_size=5, max_overflow=10
+2026-02-10 15:03:00,111 - __main__ - INFO - 🔄 Запуск миграций базы данных...
+2026-02-10 15:03:00,111 - app.storage.migrations - INFO - Running database migrations...
+2026-02-10 15:03:00,112 - app.storage.migrations - INFO - Adding column 'operation_chain_json' to table 'user_decisions'
+2026-02-10 15:03:00,115 - app.storage.migrations - INFO - Migration completed: operation_chain_json added
+2026-02-10 15:03:00,115 - app.storage.migrations - INFO - All migrations completed
+2026-02-10 15:03:00,116 - __main__ - INFO - ✅ Миграции выполнены успешно
+2026-02-10 15:03:00,116 - __main__ - INFO - 💾 Инициализация репозитория контекста...
+2026-02-10 15:03:00,116 - __main__ - INFO - 📚 Загрузка базы знаний...
+2026-02-10 15:03:00,117 - app.services.knowledge_service - INFO - Loading knowledge base...
+2026-02-10 15:03:00,117 - app.services.knowledge_service - INFO - Knowledge base loaded: 4 materials, 2 tools, 3 machines
+2026-02-10 15:03:00,117 - __main__ - INFO - 📸 Инициализация парсера изображений...
+2026-02-10 15:03:00,117 - app.core.image_parser - WARNING - ⚠️ Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-10 15:03:00,117 - app.core.image_parser - INFO - 💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH
+2026-02-10 15:03:00,117 - __main__ - WARNING - ⚠️ OCR недоступен (Tesseract не найден или не настроен)
+2026-02-10 15:03:00,117 - __main__ - INFO - 📨 Инициализация обработчика сообщений...
+2026-02-10 15:03:00,117 - app.core.image_parser - WARNING - ⚠️ Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-10 15:03:00,117 - app.core.image_parser - INFO - 💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH
+2026-02-10 15:03:00,118 - app.services.standard_service - INFO - Loaded 0 standards
+2026-02-10 15:03:00,118 - __main__ - INFO - ✅ Все сервисы инициализированы
+2026-02-10 15:03:00,809 - aiogram.dispatcher - INFO - Start polling
+2026-02-10 15:03:01,021 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 15:03:21,943 - aiogram.event - INFO - Update id=897835485 is handled. Duration 934 ms by bot id=8201932079
+2026-02-10 15:03:23,909 - app.core.conversation_orchestrator - INFO - Intent detected: work_management (confidence: 0.85)
+2026-02-10 15:03:23,909 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=work_management, fsm_enabled=False
+2026-02-10 15:03:23,909 - app.services.context_repository - WARNING - Cannot save context without user_id
+2026-02-10 15:03:23,915 - app.services.work_manager - ERROR - Error creating work: (sqlite3.IntegrityError) NOT NULL constraint failed: user_decisions.diameter_start_mm
+[SQL: INSERT INTO user_decisions (id, user_id, timestamp, machine_id, material_id, tool_id, diameter_start_mm, diameter_end_mm, length_mm, operation_chain_json, operation_type, is_external, tolerance_mm, surface_roughness_ra, bot_vc_m_min, bot_rpm, bot_feed_mm_rev, bot_ap_mm, bot_power_kw, passes_strategy_json, total_passes, user_rpm, user_feed_mm_rev, user_ap_mm, comparison_choice, user_comment, diff_coeff_rpm, diff_coeff_feed, diff_coeff_ap, result_type, result_details, tool_life_minutes, actual_machining_time_min, experience_level, variance_adaptation_score, was_decision_adaptive, full_context_json, source, session_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: ('work_7173846851_W001_20260210_150323', '7173846851', '2026-02-10 12:03:23.915302', None, None, None, None, None, None, '[]', 'saved_work', 1, None, None, None, None, None, None, None, '{}', None, 0.0, 0.0, 0.0, 'custom', None, None, None, None, None, None, None, None, 'unknown', 0.0, 0, '{"work_number": "W001", "description": "Работа от 10.02.2026 15:03", "context": {"overall_confidence": 0.0, "session_id": "session_20260210_150323",  ... (14 characters truncated) ... ade": [], "defaults_used": ["machine_type", "machine_power", "tool_material", "tool_radius", "length"], "dialog_history": []}, "is_saved_work": true}', 'telegram', 'work_W001')]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+Traceback (most recent call last):
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.IntegrityError: NOT NULL constraint failed: user_decisions.diameter_start_mm
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\projects\cnc-assistant\app\services\work_manager.py", line 96, in create_work
+    self.db_session.commit()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2030, in commit
+    trans.commit(_to_root=True)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "<string>", line 2, in commit
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\orm\state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 1311, in commit
+    self._prepare_impl()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "<string>", line 2, in _prepare_impl
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\orm\state_changes.py", line 137, in _go
+    ret_value = fn(self, *arg, **kw)
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 1286, in _prepare_impl
+    self.session.flush()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 4331, in flush
+    self._flush(objects)
+    ~~~~~~~~~~~^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 4466, in _flush
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 224, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 4427, in _flush
+    flush_context.execute()
+    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\orm\unitofwork.py", line 466, in execute
+    rec.execute(self)
+    ~~~~~~~~~~~^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\orm\unitofwork.py", line 642, in execute
+    util.preloaded.orm_persistence.save_obj(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self.mapper,
+        ^^^^^^^^^^^^
+        uow.states_for_mapper_hierarchy(self.mapper, False, False),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        uow,
+        ^^^^
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\orm\persistence.py", line 93, in save_obj
+    _emit_insert_statements(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        base_mapper,
+        ^^^^^^^^^^^^
+    ...<3 lines>...
+        insert,
+        ^^^^^^^
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\orm\persistence.py", line 1048, in _emit_insert_statements
+    result = connection.execute(
+        statement, multiparams, execution_options=execution_options
+    )
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1419, in execute
+    return meth(
+        self,
+        distilled_parameters,
+        execution_options or NO_OPTIONS,
+    )
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\sql\elements.py", line 527, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self, distilled_params, execution_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1641, in _execute_clauseelement
+    ret = self._execute_context(
+        dialect,
+    ...<8 lines>...
+        cache_hit=cache_hit,
+    )
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        dialect, context, statement, parameters
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        e, str_statement, effective_parameters, cursor, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 2363, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.IntegrityError: (sqlite3.IntegrityError) NOT NULL constraint failed: user_decisions.diameter_start_mm
+[SQL: INSERT INTO user_decisions (id, user_id, timestamp, machine_id, material_id, tool_id, diameter_start_mm, diameter_end_mm, length_mm, operation_chain_json, operation_type, is_external, tolerance_mm, surface_roughness_ra, bot_vc_m_min, bot_rpm, bot_feed_mm_rev, bot_ap_mm, bot_power_kw, passes_strategy_json, total_passes, user_rpm, user_feed_mm_rev, user_ap_mm, comparison_choice, user_comment, diff_coeff_rpm, diff_coeff_feed, diff_coeff_ap, result_type, result_details, tool_life_minutes, actual_machining_time_min, experience_level, variance_adaptation_score, was_decision_adaptive, full_context_json, source, session_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: ('work_7173846851_W001_20260210_150323', '7173846851', '2026-02-10 12:03:23.915302', None, None, None, None, None, None, '[]', 'saved_work', 1, None, None, None, None, None, None, None, '{}', None, 0.0, 0.0, 0.0, 'custom', None, None, None, None, None, None, None, None, 'unknown', 0.0, 0, '{"work_number": "W001", "description": "Работа от 10.02.2026 15:03", "context": {"overall_confidence": 0.0, "session_id": "session_20260210_150323",  ... (14 characters truncated) ... ade": [], "defaults_used": ["machine_type", "machine_power", "tool_material", "tool_radius", "length"], "dialog_history": []}, "is_saved_work": true}', 'telegram', 'work_W001')]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2026-02-10 15:03:24,162 - aiogram.event - INFO - Update id=897835486 is handled. Duration 255 ms by bot id=8201932079
+2026-02-10 15:05:07,607 - aiogram.dispatcher - INFO - Polling stopped
+2026-02-10 15:05:07,608 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-02-10 15:05:07,608 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-02-10 15:05:07,858 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 15:05:11,212 - __main__ - INFO - 🚀 Инициализация сервисов...
+2026-02-10 15:05:11,212 - __main__ - INFO - 🗄️ Инициализация пула соединений БД...
+2026-02-10 15:05:11,223 - app.services.database_pool - INFO - Database pool initialized: pool_size=5, max_overflow=10
+2026-02-10 15:05:11,226 - __main__ - INFO - 🔄 Запуск миграций базы данных...
+2026-02-10 15:05:11,226 - app.storage.migrations - INFO - Running database migrations...
+2026-02-10 15:05:11,227 - app.storage.migrations - INFO - Column 'operation_chain_json' already exists. Skipping migration.
+2026-02-10 15:05:11,227 - app.storage.migrations - INFO - All migrations completed
+2026-02-10 15:05:11,227 - __main__ - INFO - ✅ Миграции выполнены успешно
+2026-02-10 15:05:11,227 - __main__ - INFO - 💾 Инициализация репозитория контекста...
+2026-02-10 15:05:11,228 - __main__ - INFO - 📚 Загрузка базы знаний...
+2026-02-10 15:05:11,228 - app.services.knowledge_service - INFO - Loading knowledge base...
+2026-02-10 15:05:11,228 - app.services.knowledge_service - INFO - Knowledge base loaded: 4 materials, 2 tools, 3 machines
+2026-02-10 15:05:11,228 - __main__ - INFO - 📸 Инициализация парсера изображений...
+2026-02-10 15:05:11,229 - app.core.image_parser - WARNING - ⚠️ Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-10 15:05:11,229 - app.core.image_parser - INFO - 💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH
+2026-02-10 15:05:11,229 - __main__ - WARNING - ⚠️ OCR недоступен (Tesseract не найден или не настроен)
+2026-02-10 15:05:11,229 - __main__ - INFO - 📨 Инициализация обработчика сообщений...
+2026-02-10 15:05:11,229 - app.core.image_parser - WARNING - ⚠️ Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-10 15:05:11,229 - app.core.image_parser - INFO - 💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH
+2026-02-10 15:05:11,230 - app.services.standard_service - INFO - Loaded 0 standards
+2026-02-10 15:05:11,230 - __main__ - INFO - ✅ Все сервисы инициализированы
+2026-02-10 15:05:11,929 - aiogram.dispatcher - INFO - Start polling
+2026-02-10 15:05:12,144 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 15:05:23,721 - app.core.conversation_orchestrator - INFO - Intent detected: work_management (confidence: 0.85)
+2026-02-10 15:05:23,721 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=work_management, fsm_enabled=False
+2026-02-10 15:05:23,721 - app.services.context_repository - WARNING - Cannot save context without user_id
+2026-02-10 15:05:23,729 - app.services.work_manager - INFO - Created work W001 for user 7173846851
+2026-02-10 15:05:24,739 - app.services.context_repository - WARNING - Cannot save context without user_id
+2026-02-10 15:05:24,740 - aiogram.event - INFO - Update id=897835487 is handled. Duration 1038 ms by bot id=8201932079
+2026-02-10 15:05:35,831 - aiogram.event - INFO - Update id=897835488 is handled. Duration 345 ms by bot id=8201932079
+2026-02-10 15:05:47,546 - app.core.conversation_orchestrator - INFO - Command detected: work_load
+2026-02-10 15:05:47,547 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=work_load, fsm_enabled=False
+2026-02-10 15:05:47,547 - app.services.context_repository - WARNING - Cannot save context without user_id
+2026-02-10 15:05:47,894 - aiogram.event - INFO - Update id=897835489 is handled. Duration 348 ms by bot id=8201932079
+2026-02-10 15:05:55,223 - app.core.conversation_orchestrator - INFO - Intent detected: noise (confidence: 0.30)
+2026-02-10 15:05:55,223 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=noise, fsm_enabled=False
+2026-02-10 15:05:55,523 - aiogram.event - INFO - Update id=897835490 is handled. Duration 302 ms by bot id=8201932079
+2026-02-10 15:06:06,928 - app.core.conversation_orchestrator - INFO - Intent detected: standard_part (confidence: 0.95)
+2026-02-10 15:06:06,928 - app.bot.handler - INFO - Orchestrator decision: mode=project, action=standard_part, fsm_enabled=True
+2026-02-10 15:06:06,928 - __main__ - ERROR - Error handling message: MessageHandler._handle_project_mode() got an unexpected keyword argument 'standard_type'
+Traceback (most recent call last):
+  File "C:\projects\cnc-assistant\app\bot\telegram_bot.py", line 650, in handle_message
+    result = await handler.process_message(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+    )
+    ^
+  File "C:\projects\cnc-assistant\app\bot\handler.py", line 145, in process_message
+    return await self._handle_project_mode(
+                 ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        user_text or '',
+        ^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        standard_number=standard_number
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+TypeError: MessageHandler._handle_project_mode() got an unexpected keyword argument 'standard_type'
+2026-02-10 15:06:07,247 - aiogram.event - INFO - Update id=897835491 is handled. Duration 319 ms by bot id=8201932079
+2026-02-10 15:06:22,807 - aiogram.dispatcher - INFO - Polling stopped
+2026-02-10 15:06:22,808 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-02-10 15:06:22,808 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-02-10 15:06:23,062 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 15:16:27,457 - __main__ - INFO - 🚀 Инициализация сервисов...
+2026-02-10 15:16:27,457 - __main__ - INFO - 🗄️ Инициализация пула соединений БД...
+2026-02-10 15:16:27,469 - app.services.database_pool - INFO - Database pool initialized: pool_size=5, max_overflow=10
+2026-02-10 15:16:27,472 - __main__ - INFO - 🔄 Запуск миграций базы данных...
+2026-02-10 15:16:27,472 - app.storage.migrations - INFO - Running database migrations...
+2026-02-10 15:16:27,473 - app.storage.migrations - INFO - Column 'operation_chain_json' already exists. Skipping migration.
+2026-02-10 15:16:27,473 - app.storage.migrations - INFO - All migrations completed
+2026-02-10 15:16:27,473 - __main__ - INFO - ✅ Миграции выполнены успешно
+2026-02-10 15:16:27,473 - __main__ - INFO - 💾 Инициализация репозитория контекста...
+2026-02-10 15:16:27,474 - __main__ - INFO - 📚 Загрузка базы знаний...
+2026-02-10 15:16:27,474 - app.services.knowledge_service - INFO - Loading knowledge base...
+2026-02-10 15:16:27,475 - app.services.knowledge_service - INFO - Knowledge base loaded: 4 materials, 2 tools, 3 machines
+2026-02-10 15:16:27,475 - __main__ - INFO - 📸 Инициализация парсера изображений...
+2026-02-10 15:16:27,475 - app.core.image_parser - WARNING - ⚠️ Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-10 15:16:27,475 - app.core.image_parser - INFO - 💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH
+2026-02-10 15:16:27,475 - __main__ - WARNING - ⚠️ OCR недоступен (Tesseract не найден или не настроен)
+2026-02-10 15:16:27,475 - __main__ - INFO - 📨 Инициализация обработчика сообщений...
+2026-02-10 15:16:27,475 - app.core.image_parser - WARNING - ⚠️ Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-10 15:16:27,475 - app.core.image_parser - INFO - 💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH
+2026-02-10 15:16:27,476 - app.services.standard_service - INFO - Loaded 0 standards
+2026-02-10 15:16:27,476 - __main__ - INFO - ✅ Все сервисы инициализированы
+2026-02-10 15:16:28,183 - aiogram.dispatcher - INFO - Start polling
+2026-02-10 15:16:28,402 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 15:16:54,352 - app.core.conversation_orchestrator - INFO - Intent detected: noise (confidence: 0.30)
+2026-02-10 15:16:54,353 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=noise, fsm_enabled=False
+2026-02-10 15:16:54,358 - app.services.context_repository - WARNING - Cannot save context without user_id
+2026-02-10 15:16:56,485 - aiogram.event - INFO - Update id=897835492 is handled. Duration 2154 ms by bot id=8201932079
+2026-02-10 15:17:06,460 - app.core.conversation_orchestrator - INFO - Intent detected: standard_part (confidence: 0.95)
+2026-02-10 15:17:06,460 - app.bot.handler - INFO - Orchestrator decision: mode=project, action=standard_part, fsm_enabled=True
+2026-02-10 15:17:06,461 - app.services.context_repository - WARNING - Cannot save context without user_id
+2026-02-10 15:17:06,799 - app.services.context_repository - WARNING - Cannot save context without user_id
+2026-02-10 15:17:06,799 - aiogram.event - INFO - Update id=897835493 is handled. Duration 339 ms by bot id=8201932079
+2026-02-10 15:19:29,055 - aiogram.dispatcher - INFO - Polling stopped
+2026-02-10 15:19:29,057 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-02-10 15:19:29,057 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-02-10 15:19:29,318 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 15:19:56,332 - __main__ - INFO - 🚀 Инициализация сервисов...
+2026-02-10 15:19:56,332 - __main__ - INFO - 🗄️ Инициализация пула соединений БД...
+2026-02-10 15:19:56,345 - app.services.database_pool - INFO - Database pool initialized: pool_size=5, max_overflow=10
+2026-02-10 15:19:56,348 - __main__ - INFO - 🔄 Запуск миграций базы данных...
+2026-02-10 15:19:56,348 - app.storage.migrations - INFO - Running database migrations...
+2026-02-10 15:19:56,349 - app.storage.migrations - INFO - Column 'operation_chain_json' already exists. Skipping migration.
+2026-02-10 15:19:56,350 - app.storage.migrations - INFO - All migrations completed
+2026-02-10 15:19:56,350 - __main__ - INFO - ✅ Миграции выполнены успешно
+2026-02-10 15:19:56,350 - __main__ - INFO - 💾 Инициализация репозитория контекста...
+2026-02-10 15:19:56,351 - __main__ - INFO - 📚 Загрузка базы знаний...
+2026-02-10 15:19:56,351 - app.services.knowledge_service - INFO - Loading knowledge base...
+2026-02-10 15:19:56,351 - app.services.knowledge_service - INFO - Knowledge base loaded: 4 materials, 2 tools, 3 machines
+2026-02-10 15:19:56,352 - __main__ - INFO - 📸 Инициализация парсера изображений...
+2026-02-10 15:19:56,352 - app.core.image_parser - WARNING - ⚠️ Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-10 15:19:56,352 - app.core.image_parser - INFO - 💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH
+2026-02-10 15:19:56,352 - __main__ - WARNING - ⚠️ OCR недоступен (Tesseract не найден или не настроен)
+2026-02-10 15:19:56,352 - __main__ - INFO - 📨 Инициализация обработчика сообщений...
+2026-02-10 15:19:56,352 - app.core.image_parser - WARNING - ⚠️ Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-10 15:19:56,352 - app.core.image_parser - INFO - 💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH
+2026-02-10 15:19:56,353 - app.services.standard_service - INFO - Loaded 0 standards
+2026-02-10 15:19:56,353 - __main__ - INFO - ✅ Все сервисы инициализированы
+2026-02-10 15:19:57,047 - aiogram.dispatcher - INFO - Start polling
+2026-02-10 15:19:57,254 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 15:20:17,631 - app.core.conversation_orchestrator - INFO - Intent detected: noise (confidence: 0.70)
+2026-02-10 15:20:17,631 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=noise, fsm_enabled=False
+2026-02-10 15:20:18,554 - aiogram.event - INFO - Update id=897835494 is handled. Duration 947 ms by bot id=8201932079
+2026-02-10 15:20:27,315 - app.core.conversation_orchestrator - INFO - Intent detected: standard_part (confidence: 0.95)
+2026-02-10 15:20:27,315 - app.bot.handler - INFO - Orchestrator decision: mode=project, action=standard_part, fsm_enabled=True
+2026-02-10 15:20:27,625 - aiogram.event - INFO - Update id=897835495 is handled. Duration 310 ms by bot id=8201932079
+2026-02-10 15:20:35,149 - app.core.conversation_orchestrator - INFO - Intent detected: noise (confidence: 0.30)
+2026-02-10 15:20:35,149 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=noise, fsm_enabled=False
+2026-02-10 15:20:35,635 - aiogram.event - INFO - Update id=897835496 is handled. Duration 486 ms by bot id=8201932079
+2026-02-10 15:22:54,007 - aiogram.dispatcher - INFO - Polling stopped
+2026-02-10 15:22:54,008 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-02-10 15:22:54,008 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-02-10 15:22:54,265 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 15:22:58,025 - __main__ - INFO - 🚀 Инициализация сервисов...
+2026-02-10 15:22:58,025 - __main__ - INFO - 🗄️ Инициализация пула соединений БД...
+2026-02-10 15:22:58,038 - app.services.database_pool - INFO - Database pool initialized: pool_size=5, max_overflow=10
+2026-02-10 15:22:58,041 - __main__ - INFO - 🔄 Запуск миграций базы данных...
+2026-02-10 15:22:58,041 - app.storage.migrations - INFO - Running database migrations...
+2026-02-10 15:22:58,042 - app.storage.migrations - INFO - Column 'operation_chain_json' already exists. Skipping migration.
+2026-02-10 15:22:58,043 - app.storage.migrations - INFO - All migrations completed
+2026-02-10 15:22:58,043 - __main__ - INFO - ✅ Миграции выполнены успешно
+2026-02-10 15:22:58,043 - __main__ - INFO - 💾 Инициализация репозитория контекста...
+2026-02-10 15:22:58,043 - __main__ - INFO - 📚 Загрузка базы знаний...
+2026-02-10 15:22:58,044 - app.services.knowledge_service - INFO - Loading knowledge base...
+2026-02-10 15:22:58,044 - app.services.knowledge_service - INFO - Knowledge base loaded: 4 materials, 2 tools, 3 machines
+2026-02-10 15:22:58,044 - __main__ - INFO - 📸 Инициализация парсера изображений...
+2026-02-10 15:22:58,044 - app.core.image_parser - WARNING - ⚠️ Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-10 15:22:58,044 - app.core.image_parser - INFO - 💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH
+2026-02-10 15:22:58,044 - __main__ - WARNING - ⚠️ OCR недоступен (Tesseract не найден или не настроен)
+2026-02-10 15:22:58,044 - __main__ - INFO - 📨 Инициализация обработчика сообщений...
+2026-02-10 15:22:58,044 - app.core.image_parser - WARNING - ⚠️ Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-10 15:22:58,044 - app.core.image_parser - INFO - 💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH
+2026-02-10 15:22:58,045 - app.services.standard_service - INFO - Loaded 0 standards
+2026-02-10 15:22:58,045 - __main__ - INFO - ✅ Все сервисы инициализированы
+2026-02-10 15:22:58,871 - aiogram.dispatcher - INFO - Start polling
+2026-02-10 15:22:59,151 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 15:23:05,462 - aiogram.event - INFO - Update id=897835497 is handled. Duration 1082 ms by bot id=8201932079
+2026-02-10 15:23:14,239 - app.core.conversation_orchestrator - INFO - Intent detected: standard_part (confidence: 0.85)
+2026-02-10 15:23:14,240 - app.bot.handler - INFO - Orchestrator decision: mode=project, action=standard_part, fsm_enabled=True
+2026-02-10 15:23:24,439 - aiogram.event - INFO - Update id=897835498 is handled. Duration 10200 ms by bot id=8201932079
+2026-02-10 15:23:35,663 - app.core.conversation_orchestrator - INFO - Intent detected: standard_part (confidence: 0.85)
+2026-02-10 15:23:35,663 - app.bot.handler - INFO - Orchestrator decision: mode=project, action=standard_part, fsm_enabled=True
+2026-02-10 15:23:35,924 - aiogram.event - INFO - Update id=897835499 is handled. Duration 262 ms by bot id=8201932079
+2026-02-10 15:23:43,090 - app.core.conversation_orchestrator - INFO - Intent detected: noise (confidence: 0.50)
+2026-02-10 15:23:43,090 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=noise, fsm_enabled=False
+2026-02-10 15:23:43,473 - aiogram.event - INFO - Update id=897835500 is handled. Duration 385 ms by bot id=8201932079
+2026-02-10 15:25:29,100 - aiogram.dispatcher - INFO - Polling stopped
+2026-02-10 15:25:29,101 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-02-10 15:25:29,101 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-02-10 15:25:29,359 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 15:26:38,303 - __main__ - INFO - 🚀 Инициализация сервисов...
+2026-02-10 15:26:38,303 - __main__ - INFO - 🗄️ Инициализация пула соединений БД...
+2026-02-10 15:26:38,317 - app.services.database_pool - INFO - Database pool initialized: pool_size=5, max_overflow=10
+2026-02-10 15:26:38,321 - __main__ - INFO - 🔄 Запуск миграций базы данных...
+2026-02-10 15:26:38,321 - app.storage.migrations - INFO - Running database migrations...
+2026-02-10 15:26:38,322 - app.storage.migrations - INFO - Column 'operation_chain_json' already exists. Skipping migration.
+2026-02-10 15:26:38,322 - app.storage.migrations - INFO - All migrations completed
+2026-02-10 15:26:38,322 - __main__ - INFO - ✅ Миграции выполнены успешно
+2026-02-10 15:26:38,322 - __main__ - INFO - 💾 Инициализация репозитория контекста...
+2026-02-10 15:26:38,323 - __main__ - INFO - 📚 Загрузка базы знаний...
+2026-02-10 15:26:38,323 - app.services.knowledge_service - INFO - Loading knowledge base...
+2026-02-10 15:26:38,324 - app.services.knowledge_service - INFO - Knowledge base loaded: 4 materials, 2 tools, 3 machines
+2026-02-10 15:26:38,324 - __main__ - INFO - 📸 Инициализация парсера изображений...
+2026-02-10 15:26:38,324 - app.core.image_parser - WARNING - ⚠️ Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-10 15:26:38,324 - app.core.image_parser - INFO - 💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH
+2026-02-10 15:26:38,324 - __main__ - WARNING - ⚠️ OCR недоступен (Tesseract не найден или не настроен)
+2026-02-10 15:26:38,324 - __main__ - INFO - 📨 Инициализация обработчика сообщений...
+2026-02-10 15:26:38,324 - app.core.image_parser - WARNING - ⚠️ Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-10 15:26:38,324 - app.core.image_parser - INFO - 💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH
+2026-02-10 15:26:38,325 - app.services.standard_service - INFO - Loaded 0 standards
+2026-02-10 15:26:38,325 - __main__ - INFO - ✅ Все сервисы инициализированы
+2026-02-10 15:26:39,019 - aiogram.dispatcher - INFO - Start polling
+2026-02-10 15:26:39,228 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 15:26:49,286 - aiogram.event - INFO - Update id=897835501 is handled. Duration 968 ms by bot id=8201932079
+2026-02-10 15:27:01,464 - aiogram.event - INFO - Update id=897835502 is handled. Duration 440 ms by bot id=8201932079
+2026-02-10 15:27:07,904 - app.core.conversation_orchestrator - INFO - Intent detected: noise (confidence: 0.30)
+2026-02-10 15:27:07,904 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=noise, fsm_enabled=False
+2026-02-10 15:27:08,192 - aiogram.event - INFO - Update id=897835503 is handled. Duration 291 ms by bot id=8201932079
+2026-02-10 15:27:20,830 - app.core.conversation_orchestrator - INFO - Intent detected: standard_part (confidence: 0.95)
+2026-02-10 15:27:20,830 - app.bot.handler - INFO - Orchestrator decision: mode=project, action=standard_part, fsm_enabled=True
+2026-02-10 15:27:20,830 - __main__ - ERROR - Error handling message: 'StandardService' object has no attribute 'get_standard_info'
+Traceback (most recent call last):
+  File "C:\projects\cnc-assistant\app\bot\telegram_bot.py", line 678, in handle_message
+    result = await handler.process_message(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+    )
+    ^
+  File "C:\projects\cnc-assistant\app\bot\handler.py", line 167, in process_message
+    return await self._handle_project_mode(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+    )
+    ^
+  File "C:\projects\cnc-assistant\app\bot\handler.py", line 489, in _handle_project_mode
+    standard_info = self.standard_service.get_standard_info(standard_type, standard_number or '')
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'StandardService' object has no attribute 'get_standard_info'. Did you mean: 'format_standard_info'?
+2026-02-10 15:27:21,114 - aiogram.event - INFO - Update id=897835504 is handled. Duration 284 ms by bot id=8201932079
+2026-02-10 15:28:26,512 - aiogram.dispatcher - INFO - Polling stopped
+2026-02-10 15:28:26,513 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-02-10 15:28:26,513 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-02-10 15:28:26,766 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 15:31:10,054 - __main__ - INFO - 🚀 Инициализация сервисов...
+2026-02-10 15:31:10,055 - __main__ - INFO - 🗄️ Инициализация пула соединений БД...
+2026-02-10 15:31:10,067 - app.services.database_pool - INFO - Database pool initialized: pool_size=5, max_overflow=10
+2026-02-10 15:31:10,070 - __main__ - INFO - 🔄 Запуск миграций базы данных...
+2026-02-10 15:31:10,071 - app.storage.migrations - INFO - Running database migrations...
+2026-02-10 15:31:10,071 - app.storage.migrations - INFO - Column 'operation_chain_json' already exists. Skipping migration.
+2026-02-10 15:31:10,072 - app.storage.migrations - INFO - All migrations completed
+2026-02-10 15:31:10,072 - __main__ - INFO - ✅ Миграции выполнены успешно
+2026-02-10 15:31:10,072 - __main__ - INFO - 💾 Инициализация репозитория контекста...
+2026-02-10 15:31:10,072 - __main__ - INFO - 📚 Загрузка базы знаний...
+2026-02-10 15:31:10,073 - app.services.knowledge_service - INFO - Loading knowledge base...
+2026-02-10 15:31:10,073 - app.services.knowledge_service - INFO - Knowledge base loaded: 4 materials, 2 tools, 3 machines
+2026-02-10 15:31:10,073 - __main__ - INFO - 📸 Инициализация парсера изображений...
+2026-02-10 15:31:10,073 - app.core.image_parser - WARNING - ⚠️ Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-10 15:31:10,073 - app.core.image_parser - INFO - 💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH
+2026-02-10 15:31:10,073 - __main__ - WARNING - ⚠️ OCR недоступен (Tesseract не найден или не настроен)
+2026-02-10 15:31:10,073 - __main__ - INFO - 📨 Инициализация обработчика сообщений...
+2026-02-10 15:31:10,073 - app.core.image_parser - WARNING - ⚠️ Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-10 15:31:10,074 - app.core.image_parser - INFO - 💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH
+2026-02-10 15:31:10,074 - app.services.standard_service - INFO - Loaded 0 standards
+2026-02-10 15:31:10,074 - __main__ - INFO - ✅ Все сервисы инициализированы
+2026-02-10 15:31:10,773 - aiogram.dispatcher - INFO - Start polling
+2026-02-10 15:31:10,993 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 15:33:39,317 - aiogram.event - INFO - Update id=897835505 is handled. Duration 956 ms by bot id=8201932079
+2026-02-10 15:33:44,064 - app.core.conversation_orchestrator - INFO - Intent detected: standard_part (confidence: 0.95)
+2026-02-10 15:33:44,064 - app.bot.handler - INFO - Orchestrator decision: mode=project, action=standard_part, fsm_enabled=True
+2026-02-10 15:33:44,398 - aiogram.event - INFO - Update id=897835506 is handled. Duration 335 ms by bot id=8201932079
+2026-02-10 15:46:02,167 - aiogram.dispatcher - INFO - Polling stopped
+2026-02-10 15:46:02,168 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-02-10 15:46:02,168 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-02-10 15:46:02,422 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'

@@ -1,7 +1,7 @@
 """
-Telegram-бот для сбора РЕШЕНИЙ операторов.
-Версия 5.0: Новая философия - сбор практики, а не рекомендаций.
-Использует: core/calculator.py, core/pass_strategy.py, storage/models.py
+AI-подобный Telegram бот без кнопок.
+Понимает контекст, ведет естественный диалог, делает предположения.
+Собирает реальный опыт операторов для обучения ИИ.
 """
 
 import asyncio
@@ -11,7 +11,6 @@ import sys
 from pathlib import Path
 from typing import Dict, Any, Optional
 from datetime import datetime
-import re
 
 # Добавляем корень проекта в путь Python
 project_root = Path(__file__).parent.parent.parent
@@ -19,98 +18,64 @@ sys.path.insert(0, str(project_root))
 
 from dotenv import load_dotenv
 
-load_dotenv()
-
-# Наши новые модули
-from app.core.calculator import (
-    CuttingCalculator, CuttingLimits, MaterialProperties,
-    ToolProperties, Geometry, create_calculator_from_context,
-    validate_recommendation_against_limits
-)
-from app.core.pass_strategy import (
-    PassStrategy, StrategyConfig, create_strategy_from_context,
-    format_strategy_for_user, validate_strategy_against_practice
-)
-from app.storage.models import (
-    save_user_decision, get_user_decisions, create_decision_id,
-    init_orm_database, get_session
-)
+# Загрузка .env
+env_path = project_root / ".env"
+if env_path.exists():
+    load_dotenv(env_path)
+    print(f"✅ Загружен .env из: {env_path}")
+else:
+    print(f"❌ Файл .env не найден: {env_path}")
+    sys.exit(1)
 
 from aiogram import Bot, Dispatcher, F, types
 from aiogram.client.default import DefaultBotProperties
 from aiogram.filters import Command
-from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.storage.memory import MemoryStorage
-from aiogram.fsm.state import State, StatesGroup
-from aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardBuilder
 
-# Создаем директорию для логов
-logs_dir = Path(__file__).parent.parent.parent / "logs"
+# Импорты новой архитектуры
+from app.core.context import Context, DataSource
+from app.core.parser import TextParser
+from app.core.image_parser import ImageParser
+from app.core.assumptions import AssumptionEngine
+from app.services.knowledge_service import KnowledgeService
+from app.services.tool_saver import ToolSaver
+from app.services.recommendation import get_turning_recommendation
+from app.bot.handler import MessageHandler
+from app.storage.models import init_orm_database, get_session, save_user_decision
+from app.storage.migrations import run_all_migrations
+
+# Настройка логирования
+logs_dir = project_root / "logs"
 logs_dir.mkdir(exist_ok=True)
-
-
-# ============================================================================
-# СОСТОЯНИЯ ДЛЯ НОВОЙ ЛОГИКИ
-# ============================================================================
-
-class CNCStates(StatesGroup):
-    """Состояния для сбора решений операторов."""
-    # Контекст
-    waiting_material = State()
-    waiting_operation = State()
-    waiting_machine_type = State()
-    waiting_machine_power = State()
-
-    # Геометрия
-    waiting_diameter_start = State()
-    waiting_diameter_end = State()
-    waiting_length = State()
-
-    # Инструмент
-    waiting_tool_material = State()
-    waiting_tool_radius = State()
-    waiting_tool_overhang = State()
-
-    # Рекомендация и сравнение
-    waiting_recommendation_view = State()  # показываем рекомендацию
-    waiting_comparison_rpm = State()  # спрашиваем про обороты
-    waiting_comparison_feed = State()  # спрашиваем про подачу
-    waiting_comparison_ap = State()  # спрашиваем про глубину
-
-    # Ручной ввод (если выбрано)
-    waiting_manual_rpm = State()
-    waiting_manual_feed = State()
-    waiting_manual_ap = State()
-
-    # Подтверждение
-    waiting_confirmation = State()
-
-
-# ============================================================================
-# НАСТРОЙКА ЛОГГИРОВАНИЯ
-# ============================================================================
 
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
         logging.StreamHandler(sys.stdout),
-        logging.FileHandler(logs_dir / "cnc_bot_v5.log", encoding='utf-8')
+        logging.FileHandler(logs_dir / "telegram_bot.log", encoding='utf-8')
     ]
 )
 logger = logging.getLogger(__name__)
 
-# ============================================================================
-# КОНФИГУРАЦИЯ БОТА
-# ============================================================================
-
+# Конфигурация
 BOT_TOKEN = os.getenv("TELEGRAM_TOKEN")
 if not BOT_TOKEN or BOT_TOKEN == "YOUR_BOT_TOKEN":
     logger.error("❌ Токен не найден! Проверьте .env файл")
-    print("❌ ОШИБКА: Токен бота не найден!")
-    print("❌ Проверьте файл .env и установите TELEGRAM_TOKEN")
     sys.exit(1)
+
+# Опциональная настройка пути к Tesseract OCR
+TESSERACT_CMD = os.getenv("TESSERACT_CMD") or os.getenv("TESSERACT_PATH")
+
+# Путь к базе данных (абсолютный путь от корня проекта)
+db_path = project_root / "app" / "storage" / "cnc.db"
+db_path.parent.mkdir(parents=True, exist_ok=True)  # Создаем директорию если её нет
+# Для Windows нужно использовать правильный формат пути
+if os.name == 'nt':  # Windows
+    DB_URL = f"sqlite:///{str(db_path).replace(chr(92), '/')}"
+else:  # Unix/Linux/Mac
+    DB_URL = f"sqlite:///{db_path.as_posix()}"
 
 # Инициализация бота
 bot = Bot(
@@ -120,1464 +85,1201 @@ bot = Bot(
 storage = MemoryStorage()
 dp = Dispatcher(storage=storage)
 
-# Инициализация базы данных
-try:
-    init_orm_database()
-    logger.info("✅ База данных инициализирована")
-except Exception as e:
-    logger.error(f"❌ Ошибка инициализации БД: {e}")
+# Глобальные сервисы (инициализируются при старте)
+knowledge_service: Optional[KnowledgeService] = None
+handler: Optional[MessageHandler] = None
+image_parser: Optional[ImageParser] = None
+context_repository: Optional[Any] = None  # ContextRepository
+db_pool: Optional[Any] = None  # DatabasePool
+
+# Хранилище контекстов пользователей (в памяти, для обратной совместимости)
+# В будущем будет использоваться только context_repository
+user_contexts: Dict[str, Context] = {}
 
 
-# ============================================================================
-# КЛАВИАТУРЫ ДЛЯ НОВОГО ДИАЛОГА
-# ============================================================================
-
-def create_main_menu_keyboard() -> ReplyKeyboardMarkup:
-    """Главное меню."""
-    builder = ReplyKeyboardBuilder()
-
-    builder.add(KeyboardButton(text="🎯 Новый подбор"))
-    builder.add(KeyboardButton(text="📊 Мои решения"))
-    builder.add(KeyboardButton(text="📚 База знаний"))
-    builder.add(KeyboardButton(text="❓ Помощь"))
-
-    builder.adjust(2, 2)
-    return builder.as_markup(resize_keyboard=True)
+def ensure_context_user_id(context: Context, user_id: str) -> None:
+    """
+    Убедиться что user_id установлен в контексте перед сохранением.
+    
+    Args:
+        context: Контекст для проверки
+        user_id: ID пользователя для установки
+    """
+    if not context.user_id and user_id:
+        context.user_id = user_id
+    if not context.session_id:
+        context.session_id = f"session_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
 
 
-def create_material_keyboard() -> ReplyKeyboardMarkup:
-    """Клавиатура для выбора материала."""
-    builder = ReplyKeyboardBuilder()
-
-    materials = [
-        "Сталь", "Алюминий", "Нержавейка",
-        "Чугун", "Титан", "Латунь", "Медь"
-    ]
-
-    for material in materials:
-        builder.add(KeyboardButton(text=material))
-
-    builder.add(KeyboardButton(text="🔙 Назад"))
-    builder.adjust(2, 2, 2, 1)
-
-    return builder.as_markup(resize_keyboard=True)
-
-
-def create_operation_keyboard() -> ReplyKeyboardMarkup:
-    """Клавиатура для выбора операции."""
-    builder = ReplyKeyboardBuilder()
-
-    operations = [
-        "Черновая", "Получистовая", "Чистовая",
-        "Проточка", "Растачивание"
-    ]
-
-    for op in operations:
-        builder.add(KeyboardButton(text=op))
-
-    builder.add(KeyboardButton(text="🔙 Назад"))
-    builder.adjust(2, 2, 1)
-
-    return builder.as_markup(resize_keyboard=True)
-
-
-def create_machine_type_keyboard() -> ReplyKeyboardMarkup:
-    """Клавиатура для выбора типа станка."""
-    builder = ReplyKeyboardBuilder()
-
-    machines = [
-        "Токарный ЧПУ", "Токарный ручной",
-        "Фрезерный ЧПУ", "Фрезерный ручной"
-    ]
-
-    for machine in machines:
-        builder.add(KeyboardButton(text=machine))
-
-    builder.add(KeyboardButton(text="🔙 Назад"))
-    builder.adjust(2, 2, 1)
-
-    return builder.as_markup(resize_keyboard=True)
-
-
-def create_power_keyboard() -> ReplyKeyboardMarkup:
-    """Клавиатура для выбора мощности станка."""
-    builder = ReplyKeyboardBuilder()
-
-    powers = ["7.5", "11", "15", "18.5", "22", "30", "45"]
-
-    for power in powers:
-        builder.add(KeyboardButton(text=f"{power} кВт"))
-
-    builder.add(KeyboardButton(text="Другая..."))
-    builder.add(KeyboardButton(text="🔙 Назад"))
-    builder.adjust(3, 3, 1, 1)
-
-    return builder.as_markup(resize_keyboard=True)
-
-
-def create_tool_material_keyboard() -> ReplyKeyboardMarkup:
-    """Клавиатура для выбора материала инструмента."""
-    builder = ReplyKeyboardBuilder()
-
-    materials = [
-        "Твердый сплав", "Быстрорез",
-        "Керамика", "CBN", "Другое"
-    ]
-
-    for material in materials:
-        builder.add(KeyboardButton(text=material))
-
-    builder.add(KeyboardButton(text="🔙 Назад"))
-    builder.adjust(2, 2, 1)
-
-    return builder.as_markup(resize_keyboard=True)
-
-
-def create_tool_radius_keyboard() -> ReplyKeyboardMarkup:
-    """Клавиатура для выбора радиуса пластины."""
-    builder = ReplyKeyboardBuilder()
-
-    radii = ["0.4", "0.6", "0.8", "1.0", "1.2", "1.6", "2.0", "2.4"]
-
-    for radius in radii:
-        builder.add(KeyboardButton(text=f"{radius} мм"))
-
-    builder.add(KeyboardButton(text="🔙 Назад"))
-    builder.adjust(3, 3, 3)
-
-    return builder.as_markup(resize_keyboard=True)
-
-
-def create_comparison_keyboard() -> InlineKeyboardMarkup:
-    """Клавиатура для сравнения с рекомендацией."""
-    builder = InlineKeyboardBuilder()
-
-    builder.add(types.InlineKeyboardButton(
-        text="⬇️ Ниже",
-        callback_data="comparison_lower"
-    ))
-    builder.add(types.InlineKeyboardButton(
-        text="✅ Так же",
-        callback_data="comparison_same"
-    ))
-    builder.add(types.InlineKeyboardButton(
-        text="⬆️ Выше",
-        callback_data="comparison_higher"
-    ))
-    builder.add(types.InlineKeyboardButton(
-        text="✏️ Вручную",
-        callback_data="comparison_manual"
-    ))
-
-    builder.adjust(2, 2)
-    return builder.as_markup()
-
-
-def create_confirmation_keyboard() -> InlineKeyboardMarkup:
-    """Клавиатура для подтверждения сохранения."""
-    builder = InlineKeyboardBuilder()
-
-    builder.add(types.InlineKeyboardButton(
-        text="💾 Сохранить решение",
-        callback_data="save_decision"
-    ))
-    builder.add(types.InlineKeyboardButton(
-        text="🔄 Начать заново",
-        callback_data="restart"
-    ))
-
-    builder.adjust(1)
-    return builder.as_markup()
+def save_context_safe(context: Context, user_id: str) -> None:
+    """
+    Безопасно сохранить контекст с проверкой user_id.
+    
+    Args:
+        context: Контекст для сохранения
+        user_id: ID пользователя
+    """
+    ensure_context_user_id(context, user_id)
+    if context_repository:
+        context_repository.save_context(context)
+    else:
+        user_contexts[user_id] = context
 
 
 # ============================================================================
 # ФОРМАТИРОВАНИЕ СООБЩЕНИЙ
 # ============================================================================
 
-def format_welcome_message(name: str) -> str:
-    """Форматировать приветственное сообщение."""
-    return (
-        f"👋 Привет, {name}!\n\n"
-        f"🤖 <b>Я - CNC Assistant v5.0</b>\n\n"
-        f"<b>Новая философия:</b>\n"
-        f"• 📊 <b>Я НЕ даю истину</b> - я собираю практику\n"
-        f"• 🧠 <b>Ваши решения</b> обучают будущего ИИ-технолога\n"
-        f"• ⚖️ <b>Сравниваю</b> рекомендации с реальностью\n\n"
-        f"<i>Давайте соберем ваш опыт для обучения ИИ!</i>"
-    )
-
-
-def format_context_summary(context: Dict[str, Any]) -> str:
-    """Форматировать сводку контекста."""
+def format_context_summary(context: Context) -> str:
+    """Форматировать краткую сводку контекста."""
     lines = []
+    
+    if context.material:
+        source_icon = "👤" if context.is_field_from_user('material') else "🤖"
+        lines.append(f"{source_icon} Материал: <b>{context.material}</b>")
+    
+    if context.diameter_start and context.diameter_end:
+        source_icon = "👤" if context.is_field_from_user('diameter_start') else "🤖"
+        lines.append(f"{source_icon} Диаметры: <b>Ø{context.diameter_start} → Ø{context.diameter_end} мм</b>")
+    
+    if context.operation:
+        source_icon = "👤" if context.is_field_from_user('operation') else "🤖"
+        lines.append(f"{source_icon} Операция: <b>{context.operation}</b>")
+    
+    if context.mode:
+        source_icon = "👤" if context.is_field_from_user('mode') else "🤖"
+        lines.append(f"{source_icon} Режим: <b>{context.mode}</b>")
+    
+    if context.machine_type:
+        source_icon = "👤" if context.is_field_from_user('machine_type') else "🤖"
+        lines.append(f"{source_icon} Станок: <b>{context.machine_type}</b>")
+    
+    if context.tool_name:
+        lines.append(f"🔧 Инструмент: <b>{context.tool_name}</b>")
+    
+    if context.assumptions_made:
+        lines.append(f"\n💡 <i>Я предположил: {', '.join(context.assumptions_made)}</i>")
+    
+    if context.overall_confidence > 0:
+        confidence_pct = int(context.overall_confidence * 100)
+        lines.append(f"🎯 <i>Уверенность: {confidence_pct}%</i>")
+    
+    return "\n".join(lines) if lines else "Пока нет данных..."
 
-    lines.append("📋 <b>СВОДКА КОНТЕКСТА:</b>")
-    lines.append("")
-    lines.append(f"• <b>Материал:</b> {context.get('material', 'не указан')}")
-    lines.append(f"• <b>Операция:</b> {context.get('operation', 'не указана')}")
 
-    if 'machine_type' in context:
-        lines.append(f"• <b>Станок:</b> {context.get('machine_type')}")
-
-    if 'machine_power' in context:
-        lines.append(f"• <b>Мощность:</b> {context.get('machine_power')} кВт")
-
-    if 'diameter_start' in context and 'diameter_end' in context:
-        lines.append(f"• <b>Диаметры:</b> {context.get('diameter_start')} → {context.get('diameter_end')} мм")
-        stock = (context.get('diameter_start', 0) - context.get('diameter_end', 0)) / 2
-        lines.append(f"• <b>Припуск:</b> {stock:.1f} мм на сторону")
-
-    if 'length' in context:
-        lines.append(f"• <b>Длина:</b> {context.get('length')} мм")
-
-    if 'tool_material' in context:
-        lines.append(f"• <b>Инструмент:</b> {context.get('tool_material')}")
-
-    if 'tool_radius' in context:
-        lines.append(f"• <b>Радиус пластины:</b> {context.get('tool_radius')} мм")
-
-    return "\n".join(lines)
-
-
-def format_recommendation_with_strategy(
-        recommendation: Dict[str, Any],
-        strategy: Dict[str, Any],
-        context: Dict[str, Any]
-) -> str:
-    """Форматировать рекомендацию со стратегией проходов."""
+def format_recommendation(recommendation: Dict[str, Any], context: Context) -> str:
+    """Форматировать рекомендацию в естественном виде."""
     lines = []
-
-    lines.append("🎯 <b>РЕКОМЕНДАЦИЯ (ТАБЛИЧНЫЕ ЗНАЧЕНИЯ):</b>")
+    
+    lines.append("🎯 <b>РЕКОМЕНДУЮ:</b>")
     lines.append("")
-
+    
     # Основные параметры
-    lines.append(f"• <b>Скорость резания:</b> {recommendation.get('vc', 0):.1f} м/мин")
-    lines.append(f"• <b>Обороты:</b> {recommendation.get('rpm', 0):.0f} об/мин")
-    lines.append(f"• <b>Подача:</b> {recommendation.get('feed', 0):.3f} мм/об")
-    lines.append(f"• <b>Глубина резания:</b> {recommendation.get('ap', 0):.2f} мм")
-    lines.append(f"• <b>Расчетная мощность:</b> {recommendation.get('power_kw', 0):.1f} кВт")
+    vc = recommendation.get('vc_m_min') or recommendation.get('vc', 0)
+    rpm = recommendation.get('rpm', 0)
+    feed = recommendation.get('feed_mm_rev') or recommendation.get('feed', 0)
+    ap = recommendation.get('ap_mm') or recommendation.get('ap', 0)
+    power = recommendation.get('power_kw', 0)
+    
+    lines.append(f"⚡ Скорость резания: <code>{vc:.0f} м/мин</code>")
+    lines.append(f"🔄 Обороты: <code>{rpm:.0f} об/мин</code>")
+    lines.append(f"📏 Подача: <code>{feed:.2f} мм/об</code>")
+    lines.append(f"🔪 Глубина: <code>{ap:.1f} мм</code>")
+    
+    if power > 0:
+        lines.append(f"⚙️ Мощность: <code>{power:.1f} кВт</code>")
+    
+    # Объяснение
     lines.append("")
-
-    # Стратегия проходов
-    lines.append("📊 <b>СТРАТЕГИЯ ПРОХОДОВ:</b>")
-    lines.append(f"• <b>Тип операции:</b> {strategy.get('operation_type', 'черновая')}")
-    lines.append(f"• <b>Количество проходов:</b> {strategy.get('total_passes', 1)}")
-    lines.append(f"• <b>Средняя глубина:</b> {strategy.get('avg_ap_mm', 0):.2f} мм")
-    lines.append("")
-
-    # Ключевое сообщение
-    lines.append("<i>📌 На практике операторы часто корректируют эти параметры</i>")
-    lines.append("<i>   в зависимости от конкретных условий, инструмента и опыта.</i>")
-    lines.append("")
-
+    lines.append("<b>Почему такие параметры:</b>")
+    
+    if context.material:
+        material_explanations = {
+            'сталь': 'Для стали использую средние скорости резания',
+            'алюминий': 'Алюминий обрабатывается на высоких скоростях',
+            'нержавейка': 'Нержавейка требует более низких скоростей',
+            'титан': 'Титан обрабатывается очень аккуратно, низкие скорости'
+        }
+        explanation = material_explanations.get(context.material.lower(), 'Стандартные параметры для этого материала')
+        lines.append(f"• {explanation}")
+    
+    if context.mode:
+        mode_explanations = {
+            'черновая': 'Черновая обработка — максимальный съём металла',
+            'чистовая': 'Чистовая обработка — акцент на качество поверхности',
+            'получистовая': 'Получистовая — баланс между производительностью и качеством'
+        }
+        explanation = mode_explanations.get(context.mode.lower(), '')
+        if explanation:
+            lines.append(f"• {explanation}")
+    
     # Предупреждения
-    warnings = recommendation.get('warnings', []) + strategy.get('warnings', [])
+    warnings = recommendation.get('warnings', [])
     if warnings:
-        lines.append("⚠️ <b>ВНИМАНИЕ:</b>")
-        for warning in warnings[:3]:  # показываем не более 3 предупреждений
-            lines.append(f"• {warning}")
         lines.append("")
-
+        lines.append("⚠️ <b>Обратите внимание:</b>")
+        for warning in warnings[:3]:  # Максимум 3 предупреждения
+            lines.append(f"• {warning}")
+    
+    # Предположения
+    if context.assumptions_made:
+        lines.append("")
+        lines.append("💡 <b>Я предположил:</b>")
+        for assumption in context.assumptions_made:
+            metadata = context.get_field_metadata(assumption)
+            if metadata and metadata.reasoning:
+                lines.append(f"• {assumption}: {metadata.reasoning}")
+    
+    lines.append("")
+    lines.append("💬 <b>Какие параметры вы используете на практике?</b>")
+    lines.append("<i>Опишите свои режимы резания — это поможет улучшить рекомендации.</i>")
+    
     return "\n".join(lines)
 
 
-def format_comparison_prompt(
-        parameter: str,
-        recommended_value: float,
-        unit: str
-) -> str:
-    """Форматировать запрос на сравнение."""
-    param_names = {
-        "rpm": ("обороты шпинделя", "об/мин"),
-        "feed": ("подачу на оборот", "мм/об"),
-        "ap": ("глубину резания", "мм")
-    }
-
-    name, actual_unit = param_names.get(parameter, (parameter, unit))
-
-    return (
-        f"<b>Сравнение: {name}</b>\n\n"
-        f"🎯 <b>Табличная рекомендация:</b> {recommended_value:.1f} {actual_unit}\n\n"
-        f"<i>А какие {name} ВЫ используете на практике?</i>\n"
-        f"• ⬇️ <b>Ниже</b> рекомендации?\n"
-        f"• ✅ <b>Примерно так же</b>?\n"
-        f"• ⬆️ <b>Выше</b> рекомендации?\n"
-        f"• ✏️ Хочу <b>ввести своё значение</b>"
-    )
-
-
-def format_decision_result(
-        recommendation: Dict[str, Any],
-        user_values: Dict[str, float],
-        comparison_choices: Dict[str, str]
-) -> str:
-    """Форматировать результат решения."""
+def format_clarification_request(context: Context, missing_fields: list) -> str:
+    """Форматировать запрос на уточнение в естественном виде."""
     lines = []
-
-    lines.append("📋 <b>ВАШЕ РЕШЕНИЕ СОХРАНЕНО!</b>")
+    
+    lines.append("🤔 <b>Нужно уточнить несколько моментов:</b>")
     lines.append("")
-
-    lines.append("<b>Сравнение с табличными значениями:</b>")
-    lines.append("<code>Параметр     | Таблица | Вы | Отношение</code>")
-    lines.append("<code>" + "-" * 45 + "</code>")
-
-    for param in ["rpm", "feed", "ap"]:
-        rec_val = recommendation.get(param, 0)
-        user_val = user_values.get(param, 0)
-
-        if rec_val > 0:
-            ratio = user_val / rec_val
-
-            if ratio < 0.9:
-                icon = "⬇️"
-            elif ratio > 1.1:
-                icon = "⬆️"
-            else:
-                icon = "✅"
-
-            # Форматируем значения
-            if param == "rpm":
-                rec_str = f"{rec_val:.0f}"
-                user_str = f"{user_val:.0f}"
-                param_name = "Обороты"
-            elif param == "feed":
-                rec_str = f"{rec_val:.3f}"
-                user_str = f"{user_val:.3f}"
-                param_name = "Подача"
-            else:  # ap
-                rec_str = f"{rec_val:.2f}"
-                user_str = f"{user_val:.2f}"
-                param_name = "Глубина"
-
-            lines.append(f"<code>{param_name:12} | {rec_str:7} | {user_str:4} | {icon} {ratio:.2f}x</code>")
-
+    
+    if 'material' in missing_fields:
+        lines.append("• <b>Из какого материала</b> заготовка? (сталь, алюминий, нержавейка...)")
+    
+    if 'diameter_start' in missing_fields or 'diameter_end' in missing_fields:
+        lines.append("• <b>Какие диаметры?</b> (например: с Ø100 до Ø90)")
+    
+    if 'operation' in missing_fields:
+        lines.append("• <b>Какая операция?</b> (черновая, чистовая...)")
+    
+    # Показываем что уже известно
+    known = format_context_summary(context)
+    if known and known != "Пока нет данных...":
+        lines.append("")
+        lines.append("<b>Что я уже знаю:</b>")
+        lines.append(known)
+    
     lines.append("")
-    lines.append("<i>🧠 Это решение будет использовано для обучения ИИ-технолога.</i>")
-    lines.append("<i>Спасибо за ваш опыт!</i>")
-
+    lines.append("💬 <i>Можете описать всё в одном сообщении, я пойму.</i>")
+    
     return "\n".join(lines)
 
 
 # ============================================================================
-# УТИЛИТЫ ДЛЯ ОБРАБОТКИ ВВОДА
-# ============================================================================
-
-class InputParser:
-    """Парсер ввода пользователя."""
-
-    @staticmethod
-    def parse_number(text: str) -> Optional[float]:
-        """Парсить число из текста."""
-        try:
-            # Убираем все нецифровые символы, кроме точки и запятой
-            clean_text = ''.join(c for c in text if c.isdigit() or c in ',.')
-
-            if not clean_text:
-                return None
-
-            # Заменяем запятую на точку
-            clean_text = clean_text.replace(',', '.')
-
-            # Берем первое число
-            import re
-            match = re.search(r'\d+(?:\.\d+)?', clean_text)
-            if match:
-                return float(match.group())
-
-            return None
-        except:
-            return None
-
-    @staticmethod
-    def parse_diameter(text: str) -> Optional[float]:
-        """Парсить диаметр."""
-        value = InputParser.parse_number(text)
-        if value and 0.1 <= value <= 2000:
-            return value
-        return None
-
-    @staticmethod
-    def parse_power(text: str) -> Optional[float]:
-        """Парсить мощность."""
-        value = InputParser.parse_number(text)
-        if value and 1 <= value <= 500:
-            return value
-        return None
-
-    @staticmethod
-    def parse_length(text: str) -> Optional[float]:
-        """Парсить длину."""
-        value = InputParser.parse_number(text)
-        if value and 1 <= value <= 5000:
-            return value
-        return None
-
-    @staticmethod
-    def parse_overhang(text: str) -> Optional[float]:
-        """Парсить вылет инструмента."""
-        value = InputParser.parse_number(text)
-        if value and 10 <= value <= 500:
-            return value
-        return None
-
-
-# ============================================================================
-# ОБРАБОТЧИКИ КОМАНД
+# ОБРАБОТЧИКИ СООБЩЕНИЙ
 # ============================================================================
 
 @dp.message(Command("start", "help"))
-async def cmd_start(message: Message, state: FSMContext):
+async def cmd_start(message: types.Message, state: FSMContext):
     """Начало работы с ботом."""
     await state.clear()
-
-    await message.answer(
-        format_welcome_message(message.from_user.first_name or "друг"),
-        reply_markup=create_main_menu_keyboard()
-    )
-    logger.info(f"Пользователь {message.from_user.id} начал работу")
-
-
-@dp.message(F.text == "🎯 Новый подбор")
-async def start_new_selection(message: Message, state: FSMContext):
-    """Начать новый подбор."""
-    await state.clear()
-    await state.set_state(CNCStates.waiting_material)
-
-    await message.answer(
-        "🔧 <b>НОВЫЙ ПОДБОР РЕЖИМОВ</b>\n\n"
-        "<i>Цель: собрать ваше РЕАЛЬНОЕ решение для обучения ИИ.</i>\n\n"
-        "1️⃣ Выберите материал заготовки:",
-        reply_markup=create_material_keyboard()
-    )
-
-
-@dp.message(F.text == "📊 Мои решения")
-async def show_my_decisions(message: Message):
-    """Показать решения пользователя."""
+    
     user_id = str(message.from_user.id)
+    user_name = message.from_user.first_name or "друг"
+    
+    # Проверяем, есть ли история у пользователя
+    if context_repository:
+        existing_context = context_repository.get_context(user_id)
+    else:
+        existing_context = user_contexts.get(user_id)
+    has_history = existing_context and (
+        existing_context.dialog_history or
+        existing_context.material or
+        existing_context.machine_type or
+        existing_context.tool_name
+    )
+    
+    if has_history:
+        # Есть история - предлагаем продолжить или начать заново
+        welcome_text = (
+            f"👋 <b>Привет, {user_name}!</b>\n\n"
+            f"📋 <b>Я помню нашу предыдущую работу:</b>\n\n"
+        )
+        
+        # Показываем что уже известно
+        if existing_context.machine_type:
+            # Проверяем, не является ли это неизвестным станком (не стандартный тип)
+            known_types = ['токарный чпу', 'токарный ручной', 'фрезерный чпу', 'фрезерный ручной']
+            if existing_context.machine_type.lower() not in known_types:
+                welcome_text += f"🏭 <b>Станок:</b> {existing_context.machine_type} <i>(сохранён в базу)</i>\n"
+            else:
+                welcome_text += f"🏭 <b>Станок:</b> {existing_context.machine_type}\n"
+        
+        if existing_context.material:
+            # Проверяем, не является ли это неизвестным материалом
+            known_materials = ['сталь', 'алюминий', 'нержавейка', 'титан', 'чугун', 'латунь', 'медь']
+            if existing_context.material.lower() not in known_materials:
+                welcome_text += f"🔩 <b>Материал:</b> {existing_context.material} <i>(сохранён в базу)</i>\n"
+            else:
+                welcome_text += f"🔩 <b>Материал:</b> {existing_context.material}\n"
+        
+        if existing_context.tool_name:
+            welcome_text += f"🔧 <b>Инструмент:</b> {existing_context.tool_name}\n"
+        if existing_context.diameter_start and existing_context.diameter_end:
+            welcome_text += f"📏 <b>Диаметры:</b> Ø{existing_context.diameter_start} → Ø{existing_context.diameter_end} мм\n"
+        
+        welcome_text += (
+            "\n💬 <b>Что хотите сделать?</b>\n\n"
+            "• Опишите новую задачу обработки\n"
+            "• Добавить/изменить инструмент (или отправьте фото)\n"
+            "• Изменить параметры станка\n"
+            "• <code>история</code> - показать историю диалога и работы\n"
+            "• <code>мои работы</code> - список сохранённых работ\n"
+            "• <code>сохранить работу</code> - сохранить текущую задачу\n"
+            "• Начать с чистого листа (/start для нового контекста)\n\n"
+            "<i>Просто напишите что нужно, я пойму.</i>"
+        )
+    else:
+        # Новая сессия - стандартное приветствие
+        welcome_text = (
+            f"👋 <b>Привет, {user_name}!</b>\n\n"
+            f"Я <b>CNC Assistant</b> — твой ИИ-помощник для подбора режимов резания.\n\n"
+            f"💬 <b>Что я умею:</b>\n\n"
+            f"• Подбирать режимы резания по описанию задачи\n"
+            f"• Распознавать инструменты с фотографий\n"
+            f"• Помнить контекст между сообщениями\n"
+            f"• Делать разумные предположения\n\n"
+            f"📝 <b>Просто опиши задачу в свободной форме:</b>\n\n"
+            f"• <i>\"Сталь, токарный ЧПУ, снять с Ø100 до Ø90\"</i>\n"
+            f"• <i>\"Алюминий, черновая обработка, станок 11 кВт\"</i>\n"
+            f"• <i>\"Проточить нержавейку, радиус пластины 0.8 мм\"</i>\n\n"
+            f"💡 <i>Или начни с описания станка, на котором работаешь.</i>"
+        )
+    
+    await message.answer(welcome_text)
 
+
+@dp.message(F.photo)
+async def handle_photo(message: types.Message, state: FSMContext):
+    """Обработка фотографий инструментов."""
+    user_id = str(message.from_user.id)
+    
+    # Получаем или создаем контекст
+    if context_repository:
+        context = context_repository.get_context(user_id)
+        if not context:
+            context = Context()
+            context.user_id = user_id
+            context_repository.save_context(context)
+    else:
+        context = user_contexts.get(user_id)
+        if not context:
+            context = Context()
+            context.user_id = user_id
+            user_contexts[user_id] = context
+    
     try:
-        with get_session() as session:
-            decisions = get_user_decisions(session, user_id, limit=10)
-
-            if not decisions:
+        # Получаем самое большое фото
+        photo = message.photo[-1]
+        
+        # Скачиваем фото
+        file = await bot.get_file(photo.file_id)
+        image_data = await bot.download_file(file.file_path)
+        image_bytes = image_data.read()
+        
+        # Парсим изображение
+        if not image_parser:
+            await message.answer(
+                "❌ OCR не настроен. Установите pytesseract и Pillow для распознавания фотографий."
+            )
+            return
+        
+        # Проверяем, что OCR доступен перед парсингом
+        if not image_parser or not image_parser.ocr_available:
+            await message.answer(
+                "⚠️ <b>OCR не настроен</b>\n\n"
+                "Для распознавания инструментов с фотографий нужно установить Tesseract OCR.\n\n"
+                "📥 <b>Установка:</b>\n"
+                "1. Скачайте Tesseract OCR: https://github.com/tesseract-ocr/tesseract\n"
+                "2. Установите его в систему\n"
+                "3. Добавьте в PATH или укажите путь в настройках\n\n"
+                "💡 <i>Пока что вы можете описать инструмент текстом, я пойму.</i>"
+            )
+            return
+        
+        parse_result = image_parser.parse_tool_image(image_bytes)
+        
+        if not parse_result.get('success'):
+            # Обработка ошибок парсинга
+            error_message = parse_result.get('error', 'Не удалось распознать инструмент на фотографии.')
+            
+            if 'tesseract' in error_message.lower() or 'ocr' in error_message.lower():
                 await message.answer(
-                    "📊 <b>Ваши решения:</b>\n\n"
-                    "У вас пока нет сохраненных решений.\n"
-                    "Начните новый подбор, чтобы собрать данные для ИИ!",
-                    reply_markup=create_main_menu_keyboard()
+                    "⚠️ <b>OCR не настроен</b>\n\n"
+                    "Для распознавания инструментов с фотографий нужно установить Tesseract OCR.\n\n"
+                    "📥 <b>Установка:</b>\n"
+                    "1. Скачайте Tesseract OCR: https://github.com/tesseract-ocr/tesseract\n"
+                    "2. Установите его в систему\n"
+                    "3. Добавьте в PATH или укажите путь в настройках\n\n"
+                    "💡 <i>Пока что вы можете описать инструмент текстом, я пойму.</i>"
+                )
+            else:
+                await message.answer(
+                    f"❌ <b>Не удалось распознать инструмент</b>\n\n"
+                    f"{error_message}\n\n"
+                    f"💡 <i>Попробуйте описать инструмент текстом или отправьте более четкое фото.</i>"
+                )
+            return
+        
+        if parse_result.get('success'):
+            # Сохраняем инструмент в БД
+            tool_id = None
+            if handler and handler.tool_saver:
+                tool_id = handler.tool_saver.save_tool_from_image(parse_result)
+            
+            # Обновляем контекст
+            if parse_result.get('tool_name'):
+                context.set_field(
+                    'tool_name',
+                    parse_result['tool_name'],
+                    DataSource.USER,
+                    confidence=parse_result.get('confidence', 0.7),
+                    reasoning="Распознано с фотографии инструмента"
+                )
+            
+            if parse_result.get('tool_type'):
+                context.set_field(
+                    'tool_type',
+                    parse_result['tool_type'],
+                    DataSource.USER,
+                    confidence=parse_result.get('confidence', 0.7),
+                    reasoning="Определено по ISO коду"
+                )
+            
+            if parse_result.get('insert_material'):
+                context.set_field(
+                    'tool_material',
+                    parse_result['insert_material'],
+                    DataSource.USER,
+                    confidence=parse_result.get('confidence', 0.7),
+                    reasoning="Распознано с фотографии"
+                )
+            
+            # Формируем ответ
+            response_lines = []
+            response_lines.append("✅ <b>Инструмент распознан!</b>")
+            response_lines.append("")
+            
+            if parse_result.get('tool_name'):
+                response_lines.append(f"📌 <b>Название:</b> <code>{parse_result['tool_name']}</code>")
+            
+            if parse_result.get('tool_type'):
+                response_lines.append(f"🔧 <b>Тип:</b> {parse_result['tool_type']}")
+            
+            if parse_result.get('manufacturer'):
+                response_lines.append(f"🏭 <b>Производитель:</b> {parse_result['manufacturer']}")
+            
+            if parse_result.get('insert_material'):
+                response_lines.append(f"💎 <b>Материал:</b> {parse_result['insert_material']}")
+            
+            if tool_id:
+                response_lines.append("")
+                response_lines.append(f"💾 <i>Инструмент сохранён в базу (ID: {tool_id})</i>")
+            
+            response_lines.append("")
+            response_lines.append("💬 <b>Теперь опиши задачу обработки, и я учту этот инструмент.</b>")
+            
+            await message.answer("\n".join(response_lines))
+            
+            # Сохраняем контекст (с проверкой user_id)
+            save_context_safe(context, user_id)
+        
+        else:
+            error = parse_result.get('error', 'Не удалось распознать')
+            await message.answer(
+                f"❌ <b>Не удалось распознать инструмент</b>\n\n"
+                f"Ошибка: {error}\n\n"
+                f"💡 <i>Попробуйте сфотографировать этикетку или маркировку инструмента более чётко.</i>"
+            )
+    
+    except Exception as e:
+        logger.error(f"Error handling photo: {e}", exc_info=True)
+        await message.answer(
+            f"❌ <b>Ошибка обработки фотографии</b>\n\n"
+            f"Попробуйте ещё раз или опишите инструмент текстом."
+        )
+
+
+@dp.message()
+async def handle_message(message: types.Message, state: FSMContext):
+    """Главный обработчик всех текстовых сообщений."""
+    user_id = str(message.from_user.id)
+    user_text = (message.text or "").strip()
+    user_name = message.from_user.first_name or "друг"
+    
+    # Проверяем на приветствие
+    greetings = ['привет', 'здравствуй', 'здравствуйте', 'добрый день', 'добрый вечер', 
+                 'доброе утро', 'hi', 'hello', 'hey', 'салют', 'здарова']
+    
+    is_greeting = any(greeting in user_text.lower() for greeting in greetings)
+    
+    # Получаем или создаем контекст (используем репозиторий если доступен)
+    if context_repository:
+        context = context_repository.get_context(user_id)
+        if not context:
+            context = Context()
+            context.user_id = user_id
+            context.session_id = f"session_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            context_repository.save_context(context)
+        else:
+            # Обновляем user_id и session_id если нужно
+            ensure_context_user_id(context, user_id)
+    else:
+        # Fallback на старый способ (в памяти)
+        context = user_contexts.get(user_id)
+        if not context:
+            context = Context()
+            context.user_id = user_id
+            context.session_id = f"session_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            user_contexts[user_id] = context
+        else:
+            # Убеждаемся что user_id установлен
+            ensure_context_user_id(context, user_id)
+    
+    # Проверяем запросы на историю и работы (до обработки через handler)
+    user_text_lower = user_text.lower().strip()
+    
+    # Запросы на показ истории/работ
+    history_queries = ['история', 'историю', 'покажи историю', 'мои работы', 'работы', 
+                       'список работ', 'покажи работы', 'show history', 'my works', 'list works']
+    
+    if any(query in user_text_lower for query in history_queries):
+        # Показываем историю диалога и сохраненные работы
+        response_lines = []
+        
+        # История диалога
+        if context.dialog_history:
+            response_lines.append("📜 <b>История нашего диалога:</b>")
+            response_lines.append("")
+            
+            # Показываем последние 5 событий
+            recent_history = context.dialog_history[-5:]
+            for i, event in enumerate(recent_history, 1):
+                event_type = event.get('event', 'unknown')
+                event_data = event.get('data', {})
+                timestamp = event.get('timestamp', '')
+                
+                if event_type == 'message':
+                    text = event_data.get('text', '')[:50]
+                    if text:
+                        response_lines.append(f"{i}. 💬 Сообщение: {text}...")
+                elif event_type == 'calculation':
+                    response_lines.append(f"{i}. 🧮 Выполнен расчет режимов")
+                elif event_type == 'machine_saved':
+                    response_lines.append(f"{i}. 🏭 Сохранен станок: {event_data.get('machine_name', '')}")
+                elif event_type == 'material_saved':
+                    response_lines.append(f"{i}. 🔩 Сохранен материал: {event_data.get('material_name', '')}")
+                elif event_type == 'tool_saved':
+                    response_lines.append(f"{i}. 🔧 Сохранен инструмент: {event_data.get('tool_name', '')}")
+            
+            if len(context.dialog_history) > 5:
+                response_lines.append(f"\n<i>... и ещё {len(context.dialog_history) - 5} событий</i>")
+        else:
+            response_lines.append("📜 <b>История диалога пуста.</b>")
+        
+        # Сохраненные работы
+        if handler and handler.work_manager:
+            works = handler.work_manager.list_works(user_id, limit=10)
+            if works:
+                response_lines.append("")
+                response_lines.append("📋 <b>Ваши сохраненные работы:</b>")
+                response_lines.append("")
+                for work in works:
+                    desc = work.get('description', 'Без описания')
+                    if len(desc) > 50:
+                        desc = desc[:50] + "..."
+                    response_lines.append(f"• <code>{work['work_number']}</code> - {desc}")
+                response_lines.append("")
+                response_lines.append("💡 <i>Напиши \"работа W001\" чтобы загрузить работу.</i>")
+            else:
+                response_lines.append("")
+                response_lines.append("📋 <b>У вас пока нет сохранённых работ.</b>")
+                response_lines.append("💡 <i>Скажи \"сохранить работу\" чтобы сохранить текущую задачу.</i>")
+        
+        # Текущий контекст
+        has_current_context = (
+            context.material or
+            context.machine_type or
+            context.tool_name or
+            context.diameter_start
+        )
+        
+        if has_current_context:
+            response_lines.append("")
+            response_lines.append("📌 <b>Текущий контекст:</b>")
+            if context.machine_type:
+                response_lines.append(f"🏭 Станок: {context.machine_type}")
+            if context.material:
+                response_lines.append(f"🔩 Материал: {context.material}")
+            if context.tool_name:
+                response_lines.append(f"🔧 Инструмент: {context.tool_name}")
+            if context.diameter_start and context.diameter_end:
+                response_lines.append(f"📏 Диаметры: Ø{context.diameter_start} → Ø{context.diameter_end} мм")
+        
+        await message.answer("\n".join(response_lines))
+        return
+    
+    # Если это приветствие - отвечаем дружелюбно
+    if is_greeting:
+        has_history = (
+            context.dialog_history or
+            context.material or
+            context.machine_type or
+            context.tool_name
+        )
+        
+        if has_history:
+            greeting_response = (
+                f"👋 <b>Привет, {user_name}!</b>\n\n"
+                f"Рад снова тебя видеть!\n\n"
+            )
+            
+            # Показываем что помним
+            if context.machine_type:
+                greeting_response += f"🏭 Помню, ты работаешь на <b>{context.machine_type}</b>\n"
+            if context.material:
+                greeting_response += f"🔩 Последний материал: <b>{context.material}</b>\n"
+            if context.tool_name:
+                greeting_response += f"🔧 Инструмент: <b>{context.tool_name}</b>\n"
+            
+            greeting_response += (
+                "\n💬 <b>Чем могу помочь?</b>\n\n"
+                "• Опиши новую задачу обработки\n"
+                "• Добавить/изменить инструмент\n"
+                "• Изменить параметры станка\n"
+                "• <code>история</code> - показать историю диалога и работы\n"
+                "• <code>мои работы</code> - список сохранённых работ\n"
+                "• Или просто опиши что нужно обработать"
+            )
+        else:
+            greeting_response = (
+                f"👋 <b>Привет, {user_name}!</b>\n\n"
+                f"Я <b>CNC Assistant</b> — помогу подобрать режимы резания.\n\n"
+                f"💬 <b>С чего начнём?</b>\n\n"
+                f"• Опиши задачу обработки\n"
+                f"• Расскажи на каком станке работаешь\n"
+                f"• Отправь фото инструмента\n\n"
+                f"<i>Просто напиши что нужно, я пойму.</i>"
+            )
+        
+        await message.answer(greeting_response)
+        return
+    
+    try:
+        # Обрабатываем сообщение через handler
+        if not handler:
+            await message.answer(
+                "❌ Бот не инициализирован. Перезапустите бота."
+            )
+            return
+        
+        # Обрабатываем сообщение (передаем существующий контекст)
+        result = await handler.process_message(
+            user_text=user_text,
+            user_id=user_id,
+            session_id=context.session_id,
+            existing_context=context
+        )
+        
+        # Handler обновляет существующий контекст, но нужно убедиться что он сохранен
+        # Получаем обновленный контекст из handler (он модифицирует existing_context)
+        # Сохраняем контекст после обработки (с проверкой user_id)
+        save_context_safe(context, user_id)
+        
+        # Определяем действие
+        action = result.get('action', 'unknown')
+        is_command = result.get('is_command', False)
+        mode = result.get('mode', 'unknown')
+        
+        # ПРИОРИТЕТ 1: PROJECT MODE (работа по ГОСТ/чертежу)
+        if mode == 'project' or action in ['project_mode', 'standard_part', 'standard_part_unknown']:
+            await message.answer(result.get('message', ''))
+            # Сохраняем контекст после обработки стандарта (с проверкой user_id)
+            save_context_safe(context, user_id)
+            return
+        
+        # ПРИОРИТЕТ 2: Жесткие команды (обрабатываются первыми)
+        if is_command or action in ['help', 'capabilities', 'works_list', 'history', 'work_save', 'work_load', 'work_delete']:
+            if action == 'help':
+                await message.answer(
+                    "📖 <b>Помощь по использованию бота</b>\n\n"
+                    "🎯 <b>Основная функция:</b>\n"
+                    "Подбор режимов резания для токарной и фрезерной обработки.\n\n"
+                    "📝 <b>Как описать задачу:</b>\n\n"
+                    "Опиши в любом порядке:\n"
+                    "• Материал (сталь, алюминий, титан...)\n"
+                    "• Диаметры (с Ø100 до Ø90)\n"
+                    "• Тип обработки (черновая, чистовая)\n"
+                    "• Станок (если известен)\n"
+                    "• Инструмент (или отправь фото)\n\n"
+                    "💡 <b>Примеры:</b>\n"
+                    "<code>Титан, токарный ЧПУ, снять с Ø200 до Ø50</code>\n"
+                    "<code>Сталь 45, черновая, Ø100→90</code>\n\n"
+                    "🔧 <b>Команды:</b>\n"
+                    "• <code>история</code> - история диалога и работы\n"
+                    "• <code>мои работы</code> - список сохраненных работ\n"
+                    "• <code>сохранить работу</code> - сохранить задачу\n"
+                    "• <code>работа W001</code> - загрузить работу\n"
+                    "• <code>что ты можешь</code> - описание возможностей\n\n"
+                    "💬 <i>Просто опиши задачу — я пойму.</i>"
                 )
                 return
-
-            lines = []
-            lines.append("📊 <b>ПОСЛЕДНИЕ РЕШЕНИЯ:</b>")
-            lines.append("")
-
-            for i, decision in enumerate(decisions[:5], 1):
-                date = decision.timestamp.strftime("%d.%m") if decision.timestamp else "??.??"
-                material = decision.bot_vc_m_min  # временно, пока нет поля material
-
-                lines.append(
-                    f"{i}. {date} | Материал: {material} | "
-                    f"Ø: {decision.diameter_start_mm:.0f}→{decision.diameter_end_mm:.0f} мм"
+            
+            elif action == 'capabilities':
+                await message.answer(
+                    "🤖 <b>Я инженерный помощник для токарной и фрезерной обработки.</b>\n\n"
+                    "💡 <b>Что я умею:</b>\n\n"
+                    "• Подбирать режимы резания (обороты, подачи, глубины)\n"
+                    "• Учитывать материал, диаметр и тип обработки\n"
+                    "• Адаптироваться под уровень оператора\n"
+                    "• Запоминать твои решения и улучшать рекомендации\n"
+                    "• Распознавать инструменты с фотографий\n"
+                    "• Сохранять работы для быстрого доступа\n\n"
+                    "📝 <b>Как работать:</b>\n\n"
+                    "Просто опиши задачу в любом порядке:\n"
+                    "<i>\"Титан, токарный ЧПУ, снять с Ø200 до Ø50, черновая\"</i>\n\n"
+                    "Или используй команды:\n"
+                    "• <code>история</code> - показать историю и работы\n"
+                    "• <code>мои работы</code> - список сохраненных работ\n"
+                    "• <code>сохранить работу</code> - сохранить текущую задачу\n"
+                    "• <code>помощь</code> - подробная инструкция\n\n"
+                    "💬 <i>Хочешь рассчитать режим — просто напиши параметры.</i>"
                 )
-
-            lines.append("")
-            lines.append(f"<i>Всего решений: {len(decisions)}</i>")
-            lines.append("<i>Каждое решение улучшает ИИ-технолога!</i>")
-
-            await message.answer("\n".join(lines))
-
-    except Exception as e:
-        logger.error(f"Ошибка получения решений: {e}")
-        await message.answer(
-            "❌ <b>Ошибка загрузки данных</b>\n\n"
-            "Попробуйте позже или начните новый подбор.",
-            reply_markup=create_main_menu_keyboard()
-        )
-
-
-@dp.message(F.text == "📚 База знаний")
-async def show_knowledge_base(message: Message):
-    """Показать базу знаний."""
-    text = (
-        "📚 <b>БАЗА ЗНАНИЙ CNC ASSISTANT</b>\n\n"
-
-        "<b>🎯 Философия проекта:</b>\n"
-        "Мы НЕ даем «правильные» ответы. Мы собираем РЕАЛЬНУЮ ПРАКТИКУ "
-        "операторов для обучения будущего ИИ-технолога.\n\n"
-
-        "<b>🧠 Как это работает:</b>\n"
-        "1. Вы вводите параметры обработки\n"
-        "2. Бот показывает табличные значения\n"
-        "3. Вы указываете, КАК ДЕЛАЕТЕ НА ПРАКТИКЕ\n"
-        "4. Разница сохраняется как данные для ИИ\n\n"
-
-        "<b>📊 Что мы собираем:</b>\n"
-        "• Разницу между таблицами и практикой\n"
-        "• Адаптацию операторов к разным условиям\n"
-        "• Реальные физические ограничения\n\n"
-
-        "<b>🚀 Цель:</b>\n"
-        "Создать ИИ-технолога, который понимает не только теорию, "
-        "но и реальные условия производства."
-    )
-
-    await message.answer(text)
-
-
-@dp.message(F.text == "❓ Помощь")
-async def show_help(message: Message):
-    """Показать справку."""
-    help_text = (
-        "❓ <b>ПОМОЩЬ И FAQ</b>\n\n"
-
-        "<b>🤔 Зачем этот бот?</b>\n"
-        "Чтобы собрать РЕАЛЬНЫЕ данные о том, как работают практики, "
-        "а не теоретические рекомендации.\n\n"
-
-        "<b>🔧 Как проходит диалог?</b>\n"
-        "1. Выбираете материал, операцию, станок\n"
-        "2. Вводите геометрические параметры\n"
-        "3. Получаете табличные рекомендации\n"
-        "4. Сравниваете с вашей практикой\n"
-        "5. Сохраняете решение для обучения ИИ\n\n"
-
-        "<b>🎯 Что делать, если не знаю точных значений?</b>\n"
-        "• Используйте примерные значения\n"
-        "• Выбирайте «Так же» или «Вручную»\n"
-        "• Важен сам факт сравнения\n\n"
-
-        "<b>⚠️ Важно понимать:</b>\n"
-        "Бот НЕ даёт инструкций к действию! "
-        "Он только собирает данные о различиях между теорией и практикой."
-    )
-
-    await message.answer(help_text)
-
-
-@dp.message(F.text == "🔙 Назад")
-async def handle_back(message: Message, state: FSMContext):
-    """Обработка кнопки Назад."""
-    current_state = await state.get_state()
-
-    if not current_state:
-        await message.answer(
-            "🔙 Возвращаемся в главное меню",
-            reply_markup=create_main_menu_keyboard()
-        )
-        return
-
-    # Маппинг возвратов
-    back_map = {
-        CNCStates.waiting_material: None,  # в главное меню
-        CNCStates.waiting_operation: CNCStates.waiting_material,
-        CNCStates.waiting_machine_type: CNCStates.waiting_operation,
-        CNCStates.waiting_machine_power: CNCStates.waiting_machine_type,
-        CNCStates.waiting_diameter_start: CNCStates.waiting_machine_power,
-        CNCStates.waiting_diameter_end: CNCStates.waiting_diameter_start,
-        CNCStates.waiting_length: CNCStates.waiting_diameter_end,
-        CNCStates.waiting_tool_material: CNCStates.waiting_length,
-        CNCStates.waiting_tool_radius: CNCStates.waiting_tool_material,
-        CNCStates.waiting_tool_overhang: CNCStates.waiting_tool_radius,
-        CNCStates.waiting_recommendation_view: CNCStates.waiting_tool_overhang,
-    }
-
-    next_state = back_map.get(current_state)
-
-    if next_state is None:
-        # Возврат в главное меню
-        await state.clear()
-        await message.answer(
-            "🔙 Возвращаемся в главное меню",
-            reply_markup=create_main_menu_keyboard()
-        )
-    else:
-        await state.set_state(next_state)
-        await message.answer(
-            "🔙 Возвращаемся на предыдущий шаг",
-            reply_markup=await _get_keyboard_for_state(next_state)
-        )
-
-
-# ============================================================================
-# ОСНОВНОЙ ДИАЛОГ: СБОР КОНТЕКСТА
-# ============================================================================
-
-@dp.message(CNCStates.waiting_material)
-async def handle_material(message: Message, state: FSMContext):
-    """Обработка выбора материала."""
-    material = message.text
-
-    if material == "🔙 Назад":
-        await handle_back(message, state)
-        return
-
-    await state.update_data(material=material)
-    await state.set_state(CNCStates.waiting_operation)
-
-    await message.answer(
-        f"✅ Материал: <b>{material}</b>\n\n"
-        f"2️⃣ Выберите тип операции:",
-        reply_markup=create_operation_keyboard()
-    )
-
-
-@dp.message(CNCStates.waiting_operation)
-async def handle_operation(message: Message, state: FSMContext):
-    """Обработка выбора операции."""
-    operation = message.text
-
-    if operation == "🔙 Назад":
-        await handle_back(message, state)
-        return
-
-    await state.update_data(operation=operation)
-    await state.set_state(CNCStates.waiting_machine_type)
-
-    await message.answer(
-        f"✅ Операция: <b>{operation}</b>\n\n"
-        f"3️⃣ Выберите тип станка:",
-        reply_markup=create_machine_type_keyboard()
-    )
-
-
-@dp.message(CNCStates.waiting_machine_type)
-async def handle_machine_type(message: Message, state: FSMContext):
-    """Обработка выбора типа станка."""
-    machine_type = message.text
-
-    if machine_type == "🔙 Назад":
-        await handle_back(message, state)
-        return
-
-    await state.update_data(machine_type=machine_type)
-    await state.set_state(CNCStates.waiting_machine_power)
-
-    # Определяем мощность по умолчанию
-    default_power = "15 кВт" if "ЧПУ" in machine_type else "7.5 кВт"
-
-    await message.answer(
-        f"✅ Станок: <b>{machine_type}</b>\n\n"
-        f"4️⃣ Выберите мощность станка:",
-        reply_markup=create_power_keyboard()
-    )
-
-
-@dp.message(CNCStates.waiting_machine_power)
-async def handle_machine_power(message: Message, state: FSMContext):
-    """Обработка выбора мощности."""
-    text = message.text
-
-    if text == "🔙 Назад":
-        await handle_back(message, state)
-        return
-
-    if text == "Другая...":
-        await message.answer(
-            "Введите мощность станка в кВт (например: 7.5, 11, 15):",
-            reply_markup=ReplyKeyboardMarkup(
-                keyboard=[[KeyboardButton(text="🔙 Назад")]],
-                resize_keyboard=True
+                return
+            
+            # Остальные команды обрабатываются ниже в коде
+            # (works_list, history, work_save и т.д. уже обрабатываются)
+        
+        # Обработка не-инженерных интентов (если не команда)
+        if not is_command:
+            if action == 'meta_capabilities':
+                await message.answer(result.get('message', ''))
+                return
+            
+        if action == 'noise' or action == 'noise_fallback':
+            await message.answer(result.get('message', ''))
+            return
+            
+            if action == 'clarify_intent':
+                await message.answer(result.get('message', ''))
+                return
+            
+            if action == 'greeting':
+                # Приветствие уже обработано выше
+                pass
+        
+        if action == 'clarify':
+            # Нужно уточнить данные
+            missing = result.get('missing_fields', [])
+            
+            # Проверяем, были ли сохранены новые сущности
+            saved_entities = []
+            for history_item in context.dialog_history[-5:]:  # Проверяем последние 5 событий
+                if history_item.get('event') == 'machine_saved':
+                    saved_entities.append(f"🏭 Станок <b>{history_item.get('data', {}).get('machine_name')}</b> сохранён в базу")
+                elif history_item.get('event') == 'material_saved':
+                    saved_entities.append(f"🔩 Материал <b>{history_item.get('data', {}).get('material_name')}</b> сохранён в базу")
+                elif history_item.get('event') == 'tool_saved':
+                    saved_entities.append(f"🔧 Инструмент <b>{history_item.get('data', {}).get('tool_name')}</b> сохранён в базу")
+            
+            # Проверяем, есть ли уже какая-то информация в контексте
+            has_some_info = (
+                context.material or
+                context.machine_type or
+                context.tool_name or
+                context.diameter_start or
+                context.diameter_end
             )
-        )
-        return
-
-    power = None
-    if "кВт" in text:
-        # Извлекаем число из текста
-        parser = InputParser()
-        power = parser.parse_power(text)
-
-    if power is None:
-        await message.answer(
-            "❌ Неверный формат мощности. Введите число в кВт (например: 15, 7.5):"
-        )
-        return
-
-    await state.update_data(machine_power=power)
-    await state.set_state(CNCStates.waiting_diameter_start)
-
-    await message.answer(
-        f"✅ Мощность: <b>{power} кВт</b>\n\n"
-        f"5️⃣ Введите начальный диаметр заготовки (мм):\n"
-        f"<i>Например: 100, 50.5, 200</i>",
-        reply_markup=ReplyKeyboardMarkup(
-            keyboard=[[KeyboardButton(text="🔙 Назад")]],
-            resize_keyboard=True
-        )
-    )
-
-
-@dp.message(CNCStates.waiting_diameter_start)
-async def handle_diameter_start(message: Message, state: FSMContext):
-    """Обработка начального диаметра."""
-    text = message.text
-
-    if text == "🔙 Назад":
-        await handle_back(message, state)
-        return
-
-    parser = InputParser()
-    diameter = parser.parse_diameter(text)
-
-    if diameter is None:
-        await message.answer(
-            "❌ Неверный формат диаметра. Введите число в мм (например: 100, 50.5):"
-        )
-        return
-
-    await state.update_data(diameter_start=diameter)
-    await state.set_state(CNCStates.waiting_diameter_end)
-
-    await message.answer(
-        f"✅ Начальный диаметр: <b>{diameter} мм</b>\n\n"
-        f"6️⃣ Введите конечный диаметр (мм):\n"
-        f"<i>Меньше начального. Например: 90, 45, 180</i>"
-    )
-
-
-@dp.message(CNCStates.waiting_diameter_end)
-async def handle_diameter_end(message: Message, state: FSMContext):
-    """Обработка конечного диаметра."""
-    text = message.text
-
-    if text == "🔙 Назад":
-        await handle_back(message, state)
-        return
-
-    parser = InputParser()
-    diameter = parser.parse_diameter(text)
-
-    if diameter is None:
-        await message.answer(
-            "❌ Неверный формат диаметра. Введите число в мм:"
-        )
-        return
-
-    # Получаем начальный диаметр
-    data = await state.get_data()
-    start_diameter = data.get('diameter_start', 0)
-
-    if diameter >= start_diameter:
-        await message.answer(
-            "❌ Конечный диаметр должен быть МЕНЬШЕ начального!\n"
-            f"Начальный: {start_diameter} мм\n"
-            "Введите правильное значение:"
-        )
-        return
-
-    await state.update_data(diameter_end=diameter)
-    await state.set_state(CNCStates.waiting_length)
-
-    stock = (start_diameter - diameter) / 2
-    await message.answer(
-        f"✅ Конечный диаметр: <b>{diameter} мм</b>\n"
-        f"📏 Припуск: <b>{stock:.1f} мм</b> на сторону\n\n"
-        f"7️⃣ Введите длину обработки (мм):\n"
-        f"<i>Например: 50, 100, 200</i>"
-    )
-
-
-@dp.message(CNCStates.waiting_length)
-async def handle_length(message: Message, state: FSMContext):
-    """Обработка длины обработки."""
-    text = message.text
-
-    if text == "🔙 Назад":
-        await handle_back(message, state)
-        return
-
-    parser = InputParser()
-    length = parser.parse_length(text)
-
-    if length is None:
-        await message.answer(
-            "❌ Неверный формат длины. Введите число в мм (например: 100, 50):"
-        )
-        return
-
-    await state.update_data(length=length)
-    await state.set_state(CNCStates.waiting_tool_material)
-
-    await message.answer(
-        f"✅ Длина обработки: <b>{length} мм</b>\n\n"
-        f"8️⃣ Выберите материал инструмента:",
-        reply_markup=create_tool_material_keyboard()
-    )
-
-
-@dp.message(CNCStates.waiting_tool_material)
-async def handle_tool_material(message: Message, state: FSMContext):
-    """Обработка материала инструмента."""
-    tool_material = message.text
-
-    if tool_material == "🔙 Назад":
-        await handle_back(message, state)
-        return
-
-    await state.update_data(tool_material=tool_material)
-    await state.set_state(CNCStates.waiting_tool_radius)
-
-    await message.answer(
-        f"✅ Материал инструмента: <b>{tool_material}</b>\n\n"
-        f"9️⃣ Выберите радиус пластины:",
-        reply_markup=create_tool_radius_keyboard()
-    )
-
-
-@dp.message(CNCStates.waiting_tool_radius)
-async def handle_tool_radius(message: Message, state: FSMContext):
-    """Обработка радиуса пластины."""
-    text = message.text
-
-    if text == "🔙 Назад":
-        await handle_back(message, state)
-        return
-
-    parser = InputParser()
-    radius = parser.parse_number(text)
-
-    if radius is None or radius <= 0:
-        await message.answer(
-            "❌ Неверный формат радиуса. Выберите из списка или введите число:"
-        )
-        return
-
-    await state.update_data(tool_radius=radius)
-    await state.set_state(CNCStates.waiting_tool_overhang)
-
-    await message.answer(
-        f"✅ Радиус пластины: <b>{radius} мм</b>\n\n"
-        f"🔟 Введите вылет инструмента (мм):\n"
-        f"<i>Рекомендуется 30-50 мм. Например: 30, 40, 50</i>",
-        reply_markup=ReplyKeyboardMarkup(
-            keyboard=[[KeyboardButton(text="🔙 Назад")]],
-            resize_keyboard=True
-        )
-    )
-
-
-@dp.message(CNCStates.waiting_tool_overhang)
-async def handle_tool_overhang(message: Message, state: FSMContext):
-    """Обработка вылета инструмента."""
-    text = message.text
-
-    if text == "🔙 Назад":
-        await handle_back(message, state)
-        return
-
-    parser = InputParser()
-    overhang = parser.parse_overhang(text)
-
-    if overhang is None:
-        await message.answer(
-            "❌ Неверный формат вылета. Введите число в мм (30-100 мм):"
-        )
-        return
-
-    await state.update_data(tool_overhang=overhang)
-
-    # Показываем сводку контекста
-    data = await state.get_data()
-
-    await message.answer(
-        format_context_summary(data),
-        reply_markup=ReplyKeyboardMarkup(
-            keyboard=[[KeyboardButton(text="🔙 Назад"), KeyboardButton(text="✅ Рассчитать")]],
-            resize_keyboard=True
-        )
-    )
-
-    # Устанавливаем состояние просмотра рекомендаций
-    await state.set_state(CNCStates.waiting_recommendation_view)
-
-
-@dp.message(CNCStates.waiting_recommendation_view)
-async def handle_recommendation_view(message: Message, state: FSMContext):
-    """Обработка просмотра рекомендаций."""
-    text = message.text
-
-    if text == "🔙 Назад":
-        await handle_back(message, state)
-        return
-
-    if text != "✅ Рассчитать":
-        await message.answer("Нажмите «Рассчитать» для продолжения или «Назад» для возврата")
-        return
-
-    # Рассчитываем рекомендации
-    await _calculate_and_show_recommendations(message, state)
-
-
-async def _calculate_and_show_recommendations(message: Message, state: FSMContext):
-    """Рассчитать и показать рекомендации."""
-    data = await state.get_data()
-
-    try:
-        # 1. Создаем калькулятор
-        calculator = _create_calculator_from_data(data)
-
-        # 2. Получаем рекомендацию
-        operation_type = _map_operation_type(data.get('operation', ''))
-        recommendation = calculator.get_recommendation(operation_type)
-
-        # 3. Создаем стратегию проходов
-        strategy = _create_strategy_from_data(data, recommendation)
-
-        # 4. Сохраняем в состояние
-        await state.update_data(
-            recommendation=recommendation,
-            strategy=strategy,
-            calculator_context=data
-        )
-
-        # 5. Показываем пользователю
-        await message.answer(
-            format_recommendation_with_strategy(recommendation, strategy, data),
-            reply_markup=types.ReplyKeyboardRemove()
-        )
-
-        # 6. Начинаем сравнение с оборотами
-        await _start_comparison(message, state, "rpm")
-
-    except Exception as e:
-        logger.error(f"Ошибка расчета: {e}", exc_info=True)
-        await message.answer(
-            "❌ <b>Ошибка расчета рекомендаций</b>\n\n"
-            f"Причина: {str(e)}\n\n"
-            "Пожалуйста, начните заново.",
-            reply_markup=create_main_menu_keyboard()
-        )
-        await state.clear()
-
-
-def _create_calculator_from_data(data: Dict[str, Any]) -> CuttingCalculator:
-    """Создать калькулятор из данных."""
-    # Ограничения
-    limits = CuttingLimits(
-        max_power_kw=data.get('machine_power', 15.0),
-        max_rpm=3000.0,
-        max_ap_by_tool_mm=6.0,
-        max_feed_by_tool_mm_rev=0.4,
-        max_tool_overhang_mm=100.0
-    )
-
-    # Материал
-    material = MaterialProperties(
-        material_type=_map_material_type(data.get('material', 'сталь')),
-        hardness_hb=None,
-        tensile_strength_mpa=None
-    )
-
-    # Инструмент
-    tool = ToolProperties(
-        insert_material=_map_tool_material(data.get('tool_material', 'твердый сплав')),
-        insert_radius_mm=data.get('tool_radius', 0.8),
-        tool_overhang_mm=data.get('tool_overhang', 30.0)
-    )
-
-    # Геометрия
-    geometry = Geometry(
-        diameter_start_mm=data.get('diameter_start', 100.0),
-        diameter_end_mm=data.get('diameter_end', 90.0),
-        length_mm=data.get('length', 50.0),
-        is_external=True
-    )
-
-    return CuttingCalculator(limits, material, tool, geometry)
-
-
-def _create_strategy_from_data(data: Dict[str, Any], recommendation: Dict[str, Any]) -> Dict[str, Any]:
-    """Создать стратегию из данных."""
-    config = StrategyConfig(
-        operation_type=_map_operation_type(data.get('operation', 'черновая')),
-        is_external=True,
-        max_ap_rough_mm=min(6.0, recommendation.get('ap', 4.0))
-    )
-
-    strategy = PassStrategy(
-        diameter_start_mm=data.get('diameter_start', 100.0),
-        diameter_end_mm=data.get('diameter_end', 90.0),
-        config=config
-    )
-
-    return strategy.generate_strategy()
-
-
-def _map_material_type(material: str) -> str:
-    """Сопоставить материал."""
-    material = material.lower()
-
-    if any(x in material for x in ["алюмин", "alum"]):
-        return "aluminum"
-    elif any(x in material for x in ["нержавей", "нерж", "stainless"]):
-        return "stainless_steel"
-    elif any(x in material for x in ["титан", "titan"]):
-        return "titanium"
-    elif any(x in material for x in ["чугун", "cast"]):
-        return "cast_iron"
-    elif any(x in material for x in ["латунь", "медь", "brass", "copper"]):
-        return "copper"
-    else:
-        return "steel"
-
-
-def _map_operation_type(operation: str) -> str:
-    """Сопоставить тип операции."""
-    operation = operation.lower()
-
-    if any(x in operation for x in ["чист", "finish"]):
-        return "finishing"
-    elif any(x in operation for x in ["получист", "semi"]):
-        return "semi_finishing"
-    else:
-        return "roughing"
-
-
-def _map_tool_material(tool_material: str) -> str:
-    """Сопоставить материал инструмента."""
-    tool_material = tool_material.lower()
-
-    if any(x in tool_material for x in ["тверд", "carbide"]):
-        return "carbide"
-    elif any(x in tool_material for x in ["быстр", "hss"]):
-        return "hss"
-    elif any(x in tool_material for x in ["керам", "ceramic"]):
-        return "ceramic"
-    elif any(x in tool_material for x in ["cbn", "нитрид"]):
-        return "cbn"
-    else:
-        return "carbide"
-
-
-# ============================================================================
-# СРАВНЕНИЕ С РЕКОМЕНДАЦИЕЙ
-# ============================================================================
-
-async def _start_comparison(message: Message, state: FSMContext, parameter: str):
-    """Начать сравнение параметра."""
-    data = await state.get_data()
-    recommendation = data.get('recommendation', {})
-
-    units = {
-        "rpm": "об/мин",
-        "feed": "мм/об",
-        "ap": "мм"
-    }
-
-    await message.answer(
-        format_comparison_prompt(
-            parameter,
-            recommendation.get(parameter, 0),
-            units.get(parameter, "")
-        ),
-        reply_markup=create_comparison_keyboard()
-    )
-
-    # Устанавливаем соответствующее состояние
-    state_map = {
-        "rpm": CNCStates.waiting_comparison_rpm,
-        "feed": CNCStates.waiting_comparison_feed,
-        "ap": CNCStates.waiting_comparison_ap
-    }
-
-    await state.set_state(state_map.get(parameter))
-
-
-@dp.callback_query(F.data.startswith("comparison_"))
-async def handle_comparison_choice(callback: types.CallbackQuery, state: FSMContext):
-    """Обработка выбора сравнения."""
-    choice = callback.data.replace("comparison_", "")
-
-    # Определяем текущий параметр из состояния
-    current_state = await state.get_state()
-
-    param_map = {
-        CNCStates.waiting_comparison_rpm: "rpm",
-        CNCStates.waiting_comparison_feed: "feed",
-        CNCStates.waiting_comparison_ap: "ap"
-    }
-
-    parameter = param_map.get(current_state)
-
-    if not parameter:
-        await callback.answer("Ошибка определения параметра")
-        return
-
-    data = await state.get_data()
-    recommendation = data.get('recommendation', {})
-
-    if choice == "manual":
-        # Переходим к ручному вводу
-        state_map = {
-            "rpm": CNCStates.waiting_manual_rpm,
-            "feed": CNCStates.waiting_manual_feed,
-            "ap": CNCStates.waiting_manual_ap
-        }
-
-        await state.set_state(state_map.get(parameter))
-
-        units = {
-            "rpm": "об/мин",
-            "feed": "мм/об",
-            "ap": "мм"
-        }
-
-        await callback.message.answer(
-            f"✏️ <b>Ручной ввод {parameter}:</b>\n\n"
-            f"Табличное значение: {recommendation.get(parameter, 0):.1f} {units.get(parameter, '')}\n\n"
-            f"Введите ваше значение:",
-            reply_markup=ReplyKeyboardMarkup(
-                keyboard=[[KeyboardButton(text="🔙 К сравнению")]],
-                resize_keyboard=True
+            
+            if has_some_info:
+                # Есть какая-то информация - показываем что знаем и что нужно уточнить
+                response_lines = []
+                
+                # Показываем сохраненные сущности если есть
+                if saved_entities:
+                    response_lines.append("✅ <b>Сохранено в базу знаний:</b>")
+                    for entity in saved_entities:
+                        response_lines.append(f"• {entity}")
+                    response_lines.append("")
+                
+                response_lines.append("🤔 <b>Нужно уточнить несколько моментов:</b>")
+                response_lines.append("")
+                
+                if 'material' in missing:
+                    response_lines.append("• <b>Из какого материала</b> заготовка? (сталь, алюминий, нержавейка...)")
+                
+                if 'diameter_start' in missing or 'diameter_end' in missing:
+                    response_lines.append("• <b>Какие диаметры?</b> (например: с Ø100 до Ø90)")
+                
+                if 'operation' in missing:
+                    response_lines.append("• <b>Какая операция?</b> (черновая, чистовая...)")
+                
+                # Показываем что уже знаем
+                response_lines.append("")
+                response_lines.append("<b>Что я уже знаю:</b>")
+                
+                known_info = format_context_summary(context)
+                if known_info and known_info != "Пока нет данных...":
+                    response_lines.append(known_info)
+                
+                response_lines.append("")
+                response_lines.append("💬 <i>Можете описать всё в одном сообщении, я пойму.</i>")
+                
+                response = "\n".join(response_lines)
+            else:
+                # Нет информации - стандартный запрос
+                response_lines = []
+                
+                # Показываем сохраненные сущности если есть
+                if saved_entities:
+                    response_lines.append("✅ <b>Сохранено в базу знаний:</b>")
+                    for entity in saved_entities:
+                        response_lines.append(f"• {entity}")
+                    response_lines.append("")
+                
+                response_lines.append(format_clarification_request(context, missing))
+                response = "\n".join(response_lines)
+            
+            await message.answer(response)
+            
+            # Сохраняем контекст после уточнения (с проверкой user_id)
+            save_context_safe(context, user_id)
+        
+        elif action == 'calculate':
+            # Можно рассчитать
+            recommendation = result.get('recommendation', {})
+            
+            # Показываем что поняли
+            summary = format_context_summary(context)
+            if summary and summary != "Пока нет данных...":
+                await message.answer(f"✅ <b>Понял:</b>\n\n{summary}")
+            
+            # Показываем рекомендацию
+            rec_text = format_recommendation(recommendation, context)
+            await message.answer(rec_text)
+            
+            # Сохраняем рекомендацию в контекст
+            context.recommended_vc = recommendation.get('vc_m_min') or recommendation.get('vc')
+            context.recommended_rpm = recommendation.get('rpm')
+            context.recommended_feed = recommendation.get('feed_mm_rev') or recommendation.get('feed')
+            context.recommended_ap = recommendation.get('ap_mm') or recommendation.get('ap')
+            context.recommended_power = recommendation.get('power_kw')
+            
+            # Добавляем в историю
+            context.add_to_history('recommendation_shown', {
+                'recommendation': recommendation
+            })
+            
+            # Сохраняем обновленный контекст (с проверкой user_id)
+            save_context_safe(context, user_id)
+            
+            # Предлагаем сохранить работу
+            if handler and handler.work_manager:
+                await message.answer(
+                    "💾 <b>Хотите сохранить эту работу?</b>\n\n"
+                    "Напишите <code>сохранить работу</code> чтобы сохранить задачу под номером.\n"
+                    "Потом сможете быстро загрузить её по номеру."
+                )
+            
+            # Сохраняем контекст после расчета (с проверкой user_id)
+            save_context_safe(context, user_id)
+        
+        elif action == 'error':
+            # Ошибка
+            error_msg = result.get('message', 'Произошла ошибка')
+            await message.answer(
+                f"❌ <b>Ошибка</b>\n\n{error_msg}\n\n"
+                f"💡 <i>Попробуйте описать задачу по-другому.</i>"
             )
-        )
-
-    else:
-        # Автоматический расчет значения на основе выбора
-        recommended_value = recommendation.get(parameter, 0)
-
-        if choice == "lower":
-            user_value = recommended_value * 0.8
-        elif choice == "higher":
-            user_value = recommended_value * 1.2
-        else:  # same
-            user_value = recommended_value
-
-        # Сохраняем значение
-        current_values = data.get('user_values', {})
-        current_values[parameter] = user_value
-
-        current_choices = data.get('comparison_choices', {})
-        current_choices[parameter] = choice
-
-        await state.update_data(
-            user_values=current_values,
-            comparison_choices=current_choices
-        )
-
-        await callback.answer(f"Сохранено: {user_value:.1f}")
-
-        # Переходим к следующему параметру
-        await _proceed_to_next_parameter(callback.message, state, parameter)
-
-    await callback.answer()
-
-
-async def _proceed_to_next_parameter(message: types.Message, state: FSMContext, current_param: str):
-    """Перейти к следующему параметру."""
-    parameters = ["rpm", "feed", "ap"]
-
-    try:
-        current_idx = parameters.index(current_param)
-
-        if current_idx < len(parameters) - 1:
-            # Есть следующий параметр
-            next_param = parameters[current_idx + 1]
-            await _start_comparison(message, state, next_param)
+        
         else:
-            # Все параметры собраны - показываем сводку
-            await _show_decision_summary(message, state)
+            # Проверяем команды для работы с работами
+            user_text_lower = user_text.lower()
+            
+            # Команды для работы с работами
+            if any(cmd in user_text_lower for cmd in ['сохранить работу', 'сохрани работу', 'сохранить работу', 
+                                                       'добавить работу', 'добавь работу', 'save work', 'add work']):
+                # Сохранить текущую работу
+                if handler and handler.work_manager:
+                    work_number = handler.work_manager.create_work(
+                        user_id=user_id,
+                        description=f"Работа от {datetime.now().strftime('%d.%m.%Y %H:%M')}",
+                        context=context
+                    )
+                    if work_number:
+                        await message.answer(
+                            f"✅ <b>Работа сохранена!</b>\n\n"
+                            f"📋 <b>Номер работы:</b> <code>{work_number}</code>\n\n"
+                            f"💡 <i>Используй номер для быстрого доступа к работе.</i>\n\n"
+                            f"Команды:\n"
+                            f"• <code>мои работы</code> - список всех работ\n"
+                            f"• <code>работа {work_number}</code> - загрузить работу\n"
+                            f"• <code>удалить {work_number}</code> - удалить работу"
+                        )
+                        # Сохраняем контекст после сохранения работы (с проверкой user_id)
+                        save_context_safe(context, user_id)
+                    else:
+                        await message.answer("❌ Не удалось сохранить работу. Попробуйте ещё раз.")
+                else:
+                    await message.answer("❌ Менеджер работ не доступен.")
+            
+            elif any(cmd in user_text_lower for cmd in ['мои работы', 'список работ', 'работы', 'покажи работы',
+                                                         'my works', 'list works', 'show works']):
+                # Показать список работ
+                if handler and handler.work_manager:
+                    works = handler.work_manager.list_works(user_id, limit=20)
+                    if works:
+                        response_lines = []
+                        response_lines.append("📋 <b>Ваши сохраненные работы:</b>")
+                        response_lines.append("")
+                        for work in works:
+                            desc = work.get('description', 'Без описания')
+                            if len(desc) > 60:
+                                desc = desc[:60] + "..."
+                            created_at = work.get('created_at', '')
+                            if created_at:
+                                try:
+                                    dt = datetime.fromisoformat(created_at.replace('Z', '+00:00'))
+                                    date_str = dt.strftime('%d.%m.%Y %H:%M')
+                                except:
+                                    date_str = ''
+                            else:
+                                date_str = ''
+                            
+                            if date_str:
+                                response_lines.append(
+                                    f"• <code>{work['work_number']}</code> - {desc} <i>({date_str})</i>"
+                                )
+                            else:
+                                response_lines.append(
+                                    f"• <code>{work['work_number']}</code> - {desc}"
+                                )
+                        response_lines.append("")
+                        response_lines.append("💡 <i>Команды:</i>")
+                        response_lines.append(f"• <code>работа {works[0]['work_number']}</code> - загрузить работу")
+                        response_lines.append("• <code>сохранить работу</code> - сохранить текущую задачу")
+                        response_lines.append("• <code>удалить W001</code> - удалить работу")
+                        await message.answer("\n".join(response_lines))
+                    else:
+                        await message.answer(
+                            "📋 <b>У вас пока нет сохранённых работ.</b>\n\n"
+                            "💡 <i>Скажи \"сохранить работу\" чтобы сохранить текущую задачу.</i>"
+                        )
+                else:
+                    await message.answer("❌ Менеджер работ не доступен.")
+            
+            elif user_text_lower.startswith('работа ') or user_text_lower.startswith('work '):
+                # Загрузить работу по номеру
+                work_number = user_text.split()[-1].upper().strip()
+                if handler and handler.work_manager:
+                    loaded_context = handler.work_manager.load_work_to_context(user_id, work_number)
+                    if loaded_context:
+                        # Обновляем контекст пользователя
+                        context = loaded_context  # Используем загруженный контекст
+                        # Сохраняем контекст (с проверкой user_id)
+                        save_context_safe(context, user_id)
+                        
+                        summary = format_context_summary(context)
+                        await message.answer(
+                            f"✅ <b>Работа {work_number} загружена!</b>\n\n"
+                            f"{summary}\n\n"
+                            f"💬 <i>Можете продолжить работу с этой задачей.</i>"
+                        )
+                    else:
+                        await message.answer(
+                            f"❌ <b>Работа {work_number} не найдена.</b>\n\n"
+                            f"💡 <i>Используйте \"мои работы\" чтобы увидеть список.</i>"
+                        )
+                else:
+                    await message.answer("❌ Менеджер работ не доступен.")
+            
+            elif user_text_lower.startswith('удалить ') or user_text_lower.startswith('delete '):
+                # Удалить работу
+                work_number = user_text.split()[-1].upper().strip()
+                if handler and handler.work_manager:
+                    if handler.work_manager.delete_work(user_id, work_number):
+                        await message.answer(
+                            f"✅ <b>Работа {work_number} удалена.</b>"
+                        )
+                    else:
+                        await message.answer(
+                            f"❌ <b>Работа {work_number} не найдена.</b>"
+                        )
+                else:
+                    await message.answer("❌ Менеджер работ не доступен.")
+            
+            elif any(cmd in user_text_lower for cmd in ['что за станок', 'что это за станок', 'расскажи о станке', 'ты меня помнишь', 'помнишь меня']):
+                # Информация о станке или проверка памяти
+                if 'помнишь' in user_text_lower or 'помнит' in user_text_lower:
+                    # Проверка памяти
+                    has_memory = (
+                        context.machine_type or
+                        context.material or
+                        context.tool_name or
+                        context.diameter_start or
+                        context.dialog_history
+                    )
+                    
+                    if has_memory:
+                        response_lines = []
+                        response_lines.append("✅ <b>Да, помню!</b>\n\n")
+                        response_lines.append("<b>Что я знаю о вас:</b>\n")
+                        
+                        if context.machine_type:
+                            response_lines.append(f"🏭 <b>Станок:</b> {context.machine_type}")
+                        if context.material:
+                            response_lines.append(f"🔩 <b>Материал:</b> {context.material}")
+                        if context.tool_name:
+                            response_lines.append(f"🔧 <b>Инструмент:</b> {context.tool_name}")
+                        if context.diameter_start and context.diameter_end:
+                            response_lines.append(f"📏 <b>Диаметры:</b> Ø{context.diameter_start} → Ø{context.diameter_end} мм")
+                        
+                        if context.dialog_history:
+                            response_lines.append(f"\n💬 <b>История диалога:</b> {len(context.dialog_history)} сообщений")
+                        
+                        response_lines.append("\n💡 <i>Могу продолжить работу с этими данными.</i>")
+                        await message.answer("\n".join(response_lines))
+                    else:
+                        await message.answer(
+                            "🤔 <b>Пока мало информации.</b>\n\n"
+                            "Расскажите о себе:\n"
+                            "• На каком станке работаете\n"
+                            "• С какими материалами работаете\n"
+                            "• Какие инструменты используете\n\n"
+                            "<i>Я запомню эту информацию для будущих диалогов.</i>"
+                        )
+                elif context.machine_type:
+                    # Информация о станке
+                    machine_info = knowledge_service.find_machine(context.machine_type) if knowledge_service else None
+                    if machine_info:
+                        response = (
+                            f"🏭 <b>Информация о станке:</b>\n\n"
+                            f"<b>Тип:</b> {machine_info.machine_type}\n"
+                        )
+                        if machine_info.power_kw:
+                            response += f"<b>Мощность:</b> {machine_info.power_kw} кВт\n"
+                        if machine_info.max_rpm:
+                            response += f"<b>Макс. обороты:</b> {machine_info.max_rpm} об/мин\n"
+                        await message.answer(response)
+                    else:
+                        await message.answer(
+                            f"🏭 <b>Станок:</b> {context.machine_type}\n\n"
+                            f"💡 <i>Этот станок сохранён в базу знаний.</i>\n"
+                            f"Если у вас есть дополнительная информация о нём, поделитесь — я учту её в рекомендациях."
+                        )
+                else:
+                    await message.answer("🤔 <b>Станок не указан.</b>\n\nРасскажите на каком станке работаете.")
+            
+            elif context.recommended_vc:  # Если уже была рекомендация
+                # Пользователь описывает свои параметры
+                await handle_user_experience(message, context, user_text)
+                # Сохраняем контекст после сохранения опыта (с проверкой user_id)
+                save_context_safe(context, user_id)
+            else:
+                # Просто не поняли
+                await message.answer(
+                    "🤔 <b>Не совсем понял.</b>\n\n"
+                    "💬 <i>Опиши задачу подробнее, например:</i>\n"
+                    "<code>\"Сталь, токарный ЧПУ, снять с Ø100 до Ø90, черновая обработка\"</code>\n\n"
+                    "Или используй команды:\n"
+                    "• <code>сохранить работу</code> - сохранить текущую задачу\n"
+                    "• <code>мои работы</code> - список сохранённых работ\n"
+                    "• <code>работа W001</code> - загрузить работу по номеру"
+                )
+    
+    except Exception as e:
+        logger.error(f"Error handling message: {e}", exc_info=True)
+        await message.answer(
+            f"❌ <b>Произошла ошибка</b>\n\n"
+            f"Попробуйте описать задачу заново или нажмите /start"
+        )
 
-    except ValueError:
-        # Неизвестный параметр
-        await _show_decision_summary(message, state)
 
-
-# ============================================================================
-# РУЧНОЙ ВВОД
-# ============================================================================
-
-@dp.message(
-    CNCStates.waiting_manual_rpm |
-    CNCStates.waiting_manual_feed |
-    CNCStates.waiting_manual_ap
-)
-async def handle_manual_input(message: Message, state: FSMContext):
-    """Обработка ручного ввода."""
-    text = message.text
-
-    if text == "🔙 К сравнению":
-        # Возвращаемся к сравнению
-        current_state = await state.get_state()
-
-        param_map = {
-            CNCStates.waiting_manual_rpm: "rpm",
-            CNCStates.waiting_manual_feed: "feed",
-            CNCStates.waiting_manual_ap: "ap"
-        }
-
-        parameter = param_map.get(current_state)
-        if parameter:
-            await _start_comparison(message, state, parameter)
-        return
-
-    parser = InputParser()
-    value = parser.parse_number(text)
-
-    if value is None:
-        await message.answer("❌ Неверный формат. Введите число:")
-        return
-
-    # Определяем параметр из состояния
-    current_state = await state.get_state()
-
-    param_map = {
-        CNCStates.waiting_manual_rpm: "rpm",
-        CNCStates.waiting_manual_feed: "feed",
-        CNCStates.waiting_manual_ap: "ap"
-    }
-
-    parameter = param_map.get(current_state)
-
-    if not parameter:
-        await message.answer("❌ Ошибка определения параметра")
-        return
-
-    # Сохраняем значение
-    data = await state.get_data()
-
-    current_values = data.get('user_values', {})
-    current_values[parameter] = value
-
-    current_choices = data.get('comparison_choices', {})
-    current_choices[parameter] = "manual"
-
-    await state.update_data(
-        user_values=current_values,
-        comparison_choices=current_choices
-    )
-
-    await message.answer(
-        f"✅ Сохранено: {value}",
-        reply_markup=types.ReplyKeyboardRemove()
-    )
-
-    # Переходим к следующему параметру
-    await _proceed_to_next_parameter(message, state, parameter)
-
-
-# ============================================================================
-# ПОДТВЕРЖДЕНИЕ И СОХРАНЕНИЕ
-# ============================================================================
-
-async def _show_decision_summary(message: types.Message, state: FSMContext):
-    """Показать сводку решения."""
-    data = await state.get_data()
-
-    recommendation = data.get('recommendation', {})
-    user_values = data.get('user_values', {})
-    comparison_choices = data.get('comparison_choices', {})
-
-    # Заполняем недостающие значения значениями по умолчанию
-    for param in ["rpm", "feed", "ap"]:
-        if param not in user_values:
-            user_values[param] = recommendation.get(param, 0)
-        if param not in comparison_choices:
-            comparison_choices[param] = "same"
-
-    await state.update_data(
-        user_values=user_values,
-        comparison_choices=comparison_choices
-    )
-
-    await message.answer(
-        format_decision_result(recommendation, user_values, comparison_choices),
-        reply_markup=create_confirmation_keyboard()
-    )
-
-    await state.set_state(CNCStates.waiting_confirmation)
-
-
-@dp.callback_query(F.data == "save_decision")
-async def handle_save_decision(callback: types.CallbackQuery, state: FSMContext):
-    """Сохранить решение."""
+async def handle_user_experience(message: types.Message, context: Context, user_text: str):
+    """Обработать опыт оператора и сохранить его."""
     try:
-        data = await state.get_data()
-        user_id = str(callback.from_user.id)
-
-        # Подготавливаем данные для сохранения
-        decision_data = {
-            'user_id': user_id,
-            'geometry': {
-                'diameter_start_mm': data.get('diameter_start', 0),
-                'diameter_end_mm': data.get('diameter_end', 0),
-                'length_mm': data.get('length', 50.0),
-            },
-            'operation': {
-                'operation_type': data.get('operation', 'черновая'),
-                'is_external': True,
-            },
-            'bot_recommendation': {
-                'vc': data.get('recommendation', {}).get('vc', 0),
-                'rpm': data.get('recommendation', {}).get('rpm', 0),
-                'feed': data.get('recommendation', {}).get('feed', 0),
-                'ap': data.get('recommendation', {}).get('ap', 0),
-                'power_kw': data.get('recommendation', {}).get('power_kw', 0),
-                'passes_strategy': data.get('strategy', {}).get('passes', []),
-                'total_passes': data.get('strategy', {}).get('total_passes', 1),
-            },
-            'user_actual': {
-                'rpm': data.get('user_values', {}).get('rpm', 0),
-                'feed': data.get('user_values', {}).get('feed', 0),
-                'ap': data.get('user_values', {}).get('ap', 0),
-                'comparison_choice': _get_overall_choice(data.get('comparison_choices', {})),
-            },
-            'source': 'telegram',
-            'session_id': f"session_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
-            'full_context': {
-                'user_data': data,
-                'timestamp': datetime.now().isoformat()
-            }
-        }
-
-        # Сохраняем в БД
-        with get_session() as session:
-            decision = save_user_decision(
-                session=session,
-                user_id=user_id,
-                geometry=decision_data['geometry'],
-                operation=decision_data['operation'],
-                bot_recommendation=decision_data['bot_recommendation'],
-                user_actual=decision_data['user_actual'],
-                comparison_choice=decision_data['user_actual']['comparison_choice'],
-                source=decision_data['source'],
-                session_id=decision_data['session_id'],
-                full_context=decision_data['full_context']
+        from app.core.parser import TextParser
+        parser = TextParser()
+        
+        # Парсим параметры из текста
+        parsed = parser.parse(user_text)
+        
+        # Извлекаем числовые параметры
+        user_params = {}
+        
+        # Простой парсинг числовых значений
+        import re
+        
+        # VC
+        vc_match = re.search(r'vc[=\s:]*(\d+(?:[.,]\d+)?)|(\d+(?:[.,]\d+)?)\s*(?:м\s*в\s*минуту|м/мин)', user_text.lower())
+        if vc_match:
+            user_params['vc'] = float(vc_match.group(1) or vc_match.group(2))
+        
+        # RPM
+        rpm_match = re.search(r'rpm[=\s:]*(\d+)|(\d+)\s*(?:об|оборот)', user_text.lower())
+        if rpm_match:
+            user_params['rpm'] = float(rpm_match.group(1) or rpm_match.group(2))
+        
+        # Feed
+        feed_match = re.search(r'подач[аиу]\D*(\d+(?:[.,]\d+)?)|feed[=\s:]*(\d+(?:[.,]\d+)?)', user_text.lower())
+        if feed_match:
+            user_params['feed'] = float(feed_match.group(1) or feed_match.group(2))
+        
+        # AP
+        ap_match = re.search(r'глубин[ау]\D*(\d+(?:[.,]\d+)?)|ap[=\s:]*(\d+(?:[.,]\d+)?)', user_text.lower())
+        if ap_match:
+            user_params['ap'] = float(ap_match.group(1) or ap_match.group(2))
+        
+        if user_params:
+            # Сохраняем опыт оператора
+            session = get_session(DB_URL)
+            try:
+                save_user_decision(
+                    session=session,
+                    user_id=int(message.from_user.id),
+                    material=context.material or 'неизвестно',
+                    operation=context.operation or 'токарка',
+                    machine_type=context.machine_type or 'токарный ЧПУ',
+                    recommended_vc=context.recommended_vc or 0,
+                    recommended_rpm=context.recommended_rpm or 0,
+                    recommended_feed=context.recommended_feed or 0,
+                    recommended_ap=context.recommended_ap or 0,
+                    user_vc=user_params.get('vc'),
+                    user_rpm=user_params.get('rpm'),
+                    user_feed=user_params.get('feed'),
+                    user_ap=user_params.get('ap'),
+                    comparison_reason='custom',
+                    confidence_level='medium',
+                    result='ok'
+                )
+                session.commit()
+            except Exception as e:
+                logger.error(f"Error saving user decision: {e}", exc_info=True)
+                session.rollback()
+            finally:
+                session.close()
+            
+            await message.answer(
+                "✅ <b>Спасибо! Ваш опыт сохранён.</b>\n\n"
+                "📊 <i>Эти данные помогут улучшить рекомендации для других операторов.</i>\n\n"
+                "💬 <i>Можете описать ещё одну задачу или уточнить параметры текущей.</i>"
             )
-
-        await callback.message.answer(
-            "✅ <b>Решение успешно сохранено!</b>\n\n"
-            "<i>Этот опыт будет использован для обучения ИИ-технолога.</i>\n\n"
-            "Спасибо за ваш вклад! 🧠",
-            reply_markup=create_main_menu_keyboard()
-        )
-
-        await state.clear()
-        await callback.answer()
-
+        else:
+            await message.answer(
+                "💬 <b>Опишите свои параметры резания:</b>\n\n"
+                "Например: <code>\"VC 150 м/мин, 1000 об/мин, подача 0.2, глубина 2 мм\"</code>\n\n"
+                "Или просто: <code>\"150, 1000, 0.2, 2\"</code>"
+            )
+    
     except Exception as e:
-        logger.error(f"Ошибка сохранения решения: {e}", exc_info=True)
-        await callback.message.answer(
-            "❌ <b>Ошибка сохранения</b>\n\n"
-            "Попробуйте еще раз или начните заново.",
-            reply_markup=create_main_menu_keyboard()
+        logger.error(f"Error saving experience: {e}", exc_info=True)
+        await message.answer(
+            "❌ <b>Не удалось сохранить опыт</b>\n\n"
+            "Попробуйте описать параметры по-другому."
         )
-        await state.clear()
-        await callback.answer()
 
 
-@dp.callback_query(F.data == "restart")
-async def handle_restart(callback: types.CallbackQuery, state: FSMContext):
-    """Начать заново."""
-    await state.clear()
-    await callback.message.answer(
-        "🔄 Начинаем новый подбор!",
-        reply_markup=create_main_menu_keyboard()
+# ============================================================================
+# ИНИЦИАЛИЗАЦИЯ И ЗАПУСК
+# ============================================================================
+
+async def initialize_services():
+    """Инициализация всех сервисов."""
+    global knowledge_service, handler, image_parser, context_repository, db_pool
+    
+    logger.info("🚀 Инициализация сервисов...")
+    
+    # 1. Database Pool (для масштабируемости)
+    logger.info("🗄️ Инициализация пула соединений БД...")
+    from app.services.database_pool import DatabasePool
+    db_pool = DatabasePool(
+        db_url=DB_URL,
+        pool_size=5,
+        max_overflow=10
     )
-    await callback.answer()
-
-
-def _get_overall_choice(comparison_choices: Dict[str, str]) -> str:
-    """Получить общий выбор на основе всех сравнений."""
-    if not comparison_choices:
-        return "manual"
-
-    # Подсчитываем голоса
-    from collections import Counter
-    counter = Counter(comparison_choices.values())
-
-    # Если есть manual - возвращаем manual
-    if "manual" in counter:
-        return "manual"
-
-    # Возвращаем самый частый выбор
-    return counter.most_common(1)[0][0]
-
-
-async def _get_keyboard_for_state(state: State) -> Optional[ReplyKeyboardMarkup]:
-    """Получить клавиатуру для состояния."""
-    if state == CNCStates.waiting_material:
-        return create_material_keyboard()
-    elif state == CNCStates.waiting_operation:
-        return create_operation_keyboard()
-    elif state == CNCStates.waiting_machine_type:
-        return create_machine_type_keyboard()
-    elif state == CNCStates.waiting_machine_power:
-        return create_power_keyboard()
-    elif state == CNCStates.waiting_tool_material:
-        return create_tool_material_keyboard()
-    elif state == CNCStates.waiting_tool_radius:
-        return create_tool_radius_keyboard()
-
-    return None
-
-
-# ============================================================================
-# ЗАПУСК БОТА
-# ============================================================================
-
-async def start_telegram_bot():
-    """Запуск Telegram бота."""
+    
+    # Инициализируем БД
+    # Инициализация базы данных
+    init_orm_database(DB_URL)
+    
+    # Запуск миграций для добавления недостающих столбцов
+    logger.info("🔄 Запуск миграций базы данных...")
     try:
-        # Получаем информацию о боте
-        me = await bot.get_me()
-
-        print("\n" + "=" * 60)
-        print(f"🤖 Запуск CNC Assistant v5.0")
-        print(f"📝 Бот: @{me.username}")
-        print(f"🎯 Философия: сбор РЕАЛЬНОЙ ПРАКТИКИ операторов")
-        print(f"🧠 Цель: обучение ИИ-технолога на реальных данных")
-        print(f"⚙️ Модули: calculator.py, pass_strategy.py, storage/models.py")
-        print(f"💾 База данных: storage/cnc.db")
-        print("=" * 60 + "\n")
-
-        logger.info(f"Запуск бота: @{me.username}")
-
-        # Удаляем вебхук
-        await bot.delete_webhook(drop_pending_updates=True)
-        logger.info("Вебхук удален")
-
-        # Запускаем polling
-        print("🔄 Бот запущен и ожидает сообщений...")
-        print("⚠️ Для остановки нажмите Ctrl+C\n")
-
-        await dp.start_polling(
-            bot,
-            allowed_updates=dp.resolve_used_update_types(),
-            skip_updates=True
-        )
-
-    except KeyboardInterrupt:
-        print("\n👋 Остановка бота...")
-        logger.info("Остановка бота по запросу пользователя")
+        run_all_migrations(str(db_path))
+        logger.info("✅ Миграции выполнены успешно")
     except Exception as e:
-        print(f"\n❌ КРИТИЧЕСКАЯ ОШИБКА: {e}")
-        logger.error(f"Критическая ошибка при запуске бота: {e}", exc_info=True)
-        raise
-    finally:
-        await bot.session.close()
-        logger.info("Сессия бота закрыта")
+        logger.error(f"❌ Ошибка при выполнении миграций: {e}")
+        # Не прерываем запуск, но логируем ошибку
+    
+    # 2. Context Repository (для персистентного хранения контекста)
+    logger.info("💾 Инициализация репозитория контекста...")
+    from app.services.context_repository import ContextRepository
+    with db_pool.get_session() as session:
+        context_repository = ContextRepository(db_session=session)
+    
+    # 3. Knowledge Service
+    logger.info("📚 Загрузка базы знаний...")
+    knowledge_service = KnowledgeService()
+    await knowledge_service.initialize()
+    
+    # 4. Image Parser
+    logger.info("📸 Инициализация парсера изображений...")
+    image_parser = ImageParser(tesseract_cmd=TESSERACT_CMD)
+    if image_parser.ocr_available:
+        logger.info("✅ OCR готов к работе (Tesseract доступен)")
+    else:
+        logger.warning("⚠️ OCR недоступен (Tesseract не найден или не настроен)")
+    
+    # 5. Message Handler
+    logger.info("📨 Инициализация обработчика сообщений...")
+    
+    # Используем пул соединений для handler
+    db_session = db_pool.get_session_direct()
+    
+    handler = MessageHandler(
+        knowledge_service=knowledge_service,
+        db_session=db_session
+    )
+    
+    logger.info("✅ Все сервисы инициализированы")
 
 
-def main():
+async def main():
     """Основная функция запуска."""
-    print("🚀 CNC Assistant Telegram Bot v5.0")
-    print("🎯 НОВАЯ ФИЛОСОФИЯ: сбор практики, а не рекомендаций")
-    print("🧠 Использует: core/calculator.py, core/pass_strategy.py, storage/models.py")
-    print("⚡ Загрузка конфигурации...")
-
+    print("=" * 60)
+    print("🚀 Запуск AI-бота CNC Assistant")
+    print("🧠 Режим: естественный диалог с пониманием контекста")
+    print(f"🤖 Токен: {BOT_TOKEN[:10]}...")
+    print("=" * 60)
+    
     try:
-        asyncio.run(start_telegram_bot())
-    except KeyboardInterrupt:
-        print("\n👋 Бот остановлен пользователем")
-        sys.exit(0)
+        # Инициализация сервисов
+        await initialize_services()
+        
+        # Проверка соединения с Telegram
+        me = await bot.get_me()
+        print(f"✅ Бот: @{me.username} (ID: {me.id})")
+        
+        # Запускаем опрос
+        print("\n🔄 Бот запущен и ожидает сообщений...")
+        print("💬 Режим: естественный диалог без кнопок")
+        print("🧠 Контекст сохраняется между сообщениями")
+        print("📊 Сбор опыта операторов для обучения ИИ")
+        print("⚠️ Для остановки нажмите Ctrl+C\n")
+        
+        await dp.start_polling(bot, skip_updates=True)
+    
     except Exception as e:
-        print(f"\n❌ Фатальная ошибка: {e}")
-        logger.error(f"Фатальная ошибка: {e}", exc_info=True)
-        sys.exit(1)
+        print(f"\n❌ Критическая ошибка: {e}")
+        logger.error(f"Критическая ошибка: {e}", exc_info=True)
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        print("\n👋 Бот остановлен")
+    except Exception as e:
+        print(f"\n❌ Фатальная ошибка: {e}")
+        logger.error(f"Фатальная ошибка: {e}", exc_info=True)

@@ -1,0 +1,32 @@
+# ОСТ 1 31102-80 - Винты с цилиндрической головкой
+standard_id: ОСТ_1_31102-80
+standard_type: ОСТ
+standard_number: 1 31102-80
+
+part_type: винт
+description: Винты с цилиндрической головкой под крестообразный шлиц
+
+materials:
+  - сталь
+  - сталь углеродистая
+  - латунь
+  - алюминий
+
+tolerances:
+  thread_tolerance: 6g
+  head_tolerance: стандартная
+
+operations:
+  - name: токарная обработка
+    type: turning
+    required: true
+  - name: нарезание резьбы
+    type: threading
+    required: true
+  - name: фрезерование шлица
+    type: milling
+    required: true
+
+notes:
+  - Шлиц крестообразный типа PH
+  - Резьба метрическая

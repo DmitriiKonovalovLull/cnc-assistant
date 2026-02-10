@@ -1,0 +1,36 @@
+{
+  "tools": [
+    {
+      "tool_type": "токарный проходной",
+      "material": "твердый сплав",
+      "insert_radius_mm": 0.8,
+      "recommended_vc_multiplier": 1.0,
+      "recommended_feed_multiplier": 1.0,
+      "max_depth_of_cut_mm": 6.0
+    },
+    {
+      "tool_type": "токарный чистовой",
+      "material": "твердый сплав",
+      "insert_radius_mm": 0.4,
+      "recommended_vc_multiplier": 1.2,
+      "recommended_feed_multiplier": 0.7,
+      "max_depth_of_cut_mm": 1.0
+    },
+    {
+      "tool_type": "токарный проходной",
+      "material": "быстрорез",
+      "insert_radius_mm": 0.8,
+      "recommended_vc_multiplier": 0.5,
+      "recommended_feed_multiplier": 0.8,
+      "max_depth_of_cut_mm": 4.0
+    },
+    {
+      "tool_type": "фрезерная концевая",
+      "material": "твердый сплав",
+      "insert_radius_mm": null,
+      "recommended_vc_multiplier": 0.9,
+      "recommended_feed_multiplier": 0.5,
+      "max_depth_of_cut_mm": null
+    }
+  ]
+}

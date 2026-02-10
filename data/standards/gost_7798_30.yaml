@@ -1,0 +1,32 @@
+# ГОСТ 7798-30 - Болты с шестигранной головкой класса точности А
+standard_id: ГОСТ_7798-30
+standard_type: ГОСТ
+standard_number: 7798-30
+
+part_type: болт
+description: Болты с шестигранной головкой класса точности А
+
+materials:
+  - сталь
+  - сталь углеродистая
+  - сталь легированная
+
+tolerances:
+  thread_tolerance: 6g
+  head_tolerance: A
+
+operations:
+  - name: токарная обработка
+    type: turning
+    required: true
+  - name: нарезание резьбы
+    type: threading
+    required: true
+  - name: фрезерование головки
+    type: milling
+    required: true
+
+notes:
+  - Класс точности А - повышенная точность
+  - Резьба по ГОСТ 24705-2004
+  - Головка шестигранная по ГОСТ 7796-70

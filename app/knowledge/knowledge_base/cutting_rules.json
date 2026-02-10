@@ -1,0 +1,59 @@
+{
+  "description": "Правила резания для различных материалов и операций",
+  "rules": [
+    {
+      "material": "титан",
+      "operation": "токарка",
+      "max_vc_m_min": 60,
+      "min_vc_m_min": 20,
+      "typical_feed_mm_rev": 0.1,
+      "typical_ap_mm": 1.0,
+      "notes": "Титан требует низких скоростей и осторожной обработки"
+    },
+    {
+      "material": "алюминий",
+      "operation": "токарка",
+      "max_vc_m_min": 1000,
+      "min_vc_m_min": 200,
+      "typical_feed_mm_rev": 0.3,
+      "typical_ap_mm": 3.0,
+      "notes": "Алюминий обрабатывается на высоких скоростях"
+    },
+    {
+      "material": "сталь",
+      "operation": "токарка",
+      "max_vc_m_min": 300,
+      "min_vc_m_min": 80,
+      "typical_feed_mm_rev": 0.2,
+      "typical_ap_mm": 2.5,
+      "notes": "Стандартные параметры для стали"
+    },
+    {
+      "material": "нержавейка",
+      "operation": "токарка",
+      "max_vc_m_min": 120,
+      "min_vc_m_min": 30,
+      "typical_feed_mm_rev": 0.15,
+      "typical_ap_mm": 1.5,
+      "notes": "Нержавейка требует более низких скоростей чем сталь"
+    }
+  ],
+  "safety_rules": [
+    {
+      "rule": "ap_radius_ratio",
+      "description": "Глубина резания не должна превышать радиус пластины более чем в 2 раза",
+      "max_ratio": 2.0
+    },
+    {
+      "rule": "feed_radius_ratio",
+      "description": "Подача не должна превышать радиус пластины",
+      "max_ratio": 1.0
+    },
+    {
+      "rule": "overhang_rigidity",
+      "description": "При большом вылете (>3D) снижать параметры на 30-50%",
+      "critical_ratio": 3.0,
+      "reduction_percent": 40
+    }
+  ]
+}

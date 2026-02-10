@@ -1,16 +1,117 @@
 """
 ORM модели для базы данных.
 Теперь с акцентом на сбор РЕШЕНИЙ операторов для обучения ИИ.
+Версия с поддержкой цепочки операций (черновая → получистовая → чистовая).
 """
-from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime, Text, JSON, Boolean, Enum
+from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime, Text, JSON, Boolean, Enum, Table, \
+    ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, relationship
+from sqlalchemy.orm import sessionmaker, relationship, backref
 from sqlalchemy.sql import func
 from datetime import datetime
 import json
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
+from enum import Enum as PyEnum
 
 Base = declarative_base()
+
+
+# ============================================================================
+# ПЕРЕЧИСЛЕНИЯ
+# ============================================================================
+
+class OperationType(PyEnum):
+    """Типы операций для цепочки."""
+    ROUGHING = "roughing"  # черновая
+    SEMI_FINISHING = "semi_finishing"  # получистовая
+    FINISHING = "finishing"  # чистовая
+    FINISHING_HIGH_QUALITY = "finishing_high_quality"  # высококачественная чистовая
+
+
+class ComparisonChoice(PyEnum):
+    """Варианты сравнения с рекомендацией."""
+    LOWER = "lower"  # ниже рекомендации
+    SAME = "same"  # так же как рекомендация
+    HIGHER = "higher"  # выше рекомендации
+    CUSTOM = "custom"  # уникальное решение
+    MIXED = "mixed"  # смешанное (в цепочке разные варианты)
+
+
+class ResultType(PyEnum):
+    """Результаты операции."""
+    OK = "ok"  # успешно
+    CHATTER = "chatter"  # вибрации
+    TOOL_WEAR = "tool_wear"  # износ инструмента
+    BREAKAGE = "breakage"  # поломка инструмента
+    SURFACE_ISSUE = "surface_issue"  # проблемы с поверхностью
+    DIMENSIONAL_ERROR = "dimensional_error"  # отклонение размеров
+
+
+# ============================================================================
+# ВСПОМОГАТЕЛЬНЫЕ ТАБЛИЦЫ ДЛЯ ЦЕПОЧЕК
+# ============================================================================
+
+class OperationStep(Base):
+    """Один шаг в цепочке операций."""
+    __tablename__ = 'operation_steps'
+
+    id = Column(Integer, primary_key=True)
+    step_order = Column(Integer, nullable=False)  # порядковый номер в цепочке
+    operation_type = Column(String, nullable=False)  # roughing, semi_finishing, finishing
+
+    # Параметры для этого шага
+    target_diameter_mm = Column(Float)  # целевой диаметр после этого шага
+    stock_to_remove_mm = Column(Float)  # припуск на удаление
+
+    # Рекомендуемые параметры бота для этого шага
+    bot_vc_m_min = Column(Float)  # скорость резания
+    bot_rpm = Column(Float)  # обороты
+    bot_feed_mm_rev = Column(Float)  # подача
+    bot_ap_mm = Column(Float)  # глубина резания
+    bot_passes = Column(Integer)  # количество проходов
+
+    # Фактические параметры оператора для этого шага
+    user_rpm = Column(Float)
+    user_feed_mm_rev = Column(Float)
+    user_ap_mm = Column(Float)
+    user_passes = Column(Integer)
+
+    # Сравнение
+    comparison_choice = Column(String)  # lower, same, higher, custom
+
+    # Внешний ключ на родительскую запись
+    decision_id = Column(String, ForeignKey('user_decisions.id'))
+
+    # Отношения
+    decision = relationship("UserDecision", back_populates="operation_steps")
+
+
+class PassStrategyDetail(Base):
+    """Детали стратегии проходов для шага операции."""
+    __tablename__ = 'pass_strategy_details'
+
+    id = Column(Integer, primary_key=True)
+    operation_step_id = Column(Integer, ForeignKey('operation_steps.id'))
+    pass_number = Column(Integer)  # номер прохода
+    pass_type = Column(String)  # roughing, semi_finishing, finishing
+
+    # Геометрия
+    diameter_before_mm = Column(Float)
+    diameter_after_mm = Column(Float)
+    ap_mm = Column(Float)  # глубина резания
+
+    # Параметры
+    vc_m_min = Column(Float)
+    feed_mm_rev = Column(Float)
+    rpm = Column(Float)
+
+    # Отношения
+    operation_step = relationship("OperationStep", back_populates="pass_details")
+
+
+# Добавляем обратные связи
+OperationStep.pass_details = relationship("PassStrategyDetail", back_populates="operation_step",
+                                          cascade="all, delete-orphan")
 
 
 # ============================================================================
@@ -121,7 +222,7 @@ class Feedback(Base):
 
 
 # ============================================================================
-# НОВЫЕ ТАБЛИЦЫ (для сбора решений операторов)
+# НОВЫЕ ТАБЛИЦЫ (для сбора решений операторов) - ОБНОВЛЕННЫЕ
 # ============================================================================
 
 class MachineRecord(Base):
@@ -176,7 +277,7 @@ class ToolRecord(Base):
 class UserDecision(Base):
     """
     ОСНОВНАЯ ТАБЛИЦА - решение оператора.
-    Это "золото" для обучения ИИ.
+    ОБНОВЛЕНА: Поддержка цепочки операций.
     """
     __tablename__ = 'user_decisions'
 
@@ -194,13 +295,18 @@ class UserDecision(Base):
     diameter_end_mm = Column(Float, nullable=False)
     length_mm = Column(Float, nullable=False)
 
-    # Тип операции
-    operation_type = Column(String, nullable=False)  # roughing, finishing, semi_finishing, etc.
+    # ЦЕПОЧКА ОПЕРАЦИЙ (новое поле)
+    operation_chain_json = Column(Text, default='[]')  # JSON список типов операций
+
+    # Для обратной совместимости (старое поле)
+    operation_type = Column(String, nullable=True)  # DEPRECATED: используем operation_chain_json
+
+    # Общие параметры (для простых случаев)
     is_external = Column(Boolean, default=True)
     tolerance_mm = Column(Float)
     surface_roughness_ra = Column(Float)
 
-    # Рекомендация бота (базовые табличные значения)
+    # Сводные рекомендации бота (средние по цепочке)
     bot_vc_m_min = Column(Float)  # скорость резания, м/мин
     bot_rpm = Column(Float)  # обороты шпинделя
     bot_feed_mm_rev = Column(Float)  # подача на оборот, мм/об
@@ -211,13 +317,13 @@ class UserDecision(Base):
     passes_strategy_json = Column(Text, default='{}')
     total_passes = Column(Integer)
 
-    # Фактические параметры оператора
+    # Сводные фактические параметры оператора
     user_rpm = Column(Float, nullable=False)
     user_feed_mm_rev = Column(Float, nullable=False)
     user_ap_mm = Column(Float, nullable=False)
 
     # Как пользователь отнесся к рекомендации
-    comparison_choice = Column(String)  # lower, same, higher, manual
+    comparison_choice = Column(String)  # lower, same, higher, custom, mixed
     user_comment = Column(Text)
 
     # Коэффициенты сравнения
@@ -243,6 +349,23 @@ class UserDecision(Base):
     source = Column(String, default='telegram')
     session_id = Column(String)
 
+    # Отношения для цепочки операций
+    operation_steps = relationship("OperationStep", back_populates="decision", cascade="all, delete-orphan")
+
+    @property
+    def operation_chain(self):
+        """Цепочка операций как список."""
+        if self.operation_chain_json:
+            return json.loads(self.operation_chain_json)
+        # Для обратной совместимости
+        if self.operation_type:
+            return [self.operation_type]
+        return []
+
+    @operation_chain.setter
+    def operation_chain(self, value):
+        self.operation_chain_json = json.dumps(value, ensure_ascii=False)
+
     @property
     def passes_strategy(self):
         return json.loads(self.passes_strategy_json) if self.passes_strategy_json else {}
@@ -264,9 +387,80 @@ class UserDecision(Base):
         """Припуск на сторону, мм."""
         return (self.diameter_start_mm - self.diameter_end_mm) / 2
 
+    @property
+    def has_operation_chain(self):
+        """Есть ли цепочка операций (более 1 операции)."""
+        return len(self.operation_chain) > 1
+
+    @property
+    def primary_operation_type(self):
+        """Основной тип операции (первая в цепочке или единственная)."""
+        if self.operation_chain:
+            return self.operation_chain[0]
+        return self.operation_type or 'roughing'
+
+    def get_operation_chain_description(self) -> str:
+        """Описание цепочки операций для отображения."""
+        if not self.operation_chain:
+            return "одна операция"
+
+        chain_names = {
+            'roughing': 'черновая',
+            'semi_finishing': 'получистовая',
+            'finishing': 'чистовая',
+            'finishing_high_quality': 'высококачественная чистовая'
+        }
+
+        descriptions = [chain_names.get(op, op) for op in self.operation_chain]
+
+        if len(descriptions) == 1:
+            return descriptions[0]
+        elif len(descriptions) == 2:
+            return f"{descriptions[0]} → {descriptions[1]}"
+        else:
+            return f"{descriptions[0]} → ... → {descriptions[-1]}"
+
     def to_dict(self) -> Dict[str, Any]:
         """Преобразовать в словарь (как в domain/models.py)."""
-        return {
+        # Собираем данные по шагам операций
+        operation_steps_data = []
+        for step in sorted(self.operation_steps, key=lambda s: s.step_order):
+            step_data = {
+                'step_order': step.step_order,
+                'operation_type': step.operation_type,
+                'target_diameter_mm': step.target_diameter_mm,
+                'stock_to_remove_mm': step.stock_to_remove_mm,
+                'bot_recommendation': {
+                    'vc_m_min': step.bot_vc_m_min,
+                    'rpm': step.bot_rpm,
+                    'feed_mm_rev': step.bot_feed_mm_rev,
+                    'ap_mm': step.bot_ap_mm,
+                    'passes': step.bot_passes
+                },
+                'user_actual': {
+                    'rpm': step.user_rpm,
+                    'feed_mm_rev': step.user_feed_mm_rev,
+                    'ap_mm': step.user_ap_mm,
+                    'passes': step.user_passes
+                },
+                'comparison_choice': step.comparison_choice,
+                'pass_details': [
+                    {
+                        'pass_number': pd.pass_number,
+                        'pass_type': pd.pass_type,
+                        'diameter_before_mm': pd.diameter_before_mm,
+                        'diameter_after_mm': pd.diameter_after_mm,
+                        'ap_mm': pd.ap_mm,
+                        'vc_m_min': pd.vc_m_min,
+                        'feed_mm_rev': pd.feed_mm_rev,
+                        'rpm': pd.rpm
+                    }
+                    for pd in sorted(step.pass_details, key=lambda pd: pd.pass_number)
+                ]
+            }
+            operation_steps_data.append(step_data)
+
+        result = {
             'record_id': self.id,
             'user_id': self.user_id,
             'timestamp': self.timestamp.isoformat() if self.timestamp else None,
@@ -279,15 +473,25 @@ class UserDecision(Base):
                 'total_stock_mm': self.total_stock_mm
             },
 
-            # Операция
+            # Цепочка операций
+            'operation_chain': {
+                'chain': self.operation_chain,
+                'description': self.get_operation_chain_description(),
+                'has_chain': self.has_operation_chain,
+                'primary_operation': self.primary_operation_type,
+                'steps': operation_steps_data
+            },
+
+            # Общие параметры операции
             'operation': {
-                'operation_type': self.operation_type,
+                'operation_type': self.primary_operation_type,  # для обратной совместимости
+                'operation_chain': self.operation_chain,  # новая версия
                 'is_external': self.is_external,
                 'tolerance_mm': self.tolerance_mm,
                 'surface_roughness_ra': self.surface_roughness_ra
             },
 
-            # Рекомендация бота
+            # Сводная рекомендация бота
             'bot_recommendation': {
                 'vc': self.bot_vc_m_min,
                 'rpm': self.bot_rpm,
@@ -298,7 +502,7 @@ class UserDecision(Base):
                 'total_passes': self.total_passes
             },
 
-            # Фактические параметры
+            # Сводные фактические параметры
             'user_actual': {
                 'rpm': self.user_rpm,
                 'feed': self.user_feed_mm_rev,
@@ -331,6 +535,8 @@ class UserDecision(Base):
             'full_context': self.full_context
         }
 
+        return result
+
 
 class ExperienceProfile(Base):
     """Профиль опыта оператора (динамически обновляемый)."""
@@ -344,6 +550,10 @@ class ExperienceProfile(Base):
     total_decisions = Column(Integer, default=0)
     adaptive_decisions = Column(Integer, default=0)
 
+    # Статистика по цепочкам операций
+    chain_operation_count = Column(Integer, default=0)  # количество решений с цепочками
+    avg_chain_length = Column(Float, default=1.0)  # средняя длина цепочки
+
     # Средние коэффициенты предпочтений
     avg_rpm_coeff = Column(Float, default=1.0)
     avg_feed_coeff = Column(Float, default=1.0)
@@ -353,17 +563,30 @@ class ExperienceProfile(Base):
     material_adaptation_score = Column(Float, default=0.0)
     diameter_adaptation_score = Column(Float, default=0.0)
     operation_adaptation_score = Column(Float, default=0.0)
+    chain_adaptation_score = Column(Float, default=0.0)  # адаптивность к цепочкам
 
     # Профиль рисков
     risk_tolerance = Column(Float, default=0.5)  # 0-1, где 0 - консервативный, 1 - агрессивный
     preferred_aggressiveness = Column(Float, default=0.5)  # 0-1
+
+    # Предпочтения по цепочкам операций
+    preferred_chain_pattern_json = Column(Text, default='{}')
+
+    @property
+    def preferred_chain_pattern(self):
+        return json.loads(self.preferred_chain_pattern_json) if self.preferred_chain_pattern_json else {}
+
+    @preferred_chain_pattern.setter
+    def preferred_chain_pattern(self, value):
+        self.preferred_chain_pattern_json = json.dumps(value, ensure_ascii=False)
 
     @property
     def overall_experience_score(self) -> float:
         """Общая оценка опыта (0-100)."""
         adaptation = (self.material_adaptation_score +
                       self.diameter_adaptation_score +
-                      self.operation_adaptation_score) / 3
+                      self.operation_adaptation_score +
+                      self.chain_adaptation_score) / 4
 
         volume_score = min(self.total_decisions / 50, 1.0)
 
@@ -438,14 +661,13 @@ class MaterialLibrary(Base):
 
 
 # ============================================================================
-# УТИЛИТЫ ДЛЯ РАБОТЫ С БАЗОЙ
+# УТИЛИТЫ ДЛЯ РАБОТЫ С БАЗОЙ (ОБНОВЛЕННЫЕ)
 # ============================================================================
 
 def create_decision_id() -> str:
     """Создание уникального ID для записи решения."""
-    from datetime import datetime
-    import uuid
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    import uuid
     unique = str(uuid.uuid4())[:8]
     return f"decision_{timestamp}_{unique}"
 
@@ -460,25 +682,13 @@ def save_user_decision(
         comparison_choice: str,
         source: str = "telegram",
         session_id: Optional[str] = None,
-        full_context: Optional[Dict] = None
+        full_context: Optional[Dict] = None,
+        operation_chain: Optional[List[str]] = None,
+        operation_steps: Optional[List[Dict[str, Any]]] = None
 ) -> UserDecision:
     """
     Сохранить решение оператора в базу данных.
-
-    Args:
-        session: SQLAlchemy сессия
-        user_id: ID пользователя
-        geometry: словарь с diameter_start_mm, diameter_end_mm, length_mm
-        operation: словарь с operation_type, is_external и др.
-        bot_recommendation: словарь с рекомендациями бота
-        user_actual: словарь с фактическими параметрами
-        comparison_choice: lower, same, higher, manual
-        source: источник данных (telegram, cli, web)
-        session_id: ID сессии
-        full_context: полный контекст для анализа
-
-    Returns:
-        Сохраненная запись
+    ОБНОВЛЕНО: Поддержка цепочек операций.
     """
     # Рассчитываем коэффициенты различий
     bot = bot_recommendation
@@ -488,7 +698,16 @@ def save_user_decision(
     diff_feed = user.get('feed', 0) / bot.get('feed', 1) if bot.get('feed') else 1.0
     diff_ap = user.get('ap', 0) / bot.get('ap', 1) if bot.get('ap') else 1.0
 
-    # Создаем запись
+    # Определяем цепочку операций
+    if operation_chain:
+        chain = operation_chain
+        primary_op = operation_chain[0] if operation_chain else 'roughing'
+    else:
+        # Для обратной совместимости
+        chain = [operation.get('operation_type', 'roughing')]
+        primary_op = operation.get('operation_type', 'roughing')
+
+    # Создаем основную запись
     decision = UserDecision(
         id=create_decision_id(),
         user_id=user_id,
@@ -498,13 +717,16 @@ def save_user_decision(
         diameter_end_mm=geometry.get('diameter_end_mm', 0),
         length_mm=geometry.get('length_mm', 0),
 
-        # Операция
-        operation_type=operation.get('operation_type', 'roughing'),
+        # Цепочка операций
+        operation_chain=chain,
+        operation_type=primary_op,  # для обратной совместимости
+
+        # Общие параметры
         is_external=operation.get('is_external', True),
         tolerance_mm=operation.get('tolerance_mm'),
         surface_roughness_ra=operation.get('surface_roughness_ra'),
 
-        # Рекомендация бота
+        # Сводные рекомендации бота
         bot_vc_m_min=bot.get('vc'),
         bot_rpm=bot.get('rpm'),
         bot_feed_mm_rev=bot.get('feed'),
@@ -513,7 +735,7 @@ def save_user_decision(
         passes_strategy=bot.get('passes_strategy', {}),
         total_passes=bot.get('total_passes', 1),
 
-        # Фактические параметры
+        # Сводные фактические параметры
         user_rpm=user.get('rpm', 0),
         user_feed_mm_rev=user.get('feed', 0),
         user_ap_mm=user.get('ap', 0),
@@ -533,17 +755,64 @@ def save_user_decision(
         full_context=full_context or {}
     )
 
-    # Сохраняем
+    # Сохраняем основную запись
     session.add(decision)
+    session.flush()  # Получаем ID
+
+    # Сохраняем шаги операций, если они предоставлены
+    if operation_steps:
+        for i, step_data in enumerate(operation_steps, 1):
+            operation_step = OperationStep(
+                step_order=i,
+                operation_type=step_data.get('operation_type', 'roughing'),
+                target_diameter_mm=step_data.get('target_diameter_mm'),
+                stock_to_remove_mm=step_data.get('stock_to_remove_mm'),
+
+                # Рекомендации бота для шага
+                bot_vc_m_min=step_data.get('bot_recommendation', {}).get('vc_m_min'),
+                bot_rpm=step_data.get('bot_recommendation', {}).get('rpm'),
+                bot_feed_mm_rev=step_data.get('bot_recommendation', {}).get('feed_mm_rev'),
+                bot_ap_mm=step_data.get('bot_recommendation', {}).get('ap_mm'),
+                bot_passes=step_data.get('bot_recommendation', {}).get('passes'),
+
+                # Фактические параметры для шага
+                user_rpm=step_data.get('user_actual', {}).get('rpm'),
+                user_feed_mm_rev=step_data.get('user_actual', {}).get('feed_mm_rev'),
+                user_ap_mm=step_data.get('user_actual', {}).get('ap_mm'),
+                user_passes=step_data.get('user_actual', {}).get('passes'),
+
+                comparison_choice=step_data.get('comparison_choice'),
+                decision_id=decision.id
+            )
+
+            session.add(operation_step)
+            session.flush()
+
+            # Сохраняем детали проходов
+            pass_details = step_data.get('pass_details', [])
+            for pass_detail in pass_details:
+                detail = PassStrategyDetail(
+                    operation_step_id=operation_step.id,
+                    pass_number=pass_detail.get('pass_number'),
+                    pass_type=pass_detail.get('pass_type'),
+                    diameter_before_mm=pass_detail.get('diameter_before_mm'),
+                    diameter_after_mm=pass_detail.get('diameter_after_mm'),
+                    ap_mm=pass_detail.get('ap_mm'),
+                    vc_m_min=pass_detail.get('vc_m_min'),
+                    feed_mm_rev=pass_detail.get('feed_mm_rev'),
+                    rpm=pass_detail.get('rpm')
+                )
+                session.add(detail)
+
     session.commit()
 
     # Обновляем профиль опыта
-    update_experience_profile(session, user_id, decision)
+    update_experience_profile(session, user_id, decision, operation_steps)
 
     return decision
 
 
-def update_experience_profile(session, user_id: str, decision: UserDecision):
+def update_experience_profile(session, user_id: str, decision: UserDecision, operation_steps: Optional[List] = None):
     """Обновить профиль опыта пользователя на основе нового решения."""
     # Ищем существующий профиль или создаем новый
     profile = session.query(ExperienceProfile).filter_by(user_id=user_id).first()
@@ -553,6 +822,17 @@ def update_experience_profile(session, user_id: str, decision: UserDecision):
 
     # Обновляем статистику
     profile.total_decisions += 1
+
+    # Обновляем статистику по цепочкам
+    if decision.has_operation_chain:
+        profile.chain_operation_count += 1
+        chain_length = len(decision.operation_chain)
+        # Обновляем среднюю длину цепочки
+        if profile.avg_chain_length == 1.0:
+            profile.avg_chain_length = chain_length
+        else:
+            profile.avg_chain_length = (profile.avg_chain_length * (profile.chain_operation_count - 1) +
+                                        chain_length) / profile.chain_operation_count
 
     # Обновляем средние коэффициенты (скользящее среднее)
     if decision.diff_coeff_rpm:
@@ -567,7 +847,10 @@ def update_experience_profile(session, user_id: str, decision: UserDecision):
         profile.avg_ap_coeff = (profile.avg_ap_coeff * (profile.total_decisions - 1) +
                                 decision.diff_coeff_ap) / profile.total_decisions
 
-    # TODO: Обновить оценки адаптивности на основе сравнения с предыдущими решениями
+    # Обновляем оценку адаптивности к цепочкам
+    if operation_steps and len(operation_steps) > 1:
+        # Если оператор успешно работает с цепочками, повышаем оценку
+        profile.chain_adaptation_score = min(1.0, profile.chain_adaptation_score + 0.1)
 
     session.commit()
 
@@ -579,6 +862,172 @@ def get_user_decisions(session, user_id: str, limit: int = 100) -> list:
             .order_by(UserDecision.timestamp.desc())
             .limit(limit)
             .all())
+
+
+def get_decision_with_steps(session, decision_id: str) -> Optional[UserDecision]:
+    """Получить решение со всеми шагами операций."""
+    return (session.query(UserDecision)
+            .filter_by(id=decision_id)
+            .options(
+        session.query(UserDecision).joinedload(UserDecision.operation_steps)
+        .joinedload(OperationStep.pass_details)
+    )
+            .first())
+
+
+# ============================================================================
+# ФУНКЦИИ ДЛЯ РАБОТЫ С ЦЕПОЧКАМИ ОПЕРАЦИЙ
+# ============================================================================
+
+def create_operation_chain_from_text(text: str) -> List[str]:
+    """
+    Создать цепочку операций из текста пользователя.
+    Например: "черновой потом чистовой" → ["roughing", "finishing"]
+    """
+    text_lower = text.lower()
+
+    # Словарь для распознавания
+    operation_keywords = {
+        'чернов': 'roughing',
+        'грубо': 'roughing',
+        'съем': 'roughing',
+        'припуск': 'roughing',
+
+        'получист': 'semi_finishing',
+        'средн': 'semi_finishing',
+        'переход': 'semi_finishing',
+
+        'чистов': 'finishing',
+        'чисто': 'finishing',
+        'финиш': 'finishing',
+        'окончат': 'finishing',
+        'отдел': 'finishing'
+    }
+
+    # Разделители для цепочек
+    separators = ['потом', 'затем', 'далее', 'после', '→', '->', 'и', 'а потом']
+
+    # Ищем операции в тексте
+    found_operations = []
+
+    for keyword, operation in operation_keywords.items():
+        if keyword in text_lower:
+            found_operations.append(operation)
+
+    # Убираем дубликаты, сохраняя порядок
+    seen = set()
+    unique_operations = []
+    for op in found_operations:
+        if op not in seen:
+            seen.add(op)
+            unique_operations.append(op)
+
+    # Если операций не найдено, возвращаем стандартную цепочку
+    if not unique_operations:
+        # Пытаемся определить по контексту
+        if 'припуск' in text_lower or 'снять' in text_lower or 'много' in text_lower:
+            # Большой припуск → черновая + чистовая
+            return ['roughing', 'finishing']
+        elif 'чисто' in text_lower or 'точн' in text_lower or 'шероховат' in text_lower:
+            # Акцент на качество → чистовая
+            return ['finishing']
+        else:
+            # По умолчанию → черновая
+            return ['roughing']
+
+    # Сортируем по логическому порядку, если нет явных указаний
+    operation_order = ['roughing', 'semi_finishing', 'finishing', 'finishing_high_quality']
+    sorted_operations = sorted(unique_operations,
+                               key=lambda x: operation_order.index(x) if x in operation_order else len(operation_order))
+
+    return sorted_operations
+
+
+def get_chain_description(chain: List[str]) -> str:
+    """Получить описание цепочки операций."""
+    descriptions = {
+        'roughing': 'черновая',
+        'semi_finishing': 'получистовая',
+        'finishing': 'чистовая',
+        'finishing_high_quality': 'высококачественная чистовая'
+    }
+
+    translated = [descriptions.get(op, op) for op in chain]
+
+    if len(translated) == 1:
+        return translated[0]
+    elif len(translated) == 2:
+        return f"{translated[0]} → {translated[1]}"
+    else:
+        return f"{translated[0]} → ... → {translated[-1]}"
+
+
+def calculate_chain_statistics(chain: List[str], total_stock_mm: float) -> Dict[str, Any]:
+    """
+    Рассчитать статистику для цепочки операций.
+    """
+    if not chain:
+        return {}
+
+    # Распределение припуска по операциям
+    stock_distribution = {}
+
+    if len(chain) == 1:
+        # Одна операция - весь припуск
+        stock_distribution[chain[0]] = total_stock_mm
+    elif len(chain) == 2:
+        # Две операции: черновая 80%, чистовая 20%
+        if chain[0] == 'roughing' and chain[1] in ['semi_finishing', 'finishing']:
+            stock_distribution[chain[0]] = total_stock_mm * 0.8
+            stock_distribution[chain[1]] = total_stock_mm * 0.2
+        else:
+            # Равномерно
+            per_op = total_stock_mm / len(chain)
+            for op in chain:
+                stock_distribution[op] = per_op
+    else:
+        # Три и более операций: прогрессивное уменьшение
+        base = total_stock_mm / sum(range(1, len(chain) + 1))
+        for i, op in enumerate(chain, 1):
+            stock_distribution[op] = base * (len(chain) - i + 1)
+
+    # Расчетные параметры для каждой операции
+    operation_params = {}
+    for op, stock in stock_distribution.items():
+        if op == 'roughing':
+            operation_params[op] = {
+                'target_ap_mm': min(stock / 3, 4.0),  # Средняя глубина
+                'typical_feed_mm_rev': 0.2,
+                'typical_vc_multiplier': 1.0
+            }
+        elif op == 'semi_finishing':
+            operation_params[op] = {
+                'target_ap_mm': min(stock / 2, 1.5),
+                'typical_feed_mm_rev': 0.15,
+                'typical_vc_multiplier': 1.1
+            }
+        elif op == 'finishing':
+            operation_params[op] = {
+                'target_ap_mm': min(stock, 0.8),
+                'typical_feed_mm_rev': 0.1,
+                'typical_vc_multiplier': 1.2
+            }
+        elif op == 'finishing_high_quality':
+            operation_params[op] = {
+                'target_ap_mm': min(stock, 0.3),
+                'typical_feed_mm_rev': 0.05,
+                'typical_vc_multiplier': 1.3
+            }
+
+    return {
+        'chain': chain,
+        'description': get_chain_description(chain),
+        'total_operations': len(chain),
+        'stock_distribution': stock_distribution,
+        'operation_params': operation_params,
+        'estimated_total_passes': sum([max(1, int(stock / operation_params[op]['target_ap_mm']))
+                                       for op, stock in stock_distribution.items()])
+    }
 
 
 # ============================================================================
@@ -598,3 +1047,47 @@ def get_session(db_url: str = "sqlite:///storage/cnc.db"):
     engine = create_engine(db_url)
     Session = sessionmaker(bind=engine)
     return Session()
+
+
+# ============================================================================
+# ТЕСТИРОВАНИЕ
+# ============================================================================
+
+if __name__ == "__main__":
+    print("🧪 Тестирование моделей с поддержкой цепочек операций")
+    print("=" * 60)
+
+    # Тестирование создания цепочек
+    test_phrases = [
+        "черновой потом чистовой",
+        "сначала черновая затем чистовая обработка",
+        "чистовая отделка",
+        "большой припуск, надо снять много материала",
+        "черновой, получистовой и потом чистовая"
+    ]
+
+    for phrase in test_phrases:
+        chain = create_operation_chain_from_text(phrase)
+        print(f"📝 '{phrase}' → {chain} ({get_chain_description(chain)})")
+
+    print("\n📊 Тестирование статистики цепочек:")
+    chains_to_test = [
+        ['roughing', 'finishing'],
+        ['roughing', 'semi_finishing', 'finishing'],
+        ['finishing'],
+        ['roughing', 'finishing_high_quality']
+    ]
+
+    for chain in chains_to_test:
+        stats = calculate_chain_statistics(chain, 10.0)
+        print(f"\nЦепочка: {get_chain_description(chain)}")
+        print(f"  Операций: {stats['total_operations']}")
+        print(f"  Распределение припуска: {stats['stock_distribution']}")
+        print(f"  Оценочное количество проходов: {stats['estimated_total_passes']}")
+
+    print("\n✅ Модели обновлены для поддержки цепочек операций!")
+    print("   • Добавлены таблицы OperationStep и PassStrategyDetail")
+    print("   • Обновлена UserDecision для хранения цепочек")
+    print("   • Обновлены функции сохранения с поддержкой цепочек")
+    print("   • Добавлены утилиты для работы с цепочками")
+    print("   • Сохранена обратная совместимость")

@@ -9,41 +9,64 @@ it reasons, makes assumptions, remembers users, and learns from corrections.
 
 ## ✨ What makes it different?
 
-✅ Remembers context (material, operation, tool, diameter)  
-✅ Never asks the same question twice  
-✅ Makes assumptions like an experienced machinist  
-✅ Explains *why* a mode was chosen  
-✅ Learns from operator feedback  
-✅ Designed to evolve into a full LLM-based system  
+✅ **Natural dialogue** - No buttons, just text like talking to a human  
+✅ **Context understanding** - Remembers what you said between messages  
+✅ **Smart assumptions** - Makes intelligent guesses instead of asking everything  
+✅ **Never asks twice** - Remembers material, operation, tool, diameter  
+✅ **Explains reasoning** - Shows *why* a mode was chosen  
+✅ **Learns from feedback** - Collects real operator experience  
+✅ **Image recognition** - Recognizes tools from photos (with OCR)  
+✅ **Designed for LLM** - Ready to evolve into a full LLM-based system  
 
 ---
 
 ## 🧠 How it works (short)
 
-1. User writes naturally:
-   > "aluminum Ø10 turning roughing"
+1. **User writes naturally** (no buttons!):
+   > "Сталь, токарный ЧПУ, снять с Ø100 до Ø90"
+   > "Алюминий, черновая обработка, станок 11 кВт"
+   > [sends photo of tool] → "Теперь обработай эту деталь"
 
-2. Assistant:
-   - parses intent
-   - updates context
-   - makes assumptions if data is missing
-   - chooses the next logical step
+2. **Assistant**:
+   - Parses intent from free-form text
+   - Updates context (remembers between messages)
+   - Makes smart assumptions if data is missing
+   - Recognizes tools from photos (with OCR)
+   - Chooses the next logical step
 
-3. Outputs:
-   - recommendation
-   - explanation
-   - asks for feedback
+3. **Outputs**:
+   - Recommendation with explanation
+   - Shows what was assumed and why
+   - Asks for your real-world parameters
 
-4. Corrections are saved as training data.
+4. **Your feedback** is saved as training data for future LLM.
 
 ---
 
 ## 🔁 Dialog logic
 
-One message = one step forward.
+**Natural conversation** - no buttons, no forms, just talk.
 
-❌ Interrogation  
-✅ Decision → explanation → option to correct
+❌ Old way: Click buttons → Fill forms → Answer questions  
+✅ New way: Describe task → Get recommendation → Share your experience
+
+**Example dialog:**
+```
+You: Сталь, токарный ЧПУ, снять с Ø100 до Ø90
+
+Bot: ✅ Понял:
+👤 Материал: сталь
+👤 Диаметры: Ø100 → Ø90 мм
+🤖 Станок: токарный ЧПУ (предположено)
+🤖 Режим: черновая (предположено на основе припуска)
+
+🎯 РЕКОМЕНДУЮ:
+⚡ Скорость резания: 150 м/мин
+🔄 Обороты: 477 об/мин
+...
+
+💬 Какие параметры вы используете на практике?
+```
 
 ---
 
@@ -51,11 +74,76 @@ One message = one step forward.
 
 - **Transport layer**: Telegram / CLI / Web
 - **Dialog Manager**: FSM with `active_step`
-- **Context**: per-user memory
+- **Context**: per-user memory (единый объект состояния)
+- **Parser**: извлечение данных из текста и изображений
+- **Assumptions Engine**: разумные предположения
+- **Knowledge Service**: база знаний материалов, инструментов, станков
 - **Rule Engine**: YAML-based cutting modes
 - **Feedback Loop**: creates future dataset
 
 LLM is **not required** to start.
+
+---
+
+## 📦 Установка
+
+### 🚀 Автоматическая установка (рекомендуется):
+
+**Windows:**
+```bash
+setup.bat
+```
+
+**Linux/macOS:**
+```bash
+chmod +x setup.sh
+./setup.sh
+```
+
+Скрипт автоматически:
+- ✅ Проверит версию Python (требуется 3.10+)
+- ✅ Создаст виртуальное окружение
+- ✅ Установит все зависимости
+- ✅ Создаст необходимые директории
+- ✅ Настроит .env файл
+- ✅ Опционально установит OCR для распознавания фотографий
+
+### 📝 Ручная установка:
+
+```bash
+# 1. Создайте виртуальное окружение
+python -m venv .venv
+
+# 2. Активируйте его
+# Windows:
+.venv\Scripts\activate
+# Linux/macOS:
+source .venv/bin/activate
+
+# 3. Установите зависимости
+pip install -r requirements.txt
+
+# 4. Опционально: OCR для распознавания фотографий
+pip install -r requirements_ocr.txt
+
+# 5. Создайте .env файл с токеном бота
+echo "TELEGRAM_TOKEN=ваш_токен" > .env
+
+# 6. Запуск
+python app/main.py
+```
+
+📚 Подробная инструкция: [INSTALL.md](INSTALL.md)
+
+### Зависимости:
+
+- **aiogram** (>=3.0.0) - Telegram Bot Framework
+- **sqlalchemy** (>=2.0.0) - ORM для БД
+- **python-dotenv** (>=1.0.0) - Загрузка .env
+- **pytesseract** (опционально) - OCR для фотографий
+- **Pillow** (опционально) - Обработка изображений
+
+Полный список: [requirements.txt](requirements.txt)
 
 ---
 

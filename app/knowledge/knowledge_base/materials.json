@@ -1,0 +1,74 @@
+{
+  "materials": [
+    {
+      "name": "сталь",
+      "normalized_name": "сталь",
+      "material_type": "steel",
+      "hardness_hb": 200.0,
+      "tensile_strength": 600.0,
+      "recommended_vc_min": 80.0,
+      "recommended_vc_max": 200.0,
+      "kc_factor": 2000.0
+    },
+    {
+      "name": "алюминий",
+      "normalized_name": "алюминий",
+      "material_type": "aluminum",
+      "hardness_hb": 50.0,
+      "tensile_strength": 300.0,
+      "recommended_vc_min": 200.0,
+      "recommended_vc_max": 500.0,
+      "kc_factor": 800.0
+    },
+    {
+      "name": "нержавейка",
+      "normalized_name": "нержавейка",
+      "material_type": "stainless_steel",
+      "hardness_hb": 180.0,
+      "tensile_strength": 600.0,
+      "recommended_vc_min": 50.0,
+      "recommended_vc_max": 120.0,
+      "kc_factor": 2500.0
+    },
+    {
+      "name": "титан",
+      "normalized_name": "титан",
+      "material_type": "titanium",
+      "hardness_hb": 350.0,
+      "tensile_strength": 900.0,
+      "recommended_vc_min": 20.0,
+      "recommended_vc_max": 60.0,
+      "kc_factor": 3000.0
+    },
+    {
+      "name": "чугун",
+      "normalized_name": "чугун",
+      "material_type": "cast_iron",
+      "hardness_hb": 200.0,
+      "tensile_strength": 400.0,
+      "recommended_vc_min": 70.0,
+      "recommended_vc_max": 150.0,
+      "kc_factor": 1500.0
+    },
+    {
+      "name": "латунь",
+      "normalized_name": "латунь",
+      "material_type": "brass",
+      "hardness_hb": 80.0,
+      "tensile_strength": 350.0,
+      "recommended_vc_min": 150.0,
+      "recommended_vc_max": 300.0,
+      "kc_factor": 1000.0
+    },
+    {
+      "name": "медь",
+      "normalized_name": "медь",
+      "material_type": "copper",
+      "hardness_hb": 60.0,
+      "tensile_strength": 250.0,
+      "recommended_vc_min": 120.0,
+      "recommended_vc_max": 250.0,
+      "kc_factor": 1200.0
+    }
+  ]
+}
