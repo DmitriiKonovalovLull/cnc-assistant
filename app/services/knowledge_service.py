@@ -13,6 +13,13 @@ from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
 
+# Импортируем модуль соответствий материалов
+try:
+    from app.knowledge.material_standards import MaterialStandardsDatabase
+except ImportError:
+    MaterialStandardsDatabase = None
+    logger.warning("MaterialStandardsDatabase not available")
+
 
 @dataclass
 class MaterialData:
@@ -255,7 +262,80 @@ class KnowledgeService:
             if normalized_name in material_lower or material_lower in normalized_name:
                 return material
         
+        # Пробуем найти через систему соответствий материалов
+        if MaterialStandardsDatabase:
+            equiv = MaterialStandardsDatabase.find_equivalent(material_name)
+            if equiv:
+                # Создаем MaterialData из эквивалента
+                normalized_name = equiv.gost or equiv.astm_sae or equiv.en_din or material_name.lower()
+                material_data = MaterialData(
+                    name=material_name,
+                    normalized_name=normalized_name.lower(),
+                    material_type=equiv.material_group,
+                    recommended_vc_min=self._get_vc_min_from_machinability(equiv.machinability),
+                    recommended_vc_max=self._get_vc_max_from_machinability(equiv.machinability)
+                )
+                return material_data
+        
         return None
+    
+    def _get_vc_min_from_machinability(self, machinability: Optional[float]) -> Optional[float]:
+        """Получить минимальную скорость резания из machinability."""
+        if machinability is None:
+            return None
+        # Базовое значение для machinability 100% = 150 м/мин
+        base_vc = 150.0
+        return base_vc * (machinability / 100.0) * 0.6  # Минимум
+    
+    def _get_vc_max_from_machinability(self, machinability: Optional[float]) -> Optional[float]:
+        """Получить максимальную скорость резания из machinability."""
+        if machinability is None:
+            return None
+        # Базовое значение для machinability 100% = 150 м/мин
+        base_vc = 150.0
+        return base_vc * (machinability / 100.0) * 1.4  # Максимум
+    
+    def get_material_equivalents(self, material_name: str) -> Dict[str, Optional[str]]:
+        """
+        Получить эквиваленты материала во всех системах маркировки.
+        
+        Args:
+            material_name: Название материала
+            
+        Returns:
+            Словарь с эквивалентами по системам
+        """
+        if MaterialStandardsDatabase:
+            return MaterialStandardsDatabase.get_all_equivalents(material_name)
+        return {}
+    
+    def get_material_machinability(self, material_name: str) -> Optional[float]:
+        """
+        Получить показатель обрабатываемости материала.
+        
+        Args:
+            material_name: Название материала
+            
+        Returns:
+            Показатель machinability (%) или None
+        """
+        if MaterialStandardsDatabase:
+            return MaterialStandardsDatabase.get_machinability(material_name)
+        return None
+    
+    def format_material_equivalents(self, material_name: str) -> str:
+        """
+        Форматировать эквиваленты материала для отображения.
+        
+        Args:
+            material_name: Название материала
+            
+        Returns:
+            Отформатированная строка с эквивалентами
+        """
+        if MaterialStandardsDatabase:
+            return MaterialStandardsDatabase.format_equivalents(material_name)
+        return f"❌ Система соответствий материалов недоступна."
     
     def find_tool(self, tool_type: str, tool_material: str) -> Optional[ToolData]:
         """
@@ -303,6 +383,24 @@ class KnowledgeService:
                 return machine
         
         return None
+    
+    def list_machines(self) -> List[str]:
+        """
+        Получить список всех известных типов станков.
+        
+        Returns:
+            Список названий типов станков
+        """
+        return list(self.machines.keys())
+    
+    def get_all_machines(self) -> Dict[str, MachineData]:
+        """
+        Получить все станки.
+        
+        Returns:
+            Словарь со всеми станками
+        """
+        return self.machines.copy()
     
     def normalize_material_name(self, material_name: str) -> str:
         """

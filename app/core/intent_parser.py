@@ -17,6 +17,7 @@ class Intent(Enum):
     META_CAPABILITIES = "meta_capabilities"  # "что ты можешь", "чем полезен"
     HELP = "help"  # "помощь", "как работать"
     STANDARD_PART = "standard_part"  # ГОСТ / ОСТ / DIN / ISO - стандартная деталь
+    TECH_PROCESS = "tech_process"  # Технологический маршрут (расточка, сверление, фрезерование)
     ENGINEERING = "engineering"  # Инженерный запрос (режимы, расчеты)
     WORK_MANAGEMENT = "work_management"  # Работа с сохраненными работами
     HISTORY = "history"  # Запрос истории
@@ -49,6 +50,19 @@ class IntentParser:
             r'what\s+can\s+you\s+do',
             r'what\s+are\s+you',
             r'who\s+are\s+you',
+        ]
+        
+        # Паттерны для вопросов о станках
+        self.machine_query_patterns = [
+            r'какой\s+станок',
+            r'какие\s+станки',
+            r'список\s+станков',
+            r'станки\s+которые\s+ты\s+знаешь',
+            r'какие\s+станки\s+ты\s+знаешь',
+            r'покажи\s+станки',
+            r'выбери\s+станок',
+            r'what\s+machines',
+            r'list\s+machines',
         ]
         
         # Паттерны для помощи
@@ -141,6 +155,7 @@ class IntentParser:
         # ============================================================================
         # Если в тексте есть ГОСТ/ОСТ/DIN/ISO → это STANDARD_PART
         # НЕ проверяем наличие в базе, НЕ проверяем номер - СНАЧАЛА признаем стандарт
+        # КРИТИЧНО: Стандарты НИКОГДА не распознаются как станки
         
         # Паттерн для стандартов: "ОСТ 1 33056-80", "ГОСТ 7798-30", "DIN 912"
         # Для ОСТ может быть формат "1 33056-80" - нужно захватить весь номер
@@ -185,7 +200,37 @@ class IntentParser:
             }
         
         # ============================================================================
-        # ОСТАЛЬНЫЕ ПРОВЕРКИ (после стандартов)
+        # ПРАВИЛО №2: ТЕХНОЛОГИЧЕСКИЙ МАРШРУТ (операции)
+        # ============================================================================
+        # Если есть список операций (расточка, сверление, фрезерование) → TECH_PROCESS
+        operations = [
+            'расточка', 'расточ', 'boring',
+            'сверление', 'сверло', 'drilling',
+            'проточка', 'проточ',
+            'фрезерование', 'фрезер', 'milling',
+            'точение', 'токарка', 'turning',
+            'нарезание', 'нарезка',
+            'зенкерование', 'зенкер',
+            'развертывание', 'разверт',
+        ]
+        
+        # Находим операции в тексте
+        found_operations = []
+        for op in operations:
+            if op in text_lower:
+                found_operations.append(op)
+        
+        operation_count = len(found_operations)
+        if operation_count >= 2:  # Если есть хотя бы 2 операции - это маршрут
+            return {
+                'intent': Intent.TECH_PROCESS,
+                'confidence': 0.9,
+                'reason': f'Технологический маршрут ({operation_count} операций)',
+                'operations': found_operations
+            }
+        
+        # ============================================================================
+        # ОСТАЛЬНЫЕ ПРОВЕРКИ (после стандартов и операций)
         # ============================================================================
         
         # 1. Проверяем приветствие (строгое совпадение)
@@ -197,7 +242,17 @@ class IntentParser:
                     'reason': 'Приветствие'
                 }
         
-        # 2. Проверяем мета-вопросы о возможностях
+        # 2. Проверяем вопросы о станках
+        for pattern in self.machine_query_patterns:
+            if re.search(pattern, text_lower, re.IGNORECASE):
+                return {
+                    'intent': Intent.META_CAPABILITIES,
+                    'confidence': 0.9,
+                    'reason': 'Вопрос о станках',
+                    'subtype': 'machine_query'
+                }
+        
+        # 3. Проверяем мета-вопросы о возможностях
         for pattern in self.meta_capabilities_patterns:
             if re.search(pattern, text_lower, re.IGNORECASE):
                 return {

@@ -1,0 +1,8 @@
+# Опциональные зависимости для улучшения производительности
+# Установка: pip install -r requirements_optional.txt
+
+# lxml - более быстрый HTML парсер для BeautifulSoup
+# ВНИМАНИЕ: На Windows может требовать компилятор C++ (Visual Studio Build Tools)
+# Если установка не удалась, бот будет работать с встроенным html.parser
+# Альтернатива для Windows: скачайте предкомпилированный wheel с https://www.lfd.uci.edu/~gohlke/pythonlibs/#lxml
+lxml>=4.9.0,<5.0.0

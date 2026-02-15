@@ -44,6 +44,9 @@ class CommandRouter:
         'покажи историю': 'history',
         'сохранить работу': 'work_save',
         'добавить работу': 'work_save',
+        'эквивалент': 'material_equivalent',
+        'соответствие': 'material_equivalent',
+        'маркировка': 'material_equivalent',
         'start': 'start',
         'начать': 'start',
     }
@@ -73,12 +76,22 @@ class CommandRouter:
             if text_lower.startswith(cmd + ' ') or text_lower == cmd:
                 return cmd_name
         
-        # Проверяем команды вида "работа W001", "удалить W001"
+        # Команды вида "работа W001", "work W001", "загрузить работу 1", "исправить работу 1"
+        if any(p in text_lower for p in ['работа w', 'work w', 'загрузить работу', 'исправить работу', 'открыть работу']):
+            return 'work_load'
         if text_lower.startswith('работа ') or text_lower.startswith('work '):
             return 'work_load'
         
         if text_lower.startswith('удалить ') or text_lower.startswith('delete '):
             return 'work_delete'
+        
+        # Переименование работы: "переименовать W001 в ...", "назвать работу W001 ..."
+        if any(p in text_lower for p in ['переименовать работ', 'назвать работ', 'переименовать w']):
+            return 'work_rename'
+        
+        # Название инструмента: "назови инструмент ...", "имя инструмента ..."
+        if any(p in text_lower for p in ['назови инструмент', 'назови этот инструмент', 'имя инструмента']):
+            return 'tool_name_set'
         
         return None
 
@@ -186,6 +199,20 @@ class ConversationOrchestrator:
                     'standard_type': intent_result.get('standard_type'),
                     'standard_number': intent_result.get('standard_number'),
                     'reason': f'Стандартная деталь ({intent_result.get("standard_type")} {intent_result.get("standard_number")})'
+                }
+            
+            elif intent == Intent.TECH_PROCESS:
+                # Технологический маршрут (расточка, сверление, фрезерование)
+                self.current_mode = ConversationMode.PROJECT
+                self.fsm_enabled = True  # FSM нужен для технологического планирования
+                return {
+                    'mode': ConversationMode.PROJECT.value,
+                    'action': 'tech_process',
+                    'fsm_enabled': True,
+                    'intent': intent.value,
+                    'confidence': confidence,
+                    'operations': intent_result.get('operations', []),
+                    'reason': f'Технологический маршрут ({len(intent_result.get("operations", []))} операций)'
                 }
             
             elif intent == Intent.ENGINEERING:

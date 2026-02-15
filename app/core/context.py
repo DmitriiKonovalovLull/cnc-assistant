@@ -63,17 +63,23 @@ class Context:
     
     # Инструмент
     tool_material: Optional[str] = None  # твердый сплав, быстрорез
-    tool_radius: Optional[float] = None  # мм
-    tool_overhang: Optional[float] = None  # мм
+    tool_radius: Optional[float] = None  # мм (радиус при вершине)
+    tool_diameter: Optional[float] = None  # мм (диаметр державки/фрезы)
+    tool_overhang: Optional[float] = None  # мм (вылет инструмента)
     tool_type: Optional[str] = None  # проходной, чистовой
     tool_name: Optional[str] = None  # CNMG 120408, WNMG и т.д.
+    tool_display_name: Optional[str] = None  # Пользовательское имя: "Мой черновой", "Резец для титана"
     tool_manufacturer: Optional[str] = None  # SANDVIK, KENNAMETAL и т.д.
     tool_grade: Optional[str] = None  # P25, M15 и т.д.
     tool_metadata: Optional[FieldMetadata] = None
     
     # Стандартные детали (ГОСТ/ОСТ/DIN/ISO)
     standard_id: Optional[str] = None  # ГОСТ_7798-30, ОСТ_1_31102-80
-    part_type: Optional[str] = None  # болт, винт, шпилька, вал, втулка
+    pending_standard_search: Optional[str] = None  # Ожидаем "да" на поиск: "ОСТ 30560-80"
+    part_type: Optional[str] = None  # болт, винт, шпилька, вал, втулка, гайка
+    thread_size: Optional[str] = None  # M6, M12, M16 и т.д.
+    quantity: Optional[int] = None  # Количество деталей
+    collecting_params: bool = False  # Флаг сбора параметров для стандартной детали
     standard_metadata: Optional[FieldMetadata] = None
     
     # ========== РЕЗУЛЬТАТЫ РАСЧЁТОВ ==========
@@ -173,9 +179,9 @@ class Context:
             'material', 'operation', 'mode',
             'diameter_start', 'diameter_end', 'length',
             'machine_type', 'machine_power', 'machine_max_rpm',
-            'tool_material', 'tool_radius', 'tool_overhang', 'tool_type',
-            'tool_name', 'tool_manufacturer', 'tool_grade',
-            'standard_id', 'part_type',
+            'tool_material', 'tool_radius', 'tool_diameter', 'tool_overhang', 'tool_type',
+            'tool_name', 'tool_display_name', 'tool_manufacturer', 'tool_grade',
+            'standard_id', 'pending_standard_search', 'part_type', 'thread_size', 'quantity', 'collecting_params',
             'recommended_vc', 'recommended_rpm', 'recommended_feed',
             'recommended_ap', 'recommended_power',
             'overall_confidence', 'user_id', 'session_id'
@@ -217,9 +223,9 @@ class Context:
             'material', 'operation', 'mode',
             'diameter_start', 'diameter_end', 'length',
             'machine_type', 'machine_power', 'machine_max_rpm',
-            'tool_material', 'tool_radius', 'tool_overhang', 'tool_type',
-            'tool_name', 'tool_manufacturer', 'tool_grade',
-            'standard_id', 'part_type',
+            'tool_material', 'tool_radius', 'tool_diameter', 'tool_overhang', 'tool_type',
+            'tool_name', 'tool_display_name', 'tool_manufacturer', 'tool_grade',
+            'standard_id', 'pending_standard_search', 'part_type', 'thread_size', 'quantity', 'collecting_params',
             'recommended_vc', 'recommended_rpm', 'recommended_feed',
             'recommended_ap', 'recommended_power',
             'overall_confidence', 'user_id', 'session_id'

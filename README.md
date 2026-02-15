@@ -1,195 +1,83 @@
-# CNC Assistant 🏭🤖
+# CNC Assistant
 
-CNC Assistant is an AI-like industrial assistant for CNC operators.
-
-It does not just calculate cutting modes —  
-it reasons, makes assumptions, remembers users, and learns from corrections.
+AI-like industrial assistant for CNC operators: cutting modes, context, assumptions, and learning from feedback.
 
 ---
 
-## ✨ What makes it different?
+## Features
 
-✅ **Natural dialogue** - No buttons, just text like talking to a human  
-✅ **Context understanding** - Remembers what you said between messages  
-✅ **Smart assumptions** - Makes intelligent guesses instead of asking everything  
-✅ **Never asks twice** - Remembers material, operation, tool, diameter  
-✅ **Explains reasoning** - Shows *why* a mode was chosen  
-✅ **Learns from feedback** - Collects real operator experience  
-✅ **Image recognition** - Recognizes tools from photos (with OCR)  
-✅ **Designed for LLM** - Ready to evolve into a full LLM-based system  
-
----
-
-## 🧠 How it works (short)
-
-1. **User writes naturally** (no buttons!):
-   > "Сталь, токарный ЧПУ, снять с Ø100 до Ø90"
-   > "Алюминий, черновая обработка, станок 11 кВт"
-   > [sends photo of tool] → "Теперь обработай эту деталь"
-
-2. **Assistant**:
-   - Parses intent from free-form text
-   - Updates context (remembers between messages)
-   - Makes smart assumptions if data is missing
-   - Recognizes tools from photos (with OCR)
-   - Chooses the next logical step
-
-3. **Outputs**:
-   - Recommendation with explanation
-   - Shows what was assumed and why
-   - Asks for your real-world parameters
-
-4. **Your feedback** is saved as training data for future LLM.
+- **Natural dialogue** — describe the task in text, get recommendations with reasoning
+- **Context** — remembers material, operation, tool, diameters between messages
+- **Assumptions** — fills missing data with sensible defaults
+- **Tool recognition** — OCR from photos (Tesseract)
+- **Internet search** — looks up tools and machines online
+- **Drawing parsing** — extracts data from technical drawings
+- **Standards** — GOST, OST, DIN, ISO
+- **Engineering module** — full cutting calculation with power/torque/vibration risk
+- **Vibration analysis** — from spectrum photo or entered frequency (tooth/imbalance/resonance)
+- **Machine learning** — adapts K_machine and stable zones from operation history
 
 ---
 
-## 🔁 Dialog logic
+## Quick start
 
-**Natural conversation** - no buttons, no forms, just talk.
+**Windows:** `setup.bat`  
+**Linux/macOS:** `chmod +x setup.sh && ./setup.sh`
 
-❌ Old way: Click buttons → Fill forms → Answer questions  
-✅ New way: Describe task → Get recommendation → Share your experience
-
-**Example dialog:**
-```
-You: Сталь, токарный ЧПУ, снять с Ø100 до Ø90
-
-Bot: ✅ Понял:
-👤 Материал: сталь
-👤 Диаметры: Ø100 → Ø90 мм
-🤖 Станок: токарный ЧПУ (предположено)
-🤖 Режим: черновая (предположено на основе припуска)
-
-🎯 РЕКОМЕНДУЮ:
-⚡ Скорость резания: 150 м/мин
-🔄 Обороты: 477 об/мин
-...
-
-💬 Какие параметры вы используете на практике?
-```
-
----
-
-## 🧩 Architecture
-
-- **Transport layer**: Telegram / CLI / Web
-- **Dialog Manager**: FSM with `active_step`
-- **Context**: per-user memory (единый объект состояния)
-- **Parser**: извлечение данных из текста и изображений
-- **Assumptions Engine**: разумные предположения
-- **Knowledge Service**: база знаний материалов, инструментов, станков
-- **Rule Engine**: YAML-based cutting modes
-- **Feedback Loop**: creates future dataset
-
-LLM is **not required** to start.
-
----
-
-## 📦 Установка
-
-### 🚀 Автоматическая установка (рекомендуется):
-
-**Windows:**
-```bash
-setup.bat
-```
-
-**Linux/macOS:**
-```bash
-chmod +x setup.sh
-./setup.sh
-```
-
-Скрипт автоматически:
-- ✅ Проверит версию Python (требуется 3.10+)
-- ✅ Создаст виртуальное окружение
-- ✅ Установит все зависимости
-- ✅ Создаст необходимые директории
-- ✅ Настроит .env файл
-- ✅ Опционально установит OCR для распознавания фотографий
-
-### 📝 Ручная установка:
+Then set `TELEGRAM_TOKEN` in `.env` and run:
 
 ```bash
-# 1. Создайте виртуальное окружение
 python -m venv .venv
-
-# 2. Активируйте его
-# Windows:
-.venv\Scripts\activate
-# Linux/macOS:
-source .venv/bin/activate
-
-# 3. Установите зависимости
+.venv\Scripts\activate   # Windows
+# source .venv/bin/activate  # Linux/macOS
 pip install -r requirements.txt
-
-# 4. Опционально: OCR для распознавания фотографий
-pip install -r requirements_ocr.txt
-
-# 5. Создайте .env файл с токеном бота
-echo "TELEGRAM_TOKEN=ваш_токен" > .env
-
-# 6. Запуск
-python app/main.py
+python app/bot/telegram_bot.py
 ```
 
-📚 Подробная инструкция: [INSTALL.md](INSTALL.md)
-
-### Зависимости:
-
-- **aiogram** (>=3.0.0) - Telegram Bot Framework
-- **sqlalchemy** (>=2.0.0) - ORM для БД
-- **python-dotenv** (>=1.0.0) - Загрузка .env
-- **pytesseract** (опционально) - OCR для фотографий
-- **Pillow** (опционально) - Обработка изображений
-
-Полный список: [requirements.txt](requirements.txt)
+Details: [INSTALL.md](INSTALL.md).
 
 ---
 
-## 📊 Data for learning
+## Architecture
 
-All dialogs and corrections are stored in JSONL:
+| Layer | Description |
+|-------|-------------|
+| Transport | Telegram / CLI |
+| Context | Per-user state (material, tool, machine, diameters) |
+| Parser | Text + image (OCR) + drawings |
+| Knowledge | Materials, tools, machines, standards |
+| Engineering | `calculate_optimal_modes`, power/torque/risk, modes (AGGRESSIVE/NORMAL/SAFE) |
+| Vibration | `analyze_vibration` / from image; tooth / imbalance / resonance + corrections |
+| Learning | `record_operation`, `update_machine_learning`, safe zones, K_machine_real |
+| Selector | `select_best_machine` by power, torque, rigidity, score formula |
 
-- `data/logs/dialogs.jsonl`
-- `data/logs/corrections.jsonl`
+Main entry points:
 
-This data will be used to train a future CNC-specific LLM.
+- **calculate_optimal_modes** — `app/services/engineering_calculator.py`
+- **analyze_vibration** — `app/services/vibration_analyzer.py`
+- **update_machine_learning** — `app/services/machine_learning_service.py`
+- **select_best_machine** — `app/services/machine_selector.py`
 
----
-
-## 🚀 Roadmap
-
-- [x] Rule-based AI behavior
-- [x] Persistent user memory
-- [x] Feedback-based learning
-- [ ] Ranking rules by operator corrections
-- [ ] Hybrid (Rules + Small LLM)
-- [ ] Full CNC LLM fine-tuned on real dialogs
-
----
-
-## ⚠️ Disclaimer
-
-This assistant provides recommendations.
-Always verify parameters according to your machine, tool, and safety rules.
+Coefficients and thresholds are in DB (`calculation_coefficients`). Machine data: [docs/MACHINES_DATABASE.md](docs/MACHINES_DATABASE.md).
 
 ---
 
-## 👨‍🏭 Who is it for?
+## Data and learning
 
-- CNC operators
-- Technologists
-- Setup specialists
-- CNC learners
+- Dialogs and corrections: `data/logs/dialogs.jsonl`, `data/logs/corrections.jsonl`
+- Machine history: `machine_operation_history`, `machine_learned_params` (see schema in `app/storage/schema_machines_postgres.sql`)
 
 ---
 
-## 💬 Philosophy
+## Dependencies
 
-> The assistant should behave like a calm,
-> experienced machinist standing next to you —
-> not like a calculator or a form.
+- **Core:** [requirements.txt](requirements.txt)
+- **OCR (photos):** [requirements_ocr.txt](requirements_ocr.txt) + Tesseract
+- **Internet (SPA):** [requirements_internet.txt](requirements_internet.txt) + `playwright install`
+- **CI / lint:** [requirements-dev.txt](requirements-dev.txt) (includes ruff)
 
 ---
 
+## Disclaimer
+
+Recommendations only. Always check parameters against your machine, tool, and safety rules.

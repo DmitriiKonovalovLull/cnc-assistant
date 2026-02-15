@@ -1,0 +1,6 @@
+# Умный парсер интернета: SPA (React/Vue) и реальная асинхронность
+# Установка: pip install -r requirements_internet.txt
+# После установки: playwright install
+
+# Playwright — для сайтов с JS (Sandvik, Kennametal, Iscar, Seco, Walter)
+playwright>=1.40.0,<2.0.0

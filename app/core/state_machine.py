@@ -17,6 +17,7 @@ class SystemState(Enum):
     """
     EMPTY = "empty"  # Нет данных
     PARTIAL = "partial"  # Частичные данные
+    COLLECTING_PARAMS = "collecting_params"  # Сбор параметров (стандарт/операции заданы, собираем параметры)
     ASSUMED = "assumed"  # Данные с предположениями
     READY = "ready"  # Достаточно данных для расчета
     CALCULATED = "calculated"  # Расчет выполнен
@@ -51,6 +52,16 @@ class StateMachine:
         Returns:
             Текущее состояние системы
         """
+        # КРИТИЧЕСКОЕ ПРАВИЛО: Если идет сбор параметров (стандарт задан или операции заданы)
+        # → состояние COLLECTING_PARAMS
+        if context.collecting_params or context.standard_id or context.part_type:
+            # Если стандарт задан или тип детали известен - собираем параметры
+            return SystemState.COLLECTING_PARAMS
+        
+        # Если есть операции (технологический маршрут) - тоже собираем параметры
+        if context.operation:
+            return SystemState.COLLECTING_PARAMS
+        
         # Обязательные поля для расчета
         required_fields = ['material', 'diameter_start', 'diameter_end']
         

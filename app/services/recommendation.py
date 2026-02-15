@@ -9,6 +9,13 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+# Импортируем модуль соответствий материалов для использования machinability
+try:
+    from app.knowledge.material_standards import MaterialStandardsDatabase
+except ImportError:
+    MaterialStandardsDatabase = None
+    logger.warning("MaterialStandardsDatabase not available")
+
 
 # ============================================================================
 # ТАБЛИЧНЫЕ ЗНАЧЕНИЯ (только справочные данные)
@@ -296,6 +303,13 @@ def validate_against_limits(vc: float, feed: float, ap: float, rpm: float) -> Li
 
 from app.services.cache_service import cached
 
+# Импортируем калькулятор жесткости
+try:
+    from app.services.rigidity_calculator import RigidityCalculator
+except ImportError:
+    RigidityCalculator = None
+    logger.warning("RigidityCalculator not available")
+
 @cached(ttl_seconds=3600, key_prefix="recommendation")
 def get_turning_recommendation(
         material: str,
@@ -304,7 +318,11 @@ def get_turning_recommendation(
         mode: str,
         diameter_start_mm: float,
         diameter_end_mm: float,
-        tool_material: str = "твердый сплав"
+        tool_material: str = "твердый сплав",
+        knowledge_service: Optional[Any] = None,
+        tool_overhang_mm: Optional[float] = None,
+        tool_diameter_mm: Optional[float] = None,
+        internet_data: Optional[Dict[str, Any]] = None
 ) -> Dict[str, Any]:
     """
     Получить табличные рекомендации для токарной обработки.
@@ -321,12 +339,117 @@ def get_turning_recommendation(
         machine_coeff = CuttingTables.get_machine_coefficient(machine_type)
         tool_coeff = CuttingTables.get_tool_material_coefficient(tool_material)
 
-        # 3. Рассчитываем значения
-        vc = base_vc * machine_coeff * tool_coeff
-        feed = base_feed * machine_coeff
-        ap = base_ap  # Глубину не корректируем сильно
+        # 3. Коррекция на machinability (если доступна)
+        machinability_coeff = 1.0
+        machinability_value = None
+        if knowledge_service:
+            try:
+                machinability_value = knowledge_service.get_material_machinability(material)
+                if machinability_value:
+                    # Нормализуем machinability: 100% = коэффициент 1.0
+                    machinability_coeff = machinability_value / 100.0
+                    # Ограничиваем диапазон коэффициента (от 0.3 до 2.0)
+                    machinability_coeff = max(0.3, min(2.0, machinability_coeff))
+            except Exception as e:
+                logger.debug(f"Could not get machinability for {material}: {e}")
 
-        # 4. Рассчитываем обороты на среднем диаметре
+        # 4. Рассчитываем значения с учетом machinability
+        vc = base_vc * machine_coeff * tool_coeff * machinability_coeff
+        feed = base_feed * machine_coeff
+        # Для материалов с низкой machinability уменьшаем подачу
+        if machinability_value and machinability_value < 50:
+            feed = feed * 0.8
+        ap = base_ap  # Глубину не корректируем сильно
+        
+        # 4.5. Коррекция на основе данных из интернета (если доступны)
+        internet_correction_applied = False
+        if internet_data:
+            try:
+                # Пытаемся извлечь скорости резания из интернет-данных
+                if 'vc' in internet_data or 'скорость' in internet_data or 'speed' in internet_data:
+                    internet_vc = None
+                    # Разные варианты ключей
+                    for key in ['vc', 'скорость_резания', 'скорость', 'cutting_speed', 'speed']:
+                        if key in internet_data:
+                            val = internet_data[key]
+                            if isinstance(val, (int, float)):
+                                internet_vc = float(val)
+                                break
+                            elif isinstance(val, str):
+                                # Пытаемся извлечь число из строки
+                                import re
+                                match = re.search(r'(\d+(?:[.,]\d+)?)', val)
+                                if match:
+                                    internet_vc = float(match.group(1).replace(',', '.'))
+                                    break
+                    
+                    if internet_vc and 10 <= internet_vc <= 1000:  # Разумные пределы
+                        # Используем среднее между табличным и интернет-значением (70% табличное, 30% интернет)
+                        vc = vc * 0.7 + internet_vc * 0.3
+                        internet_correction_applied = True
+                        logger.info(f"Applied internet correction for vc: {internet_vc} м/мин")
+                
+                # Пытаемся извлечь подачу из интернет-данных
+                if 'feed' in internet_data or 'подача' in internet_data:
+                    internet_feed = None
+                    for key in ['feed', 'подача', 'feed_rate']:
+                        if key in internet_data:
+                            val = internet_data[key]
+                            if isinstance(val, (int, float)):
+                                internet_feed = float(val)
+                                break
+                            elif isinstance(val, str):
+                                import re
+                                match = re.search(r'(\d+(?:[.,]\d+)?)', val)
+                                if match:
+                                    internet_feed = float(match.group(1).replace(',', '.'))
+                                    break
+                    
+                    if internet_feed and 0.01 <= internet_feed <= 5.0:  # Разумные пределы
+                        feed = feed * 0.7 + internet_feed * 0.3
+                        internet_correction_applied = True
+                        logger.info(f"Applied internet correction for feed: {internet_feed} мм/об")
+            except Exception as e:
+                logger.debug(f"Error applying internet data correction: {e}")
+        
+        # 4.1. Коррекция на жесткость инструмента (L/D)
+        rigidity_warnings = []
+        rigidity_info = {}
+        if RigidityCalculator and tool_overhang_mm and tool_diameter_mm:
+            try:
+                rigidity_result = RigidityCalculator.calculate_adjusted_modes(
+                    base_vc=vc,
+                    base_feed=feed,
+                    base_ap=ap,
+                    tool_overhang_mm=tool_overhang_mm,
+                    tool_diameter_mm=tool_diameter_mm,
+                    tool_material=tool_material,
+                    workpiece_material=material,
+                    operation="turning"
+                )
+                
+                # Применяем коррекции жесткости
+                vc = rigidity_result['vc']
+                feed = rigidity_result['feed']
+                ap = rigidity_result['ap']
+                
+                # Сохраняем информацию о жесткости
+                rigidity_info = {
+                    'ld_ratio': rigidity_result['ld_ratio'],
+                    'risk_level': rigidity_result['risk_level'],
+                    'rigidity_coefficients': rigidity_result['rigidity_coefficients'],
+                    'tool_type': rigidity_result['tool_type'],
+                    'material_vibration_tendency': rigidity_result['material_vibration_tendency']
+                }
+                
+                # Добавляем предупреждения о вибрации
+                if rigidity_result['warnings']:
+                    rigidity_warnings.extend(rigidity_result['warnings'])
+                
+            except Exception as e:
+                logger.debug(f"Could not calculate rigidity: {e}")
+
+        # 5. Рассчитываем обороты на среднем диаметре
         avg_diameter = (diameter_start_mm + diameter_end_mm) / 2
         rpm = calculate_rpm(vc, avg_diameter)
 
@@ -335,6 +458,10 @@ def get_turning_recommendation(
 
         # 6. Проверяем физические ограничения
         warnings = validate_against_limits(vc, feed, ap, rpm)
+        
+        # Добавляем предупреждения о жесткости
+        if rigidity_warnings:
+            warnings.extend(rigidity_warnings)
 
         # 7. Рассчитываем припуск
         stock_per_side = (diameter_start_mm - diameter_end_mm) / 2
@@ -352,6 +479,13 @@ def get_turning_recommendation(
             "tool_material": tool_material,
             "machine_coefficient": machine_coeff,
             "tool_coefficient": tool_coeff,
+            "machinability": machinability_value,
+            "machinability_coefficient": machinability_coeff if machinability_value else None,
+            "rigidity_info": rigidity_info,
+            "tool_overhang_mm": tool_overhang_mm,
+            "tool_diameter_mm": tool_diameter_mm,
+            "internet_data_used": internet_correction_applied,
+            "internet_sources": internet_data.get('sources', []) if internet_data else []
         }
 
         return {
@@ -405,7 +539,10 @@ def get_milling_recommendation(
         material: str,
         machine_type: str,
         mode: str,
-        tool_diameter_mm: float
+        tool_diameter_mm: float,
+        tool_overhang_mm: Optional[float] = None,
+        tool_material: str = "твердый сплав",
+        knowledge_service: Optional[Any] = None
 ) -> Dict[str, Any]:
     """
     Получить табличные рекомендации для фрезерования.
@@ -421,13 +558,6 @@ def get_milling_recommendation(
     vc = base_vc * machine_coeff
     feed_per_tooth = base_feed * machine_coeff
 
-    # Обороты для фрезерования
-    rpm = calculate_rpm(vc, tool_diameter_mm)
-
-    # Подача в мм/мин (предполагаем 4 зуба)
-    teeth_count = 4
-    feed_mm_min = rpm * feed_per_tooth * teeth_count
-
     # Глубина резания
     if mode == "черновой":
         ap = min(tool_diameter_mm * 0.5, 6.0)
@@ -435,6 +565,50 @@ def get_milling_recommendation(
         ap = min(tool_diameter_mm * 0.3, 3.0)
     else:  # чистовой
         ap = min(tool_diameter_mm * 0.1, 1.0)
+    
+    # Коррекция на жесткость инструмента (L/D)
+    rigidity_warnings = []
+    rigidity_info = {}
+    if RigidityCalculator and tool_overhang_mm:
+        try:
+            rigidity_result = RigidityCalculator.calculate_adjusted_modes(
+                base_vc=vc,
+                base_feed=feed_per_tooth,
+                base_ap=ap,
+                tool_overhang_mm=tool_overhang_mm,
+                tool_diameter_mm=tool_diameter_mm,
+                tool_material=tool_material,
+                workpiece_material=material,
+                operation="milling"
+            )
+            
+            # Применяем коррекции жесткости
+            vc = rigidity_result['vc']
+            feed_per_tooth = rigidity_result['feed']
+            ap = rigidity_result['ap']
+            
+            # Сохраняем информацию о жесткости
+            rigidity_info = {
+                'ld_ratio': rigidity_result['ld_ratio'],
+                'risk_level': rigidity_result['risk_level'],
+                'rigidity_coefficients': rigidity_result['rigidity_coefficients'],
+                'tool_type': rigidity_result['tool_type'],
+                'material_vibration_tendency': rigidity_result['material_vibration_tendency']
+            }
+            
+            # Добавляем предупреждения о вибрации
+            if rigidity_result['warnings']:
+                rigidity_warnings.extend(rigidity_result['warnings'])
+                
+        except Exception as e:
+            logger.debug(f"Could not calculate rigidity for milling: {e}")
+
+    # Обороты для фрезерования
+    rpm = calculate_rpm(vc, tool_diameter_mm)
+
+    # Подача в мм/мин (предполагаем 4 зуба)
+    teeth_count = 4
+    feed_mm_min = rpm * feed_per_tooth * teeth_count
 
     return {
         "vc": round(vc, 1),
@@ -444,6 +618,8 @@ def get_milling_recommendation(
         "ap": round(ap, 2),
         "teeth_count": teeth_count,
         "tool_diameter_mm": tool_diameter_mm,
+        "rigidity_info": rigidity_info,
+        "warnings": rigidity_warnings,
         "is_table_based": True,
         "disclaimer": "Табличные значения для фрезерования. На практике могут отличаться.",
     }

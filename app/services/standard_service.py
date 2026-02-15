@@ -241,3 +241,108 @@ class StandardService:
             lines.append("💡 <i>Стандарт распознан. Укажи параметры детали для продолжения.</i>")
         
         return "\n".join(lines)
+    
+    def generate_manufacturing_technology(self, standard_info: Dict[str, Any], context: Dict[str, Any]) -> str:
+        """
+        Сгенерировать технологию изготовления для стандартной детали.
+        
+        Args:
+            standard_info: Информация о стандарте (из get_standard_info)
+            context: Контекст с параметрами детали (thread_size, length, quantity, material и т.д.)
+            
+        Returns:
+            Отформатированная технология изготовления
+        """
+        lines = []
+        
+        # Получаем тип детали и шаблон
+        part_class = standard_info.get('part_class', {})
+        part_type = part_class.get('type')
+        part_name = part_class.get('name', 'деталь')
+        template = standard_info.get('template', {})
+        
+        # Параметры детали из контекста
+        thread_size = context.get('thread_size')
+        length = context.get('length')
+        quantity = context.get('quantity', 1)
+        material = context.get('material', template.get('default_material', 'сталь'))
+        machine_type = context.get('machine_type', 'токарный ЧПУ')
+        
+        # Формируем описание детали
+        if part_type == 'nut':
+            part_desc = f"Гайка {thread_size or '?'}"
+        elif part_type == 'bolt':
+            part_desc = f"Болт {thread_size or '?'}"
+            if length:
+                part_desc += f"×{length} мм"
+        else:
+            part_desc = part_name
+            if thread_size:
+                part_desc += f" {thread_size}"
+            if length:
+                part_desc += f"×{length} мм"
+        
+        lines.append(f"🔧 <b>Технология изготовления:</b> {part_desc}")
+        lines.append("")
+        
+        # Получаем операции из шаблона
+        operations = template.get('operations', [])
+        
+        if not operations:
+            # Если операций нет в шаблоне, формируем стандартный маршрут
+            if part_type == 'nut':
+                operations = [
+                    "1. Подготовка заготовки",
+                    "2. Токарная обработка торцов",
+                    "3. Сверление отверстия",
+                    "4. Нарезание резьбы",
+                    "5. Фрезерование граней (шестигранник)",
+                    "6. Фаска"
+                ]
+            elif part_type == 'bolt':
+                operations = [
+                    "1. Подготовка заготовки",
+                    "2. Токарная обработка стержня",
+                    "3. Нарезание резьбы",
+                    "4. Фрезерование головки (шестигранник)",
+                    "5. Фаска"
+                ]
+            else:
+                operations = [
+                    "1. Подготовка заготовки",
+                    "2. Токарная обработка",
+                    "3. Фрезерование (при необходимости)",
+                    "4. Финишная обработка"
+                ]
+        
+        # Форматируем операции
+        for i, operation in enumerate(operations, 1):
+            # Если операция уже содержит номер, не добавляем еще раз
+            if isinstance(operation, str):
+                # Проверяем, начинается ли строка с цифры и точки
+                if len(operation) > 2 and operation[0].isdigit() and operation[1] == '.':
+                    lines.append(f"{operation}")
+                else:
+                    # Переводим операции на русский язык, если нужно
+                    operation_ru = operation.replace('_', ' ').title()
+                    # Капитализируем первую букву
+                    operation_ru = operation_ru[0].upper() + operation_ru[1:] if len(operation_ru) > 1 else operation_ru
+                    lines.append(f"{i}. {operation_ru}")
+            else:
+                lines.append(f"{i}. {operation}")
+        
+        lines.append("")
+        lines.append(f"📋 <b>Параметры:</b>")
+        lines.append(f"• Материал: {material}")
+        lines.append(f"• Станок: {machine_type}")
+        if thread_size:
+            lines.append(f"• Резьба/Диаметр: {thread_size}")
+        if length:
+            lines.append(f"• Длина: {length} мм")
+        if quantity:
+            lines.append(f"• Количество: {quantity} шт")
+        
+        lines.append("")
+        lines.append("💡 <i>Для получения режимов резания опишите конкретную операцию или используйте команду расчета.</i>")
+        
+        return "\n".join(lines)

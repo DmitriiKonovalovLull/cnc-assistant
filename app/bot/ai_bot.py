@@ -64,6 +64,12 @@ if not BOT_TOKEN or BOT_TOKEN == "YOUR_BOT_TOKEN":
     logger.error("❌ Токен не найден! Проверьте .env файл")
     sys.exit(1)
 
+# Путь к Tesseract OCR (для распознавания текста с фото)
+_default_tesseract = r"C:\Program Files\Tesseract-OCR\tesseract.exe" if os.name == "nt" else None
+if _default_tesseract and not os.path.isfile(_default_tesseract):
+    _default_tesseract = None
+TESSERACT_CMD = os.getenv("TESSERACT_CMD") or os.getenv("TESSERACT_PATH") or _default_tesseract
+
 # Инициализация бота
 bot = Bot(
     token=BOT_TOKEN,
@@ -472,7 +478,7 @@ async def initialize_services():
     
     # 2. Image Parser
     logger.info("📸 Инициализация парсера изображений...")
-    image_parser = ImageParser()
+    image_parser = ImageParser(tesseract_cmd=TESSERACT_CMD)
     
     # 3. Message Handler
     logger.info("📨 Инициализация обработчика сообщений...")
@@ -484,7 +490,8 @@ async def initialize_services():
     
     handler = MessageHandler(
         knowledge_service=knowledge_service,
-        db_session=db_session
+        db_session=db_session,
+        tesseract_cmd=TESSERACT_CMD
     )
     
     logger.info("✅ Все сервисы инициализированы")

@@ -1658,3 +1658,1322 @@ AttributeError: 'StandardService' object has no attribute 'get_standard_info'. D
 2026-02-10 15:46:02,168 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
 2026-02-10 15:46:02,168 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
 2026-02-10 15:46:02,422 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 15:46:06,086 - __main__ - INFO - 🚀 Инициализация сервисов...
+2026-02-10 15:46:06,086 - __main__ - INFO - 🗄️ Инициализация пула соединений БД...
+2026-02-10 15:46:06,100 - app.services.database_pool - INFO - Database pool initialized: pool_size=5, max_overflow=10
+2026-02-10 15:46:06,104 - __main__ - INFO - 🔄 Запуск миграций базы данных...
+2026-02-10 15:46:06,104 - app.storage.migrations - INFO - Running database migrations...
+2026-02-10 15:46:06,105 - app.storage.migrations - INFO - Column 'operation_chain_json' already exists. Skipping migration.
+2026-02-10 15:46:06,105 - app.storage.migrations - INFO - All migrations completed
+2026-02-10 15:46:06,105 - __main__ - INFO - ✅ Миграции выполнены успешно
+2026-02-10 15:46:06,105 - __main__ - INFO - 💾 Инициализация репозитория контекста...
+2026-02-10 15:46:06,106 - __main__ - INFO - 📚 Загрузка базы знаний...
+2026-02-10 15:46:06,106 - app.services.knowledge_service - INFO - Loading knowledge base...
+2026-02-10 15:46:06,106 - app.services.knowledge_service - INFO - Knowledge base loaded: 4 materials, 2 tools, 3 machines
+2026-02-10 15:46:06,106 - __main__ - INFO - 📸 Инициализация парсера изображений...
+2026-02-10 15:46:06,106 - app.core.image_parser - WARNING - ⚠️ Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-10 15:46:06,106 - app.core.image_parser - INFO - 💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH
+2026-02-10 15:46:06,107 - __main__ - WARNING - ⚠️ OCR недоступен (Tesseract не найден или не настроен)
+2026-02-10 15:46:06,107 - __main__ - INFO - 📨 Инициализация обработчика сообщений...
+2026-02-10 15:46:06,107 - app.core.image_parser - WARNING - ⚠️ Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-10 15:46:06,107 - app.core.image_parser - INFO - 💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH
+2026-02-10 15:46:06,108 - app.services.standard_service - INFO - Loaded 0 standards
+2026-02-10 15:46:06,108 - __main__ - INFO - ✅ Все сервисы инициализированы
+2026-02-10 15:46:06,823 - aiogram.dispatcher - INFO - Start polling
+2026-02-10 15:46:07,043 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 15:46:24,281 - aiogram.event - INFO - Update id=897835507 is handled. Duration 1020 ms by bot id=8201932079
+2026-02-10 15:46:30,354 - app.core.conversation_orchestrator - INFO - Intent detected: noise (confidence: 0.30)
+2026-02-10 15:46:30,354 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=noise, fsm_enabled=False
+2026-02-10 15:46:30,671 - aiogram.event - INFO - Update id=897835508 is handled. Duration 320 ms by bot id=8201932079
+2026-02-10 15:46:42,456 - app.core.conversation_orchestrator - INFO - Intent detected: standard_part (confidence: 0.95)
+2026-02-10 15:46:42,456 - app.bot.handler - INFO - Orchestrator decision: mode=project, action=standard_part, fsm_enabled=True
+2026-02-10 15:46:42,834 - aiogram.event - INFO - Update id=897835509 is handled. Duration 378 ms by bot id=8201932079
+2026-02-10 15:47:50,961 - app.core.conversation_orchestrator - INFO - Intent detected: noise (confidence: 0.30)
+2026-02-10 15:47:50,961 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=noise, fsm_enabled=False
+2026-02-10 15:47:51,291 - aiogram.event - INFO - Update id=897835510 is handled. Duration 330 ms by bot id=8201932079
+2026-02-10 15:49:46,331 - aiogram.dispatcher - INFO - Polling stopped
+2026-02-10 15:49:46,332 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-02-10 15:49:46,332 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-02-10 15:49:46,589 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 17:10:48,298 - __main__ - INFO - 🚀 Инициализация сервисов...
+2026-02-10 17:10:48,299 - __main__ - INFO - 🗄️ Инициализация пула соединений БД...
+2026-02-10 17:10:48,310 - app.services.database_pool - INFO - Database pool initialized: pool_size=5, max_overflow=10
+2026-02-10 17:10:48,313 - __main__ - INFO - 🔄 Запуск миграций базы данных...
+2026-02-10 17:10:48,314 - app.storage.migrations - INFO - Running database migrations...
+2026-02-10 17:10:48,314 - app.storage.migrations - INFO - Column 'operation_chain_json' already exists. Skipping migration.
+2026-02-10 17:10:48,314 - app.storage.migrations - INFO - All migrations completed
+2026-02-10 17:10:48,314 - __main__ - INFO - ✅ Миграции выполнены успешно
+2026-02-10 17:10:48,315 - __main__ - INFO - 💾 Инициализация репозитория контекста...
+2026-02-10 17:10:48,315 - __main__ - INFO - 📚 Загрузка базы знаний...
+2026-02-10 17:10:48,315 - app.services.knowledge_service - INFO - Loading knowledge base...
+2026-02-10 17:10:48,316 - app.services.knowledge_service - INFO - Knowledge base loaded: 4 materials, 2 tools, 3 machines
+2026-02-10 17:10:48,316 - __main__ - INFO - 📸 Инициализация парсера изображений...
+2026-02-10 17:10:48,316 - app.core.image_parser - WARNING - ⚠️ Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-10 17:10:48,316 - app.core.image_parser - INFO - 💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH
+2026-02-10 17:10:48,316 - __main__ - WARNING - ⚠️ OCR недоступен (Tesseract не найден или не настроен)
+2026-02-10 17:10:48,316 - __main__ - INFO - 📨 Инициализация обработчика сообщений...
+2026-02-10 17:10:48,316 - app.core.image_parser - WARNING - ⚠️ Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-10 17:10:48,316 - app.core.image_parser - INFO - 💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH
+2026-02-10 17:10:48,317 - app.services.standard_service - INFO - Loaded 0 standards
+2026-02-10 17:10:48,428 - app.knowledge.internet_parser.browser_parser - WARNING - requests/beautifulsoup4 not available. Install: pip install requests beautifulsoup4
+2026-02-10 17:10:48,428 - __main__ - INFO - ✅ Все сервисы инициализированы
+2026-02-10 17:10:49,108 - aiogram.dispatcher - INFO - Start polling
+2026-02-10 17:10:49,319 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 17:11:03,919 - aiogram.event - INFO - Update id=897835511 is not handled. Duration 0 ms by bot id=8201932079
+2026-02-10 17:11:03,919 - aiogram.event - ERROR - Cause exception while process update id=897835511 by bot id=8201932079
+UnboundLocalError: cannot access local variable 'context' where it is not associated with a value
+Traceback (most recent call last):
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\dispatcher.py", line 320, in _process_update
+    response = await self.feed_update(bot, update, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\dispatcher.py", line 164, in feed_update
+    response = await self.update.wrap_outer_middleware(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\middlewares\error.py", line 27, in __call__
+    return await handler(event, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\middlewares\user_context.py", line 58, in __call__
+    return await handler(event, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\fsm\middleware.py", line 43, in __call__
+    return await handler(event, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\event\telegram.py", line 126, in trigger
+    return await wrapped_inner(event, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\event\handler.py", line 71, in call
+    return await wrapped()
+           ^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\dispatcher.py", line 283, in _listen_update
+    return await self.propagate_event(update_type=update_type, event=event, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\router.py", line 161, in propagate_event
+    return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\router.py", line 153, in _wrapped
+    return await self._propagate_event(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\router.py", line 181, in _propagate_event
+    response = await observer.trigger(event, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\event\telegram.py", line 126, in trigger
+    return await wrapped_inner(event, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\event\handler.py", line 71, in call
+    return await wrapped()
+           ^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\app\bot\telegram_bot.py", line 519, in handle_message
+    is_first_message = not context.machine_type and not context.dialog_history
+                           ^^^^^^^
+UnboundLocalError: cannot access local variable 'context' where it is not associated with a value
+2026-02-10 17:18:15,225 - aiogram.dispatcher - INFO - Polling stopped
+2026-02-10 17:18:15,226 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-02-10 17:18:15,226 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-02-10 17:18:15,482 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 17:18:19,042 - __main__ - INFO - 🚀 Инициализация сервисов...
+2026-02-10 17:18:19,043 - __main__ - INFO - 🗄️ Инициализация пула соединений БД...
+2026-02-10 17:18:19,055 - app.services.database_pool - INFO - Database pool initialized: pool_size=5, max_overflow=10
+2026-02-10 17:18:19,058 - __main__ - INFO - 🔄 Запуск миграций базы данных...
+2026-02-10 17:18:19,058 - app.storage.migrations - INFO - Running database migrations...
+2026-02-10 17:18:19,059 - app.storage.migrations - INFO - Column 'operation_chain_json' already exists. Skipping migration.
+2026-02-10 17:18:19,059 - app.storage.migrations - INFO - All migrations completed
+2026-02-10 17:18:19,059 - __main__ - INFO - ✅ Миграции выполнены успешно
+2026-02-10 17:18:19,060 - __main__ - INFO - 💾 Инициализация репозитория контекста...
+2026-02-10 17:18:19,060 - __main__ - INFO - 📚 Загрузка базы знаний...
+2026-02-10 17:18:19,060 - app.services.knowledge_service - INFO - Loading knowledge base...
+2026-02-10 17:18:19,061 - app.services.knowledge_service - INFO - Knowledge base loaded: 4 materials, 2 tools, 3 machines
+2026-02-10 17:18:19,061 - __main__ - INFO - 📸 Инициализация парсера изображений...
+2026-02-10 17:18:19,061 - app.core.image_parser - WARNING - ⚠️ Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-10 17:18:19,061 - app.core.image_parser - INFO - 💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH
+2026-02-10 17:18:19,061 - __main__ - WARNING - ⚠️ OCR недоступен (Tesseract не найден или не настроен)
+2026-02-10 17:18:19,061 - __main__ - INFO - 📨 Инициализация обработчика сообщений...
+2026-02-10 17:18:19,061 - app.core.image_parser - WARNING - ⚠️ Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-10 17:18:19,061 - app.core.image_parser - INFO - 💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH
+2026-02-10 17:18:19,062 - app.services.standard_service - INFO - Loaded 0 standards
+2026-02-10 17:18:19,150 - app.knowledge.internet_parser.browser_parser - WARNING - requests/beautifulsoup4 not available. Install: pip install requests beautifulsoup4
+2026-02-10 17:18:19,150 - __main__ - INFO - ✅ Все сервисы инициализированы
+2026-02-10 17:18:19,811 - aiogram.dispatcher - INFO - Start polling
+2026-02-10 17:18:20,019 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 17:19:45,828 - aiogram.dispatcher - INFO - Polling stopped
+2026-02-10 17:19:45,829 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-02-10 17:19:45,829 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-02-10 17:19:46,086 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 17:19:49,626 - __main__ - INFO - 🚀 Инициализация сервисов...
+2026-02-10 17:19:49,627 - __main__ - INFO - 🗄️ Инициализация пула соединений БД...
+2026-02-10 17:19:49,639 - app.services.database_pool - INFO - Database pool initialized: pool_size=5, max_overflow=10
+2026-02-10 17:19:49,642 - __main__ - INFO - 🔄 Запуск миграций базы данных...
+2026-02-10 17:19:49,642 - app.storage.migrations - INFO - Running database migrations...
+2026-02-10 17:19:49,643 - app.storage.migrations - INFO - Column 'operation_chain_json' already exists. Skipping migration.
+2026-02-10 17:19:49,643 - app.storage.migrations - INFO - All migrations completed
+2026-02-10 17:19:49,643 - __main__ - INFO - ✅ Миграции выполнены успешно
+2026-02-10 17:19:49,643 - __main__ - INFO - 💾 Инициализация репозитория контекста...
+2026-02-10 17:19:49,644 - __main__ - INFO - 📚 Загрузка базы знаний...
+2026-02-10 17:19:49,644 - app.services.knowledge_service - INFO - Loading knowledge base...
+2026-02-10 17:19:49,644 - app.services.knowledge_service - INFO - Knowledge base loaded: 4 materials, 2 tools, 3 machines
+2026-02-10 17:19:49,645 - __main__ - INFO - 📸 Инициализация парсера изображений...
+2026-02-10 17:19:49,645 - app.core.image_parser - WARNING - ⚠️ Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-10 17:19:49,645 - app.core.image_parser - INFO - 💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH
+2026-02-10 17:19:49,645 - __main__ - WARNING - ⚠️ OCR недоступен (Tesseract не найден или не настроен)
+2026-02-10 17:19:49,645 - __main__ - INFO - 📨 Инициализация обработчика сообщений...
+2026-02-10 17:19:49,645 - app.core.image_parser - WARNING - ⚠️ Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-10 17:19:49,645 - app.core.image_parser - INFO - 💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH
+2026-02-10 17:19:49,646 - app.services.standard_service - INFO - Loaded 0 standards
+2026-02-10 17:19:49,729 - app.knowledge.internet_parser.browser_parser - WARNING - requests/beautifulsoup4 not available. Install: pip install requests beautifulsoup4
+2026-02-10 17:19:49,729 - __main__ - INFO - ✅ Все сервисы инициализированы
+2026-02-10 17:19:50,433 - aiogram.dispatcher - INFO - Start polling
+2026-02-10 17:19:50,646 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 17:20:06,387 - aiogram.event - INFO - Update id=897835512 is handled. Duration 942 ms by bot id=8201932079
+2026-02-10 17:20:15,669 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-02-10 17:20:15,669 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-02-10 17:20:22,638 - aiogram.dispatcher - INFO - Connection established (tryings = 1, bot id = 8201932079)
+2026-02-10 17:20:22,651 - app.services.machine_saver - INFO - Saved unknown machine: ост 33057 (ID: 4)
+2026-02-10 17:20:23,588 - aiogram.event - INFO - Update id=897835513 is handled. Duration 950 ms by bot id=8201932079
+2026-02-10 17:20:48,822 - app.core.conversation_orchestrator - INFO - Intent detected: noise (confidence: 0.30)
+2026-02-10 17:20:48,822 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=noise, fsm_enabled=False
+2026-02-10 17:20:49,110 - aiogram.event - INFO - Update id=897835514 is handled. Duration 290 ms by bot id=8201932079
+2026-02-10 17:20:59,028 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-02-10 17:20:59,029 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-02-10 17:21:03,393 - aiogram.dispatcher - INFO - Connection established (tryings = 1, bot id = 8201932079)
+2026-02-10 17:21:03,394 - app.core.conversation_orchestrator - INFO - Intent detected: standard_part (confidence: 0.85)
+2026-02-10 17:21:03,394 - app.bot.handler - INFO - Orchestrator decision: mode=project, action=standard_part, fsm_enabled=True
+2026-02-10 17:21:06,505 - aiogram.event - INFO - Update id=897835515 is handled. Duration 3111 ms by bot id=8201932079
+2026-02-10 17:21:25,755 - app.core.conversation_orchestrator - INFO - Intent detected: noise (confidence: 0.30)
+2026-02-10 17:21:25,755 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=noise, fsm_enabled=False
+2026-02-10 17:21:26,047 - aiogram.event - INFO - Update id=897835516 is handled. Duration 293 ms by bot id=8201932079
+2026-02-10 17:21:41,793 - aiogram.dispatcher - INFO - Polling stopped
+2026-02-10 17:21:41,793 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-02-10 17:21:41,794 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-02-10 17:21:42,056 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 17:31:31,402 - __main__ - INFO - 🚀 Инициализация сервисов...
+2026-02-10 17:31:31,403 - __main__ - INFO - 🗄️ Инициализация пула соединений БД...
+2026-02-10 17:31:31,414 - app.services.database_pool - INFO - Database pool initialized: pool_size=5, max_overflow=10
+2026-02-10 17:31:31,417 - __main__ - INFO - 🔄 Запуск миграций базы данных...
+2026-02-10 17:31:31,417 - app.storage.migrations - INFO - Running database migrations...
+2026-02-10 17:31:31,418 - app.storage.migrations - INFO - Column 'operation_chain_json' already exists. Skipping migration.
+2026-02-10 17:31:31,418 - app.storage.migrations - INFO - All migrations completed
+2026-02-10 17:31:31,418 - __main__ - INFO - ✅ Миграции выполнены успешно
+2026-02-10 17:31:31,418 - __main__ - INFO - 💾 Инициализация репозитория контекста...
+2026-02-10 17:31:31,419 - __main__ - INFO - 📚 Загрузка базы знаний...
+2026-02-10 17:31:31,419 - app.services.knowledge_service - INFO - Loading knowledge base...
+2026-02-10 17:31:31,419 - app.services.knowledge_service - INFO - Knowledge base loaded: 4 materials, 2 tools, 3 machines
+2026-02-10 17:31:31,419 - __main__ - INFO - 📸 Инициализация парсера изображений...
+2026-02-10 17:31:31,419 - app.core.image_parser - WARNING - ⚠️ Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-10 17:31:31,419 - app.core.image_parser - INFO - 💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH
+2026-02-10 17:31:31,419 - __main__ - WARNING - ⚠️ OCR недоступен (Tesseract не найден или не настроен)
+2026-02-10 17:31:31,420 - __main__ - INFO - 📨 Инициализация обработчика сообщений...
+2026-02-10 17:31:31,420 - app.core.image_parser - WARNING - ⚠️ Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-10 17:31:31,420 - app.core.image_parser - INFO - 💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH
+2026-02-10 17:31:31,420 - app.services.standard_service - INFO - Loaded 0 standards
+2026-02-10 17:31:31,501 - app.knowledge.internet_parser.browser_parser - WARNING - requests/beautifulsoup4 not available. Install: pip install requests beautifulsoup4
+2026-02-10 17:31:31,501 - __main__ - INFO - ✅ Все сервисы инициализированы
+2026-02-10 17:31:32,180 - aiogram.dispatcher - INFO - Start polling
+2026-02-10 17:31:32,392 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 17:41:12,082 - app.core.conversation_orchestrator - INFO - Intent detected: standard_part (confidence: 0.85)
+2026-02-10 17:41:12,082 - app.bot.handler - INFO - Orchestrator decision: mode=project, action=standard_part, fsm_enabled=True
+2026-02-10 17:41:13,077 - aiogram.event - INFO - Update id=897835517 is handled. Duration 1016 ms by bot id=8201932079
+2026-02-10 17:41:29,233 - app.core.conversation_orchestrator - INFO - Intent detected: noise (confidence: 0.30)
+2026-02-10 17:41:29,233 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=noise, fsm_enabled=False
+2026-02-10 17:41:29,592 - aiogram.event - INFO - Update id=897835518 is handled. Duration 362 ms by bot id=8201932079
+2026-02-10 17:41:37,911 - app.core.conversation_orchestrator - INFO - Command detected: capabilities
+2026-02-10 17:41:37,911 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=capabilities, fsm_enabled=False
+2026-02-10 17:41:38,204 - aiogram.event - INFO - Update id=897835519 is handled. Duration 293 ms by bot id=8201932079
+2026-02-10 17:42:17,024 - app.core.conversation_orchestrator - INFO - Intent detected: engineering (confidence: 0.70)
+2026-02-10 17:42:17,024 - app.bot.handler - INFO - Orchestrator decision: mode=engineering, action=engineering, fsm_enabled=True
+2026-02-10 17:42:17,315 - aiogram.event - INFO - Update id=897835520 is handled. Duration 292 ms by bot id=8201932079
+2026-02-10 17:42:32,297 - app.core.conversation_orchestrator - INFO - Intent detected: engineering (confidence: 0.70)
+2026-02-10 17:42:32,298 - app.bot.handler - INFO - Orchestrator decision: mode=engineering, action=engineering, fsm_enabled=True
+2026-02-10 17:42:32,683 - aiogram.event - INFO - Update id=897835521 is handled. Duration 385 ms by bot id=8201932079
+2026-02-10 17:42:46,385 - app.core.conversation_orchestrator - INFO - Intent detected: noise (confidence: 0.30)
+2026-02-10 17:42:46,386 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=noise, fsm_enabled=False
+2026-02-10 17:42:46,754 - aiogram.event - INFO - Update id=897835522 is handled. Duration 368 ms by bot id=8201932079
+2026-02-10 17:42:59,935 - app.core.conversation_orchestrator - INFO - Command detected: help
+2026-02-10 17:42:59,935 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=help, fsm_enabled=False
+2026-02-10 17:43:00,180 - aiogram.event - INFO - Update id=897835523 is handled. Duration 245 ms by bot id=8201932079
+2026-02-10 17:43:08,189 - app.core.conversation_orchestrator - INFO - Intent detected: noise (confidence: 0.30)
+2026-02-10 17:43:08,190 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=noise, fsm_enabled=False
+2026-02-10 17:43:08,486 - aiogram.event - INFO - Update id=897835524 is handled. Duration 297 ms by bot id=8201932079
+2026-02-10 20:33:30,054 - aiogram.dispatcher - INFO - Polling stopped
+2026-02-10 20:33:30,055 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-02-10 20:33:30,055 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-02-10 20:33:30,305 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 20:33:33,910 - __main__ - INFO - 🚀 Инициализация сервисов...
+2026-02-10 20:33:33,910 - __main__ - INFO - 🗄️ Инициализация пула соединений БД...
+2026-02-10 20:33:33,922 - app.services.database_pool - INFO - Database pool initialized: pool_size=5, max_overflow=10
+2026-02-10 20:33:33,925 - __main__ - INFO - 🔄 Запуск миграций базы данных...
+2026-02-10 20:33:33,925 - app.storage.migrations - INFO - Running database migrations...
+2026-02-10 20:33:33,926 - app.storage.migrations - INFO - Column 'operation_chain_json' already exists. Skipping migration.
+2026-02-10 20:33:33,926 - app.storage.migrations - INFO - All migrations completed
+2026-02-10 20:33:33,926 - __main__ - INFO - ✅ Миграции выполнены успешно
+2026-02-10 20:33:33,926 - __main__ - INFO - 💾 Инициализация репозитория контекста...
+2026-02-10 20:33:33,927 - __main__ - INFO - 📚 Загрузка базы знаний...
+2026-02-10 20:33:33,927 - app.services.knowledge_service - INFO - Loading knowledge base...
+2026-02-10 20:33:33,928 - app.services.knowledge_service - INFO - Knowledge base loaded: 4 materials, 2 tools, 3 machines
+2026-02-10 20:33:33,928 - __main__ - INFO - 📸 Инициализация парсера изображений...
+2026-02-10 20:33:33,928 - app.core.image_parser - WARNING - ⚠️ Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-10 20:33:33,928 - app.core.image_parser - INFO - 💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH
+2026-02-10 20:33:33,928 - __main__ - WARNING - ⚠️ OCR недоступен (Tesseract не найден или не настроен)
+2026-02-10 20:33:33,928 - __main__ - INFO - 📨 Инициализация обработчика сообщений...
+2026-02-10 20:33:33,928 - app.core.image_parser - WARNING - ⚠️ Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-10 20:33:33,928 - app.core.image_parser - INFO - 💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH
+2026-02-10 20:33:33,929 - app.services.standard_service - INFO - Loaded 0 standards
+2026-02-10 20:33:34,016 - app.knowledge.internet_parser.browser_parser - WARNING - requests/beautifulsoup4 not available. Install: pip install requests beautifulsoup4
+2026-02-10 20:33:34,016 - __main__ - INFO - ✅ Все сервисы инициализированы
+2026-02-10 20:33:34,710 - aiogram.dispatcher - INFO - Start polling
+2026-02-10 20:33:34,921 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 20:33:42,266 - aiogram.event - INFO - Update id=897835525 is handled. Duration 941 ms by bot id=8201932079
+2026-02-10 20:34:00,442 - app.core.conversation_orchestrator - INFO - Intent detected: standard_part (confidence: 0.95)
+2026-02-10 20:34:00,442 - app.bot.handler - INFO - Orchestrator decision: mode=project, action=standard_part, fsm_enabled=True
+2026-02-10 20:34:00,741 - aiogram.event - INFO - Update id=897835526 is handled. Duration 299 ms by bot id=8201932079
+2026-02-10 20:34:08,603 - app.core.conversation_orchestrator - INFO - Intent detected: noise (confidence: 0.30)
+2026-02-10 20:34:08,603 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=noise, fsm_enabled=False
+2026-02-10 20:34:08,895 - aiogram.event - INFO - Update id=897835527 is handled. Duration 294 ms by bot id=8201932079
+2026-02-10 20:37:13,913 - aiogram.dispatcher - INFO - Polling stopped
+2026-02-10 20:37:13,913 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-02-10 20:37:13,914 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-02-10 20:37:14,165 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 20:37:17,539 - __main__ - INFO - 🚀 Инициализация сервисов...
+2026-02-10 20:37:17,539 - __main__ - INFO - 🗄️ Инициализация пула соединений БД...
+2026-02-10 20:37:17,550 - app.services.database_pool - INFO - Database pool initialized: pool_size=5, max_overflow=10
+2026-02-10 20:37:17,553 - __main__ - INFO - 🔄 Запуск миграций базы данных...
+2026-02-10 20:37:17,553 - app.storage.migrations - INFO - Running database migrations...
+2026-02-10 20:37:17,554 - app.storage.migrations - INFO - Column 'operation_chain_json' already exists. Skipping migration.
+2026-02-10 20:37:17,554 - app.storage.migrations - INFO - All migrations completed
+2026-02-10 20:37:17,554 - __main__ - INFO - ✅ Миграции выполнены успешно
+2026-02-10 20:37:17,555 - __main__ - INFO - 💾 Инициализация репозитория контекста...
+2026-02-10 20:37:17,555 - __main__ - INFO - 📚 Загрузка базы знаний...
+2026-02-10 20:37:17,555 - app.services.knowledge_service - INFO - Loading knowledge base...
+2026-02-10 20:37:17,556 - app.services.knowledge_service - INFO - Knowledge base loaded: 4 materials, 2 tools, 3 machines
+2026-02-10 20:37:17,556 - __main__ - INFO - 📸 Инициализация парсера изображений...
+2026-02-10 20:37:17,556 - app.core.image_parser - WARNING - ⚠️ Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-10 20:37:17,556 - app.core.image_parser - INFO - 💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH
+2026-02-10 20:37:17,556 - __main__ - WARNING - ⚠️ OCR недоступен (Tesseract не найден или не настроен)
+2026-02-10 20:37:17,556 - __main__ - INFO - 📨 Инициализация обработчика сообщений...
+2026-02-10 20:37:17,556 - app.core.image_parser - WARNING - ⚠️ Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-10 20:37:17,556 - app.core.image_parser - INFO - 💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH
+2026-02-10 20:37:17,557 - app.services.standard_service - INFO - Loaded 0 standards
+2026-02-10 20:37:17,639 - app.knowledge.internet_parser.browser_parser - WARNING - requests/beautifulsoup4 not available. Install: pip install requests beautifulsoup4
+2026-02-10 20:37:17,640 - __main__ - INFO - ✅ Все сервисы инициализированы
+2026-02-10 20:37:18,334 - aiogram.dispatcher - INFO - Start polling
+2026-02-10 20:37:18,549 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 20:37:29,281 - aiogram.event - INFO - Update id=897835528 is handled. Duration 1033 ms by bot id=8201932079
+2026-02-10 20:37:37,966 - app.core.conversation_orchestrator - INFO - Intent detected: work_management (confidence: 0.85)
+2026-02-10 20:37:37,966 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=work_management, fsm_enabled=False
+2026-02-10 20:37:37,975 - app.services.work_manager - INFO - Created work W002 for user 7173846851
+2026-02-10 20:37:38,297 - aiogram.event - INFO - Update id=897835529 is handled. Duration 337 ms by bot id=8201932079
+2026-02-10 20:37:45,659 - aiogram.event - INFO - Update id=897835530 is handled. Duration 339 ms by bot id=8201932079
+2026-02-10 20:37:51,460 - app.core.conversation_orchestrator - INFO - Intent detected: noise (confidence: 0.30)
+2026-02-10 20:37:51,460 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=noise, fsm_enabled=False
+2026-02-10 20:37:51,759 - aiogram.event - INFO - Update id=897835531 is handled. Duration 300 ms by bot id=8201932079
+2026-02-10 20:37:57,662 - app.core.conversation_orchestrator - INFO - Command detected: work_load
+2026-02-10 20:37:57,662 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=work_load, fsm_enabled=False
+2026-02-10 20:37:57,925 - aiogram.event - INFO - Update id=897835532 is handled. Duration 264 ms by bot id=8201932079
+2026-02-10 20:38:05,829 - app.core.conversation_orchestrator - INFO - Intent detected: noise (confidence: 0.30)
+2026-02-10 20:38:05,829 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=noise, fsm_enabled=False
+2026-02-10 20:38:06,126 - aiogram.event - INFO - Update id=897835533 is handled. Duration 297 ms by bot id=8201932079
+2026-02-10 20:38:09,160 - app.core.conversation_orchestrator - INFO - Intent detected: noise (confidence: 0.30)
+2026-02-10 20:38:09,160 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=noise, fsm_enabled=False
+2026-02-10 20:38:09,459 - aiogram.event - INFO - Update id=897835534 is handled. Duration 298 ms by bot id=8201932079
+2026-02-10 20:39:13,180 - aiogram.dispatcher - INFO - Polling stopped
+2026-02-10 20:39:13,181 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-02-10 20:39:13,181 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-02-10 20:39:13,441 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 21:53:01,618 - __main__ - INFO - 🚀 Инициализация сервисов...
+2026-02-10 21:53:01,618 - __main__ - INFO - 🗄️ Инициализация пула соединений БД...
+2026-02-10 21:53:01,630 - app.services.database_pool - INFO - Database pool initialized: pool_size=5, max_overflow=10
+2026-02-10 21:53:01,633 - __main__ - INFO - 🔄 Запуск миграций базы данных...
+2026-02-10 21:53:01,633 - app.storage.migrations - INFO - Running database migrations...
+2026-02-10 21:53:01,634 - app.storage.migrations - INFO - Column 'operation_chain_json' already exists. Skipping migration.
+2026-02-10 21:53:01,634 - app.storage.migrations - INFO - All migrations completed
+2026-02-10 21:53:01,634 - __main__ - INFO - ✅ Миграции выполнены успешно
+2026-02-10 21:53:01,635 - __main__ - INFO - 💾 Инициализация репозитория контекста...
+2026-02-10 21:53:01,635 - __main__ - INFO - 📚 Загрузка базы знаний...
+2026-02-10 21:53:01,635 - app.services.knowledge_service - INFO - Loading knowledge base...
+2026-02-10 21:53:01,636 - app.services.knowledge_service - INFO - Knowledge base loaded: 4 materials, 2 tools, 3 machines
+2026-02-10 21:53:01,636 - __main__ - INFO - 📸 Инициализация парсера изображений...
+2026-02-10 21:53:01,636 - app.core.image_parser - WARNING - ⚠️ Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-10 21:53:01,636 - app.core.image_parser - INFO - 💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH
+2026-02-10 21:53:01,636 - __main__ - WARNING - ⚠️ OCR недоступен (Tesseract не найден или не настроен)
+2026-02-10 21:53:01,636 - __main__ - INFO - 📨 Инициализация обработчика сообщений...
+2026-02-10 21:53:01,636 - app.core.image_parser - WARNING - ⚠️ Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-10 21:53:01,636 - app.core.image_parser - INFO - 💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH
+2026-02-10 21:53:01,637 - app.services.standard_service - INFO - Loaded 0 standards
+2026-02-10 21:53:01,732 - app.knowledge.internet_parser.browser_parser - WARNING - requests/beautifulsoup4 not available. Install: pip install requests beautifulsoup4
+2026-02-10 21:53:01,733 - __main__ - INFO - ✅ Все сервисы инициализированы
+2026-02-10 21:53:02,328 - aiogram.dispatcher - INFO - Start polling
+2026-02-10 21:53:02,402 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 21:53:12,545 - aiogram.event - INFO - Update id=897835535 is handled. Duration 782 ms by bot id=8201932079
+2026-02-10 21:53:20,724 - app.core.conversation_orchestrator - INFO - Intent detected: work_management (confidence: 0.85)
+2026-02-10 21:53:20,724 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=work_management, fsm_enabled=False
+2026-02-10 21:53:20,734 - app.services.work_manager - INFO - Created work W003 for user 7173846851
+2026-02-10 21:53:20,831 - aiogram.event - INFO - Update id=897835536 is handled. Duration 114 ms by bot id=8201932079
+2026-02-10 21:53:28,433 - aiogram.event - INFO - Update id=897835537 is handled. Duration 343 ms by bot id=8201932079
+2026-02-10 21:53:42,124 - app.core.conversation_orchestrator - INFO - Command detected: work_load
+2026-02-10 21:53:42,124 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=work_load, fsm_enabled=False
+2026-02-10 21:53:42,536 - aiogram.event - INFO - Update id=897835538 is handled. Duration 412 ms by bot id=8201932079
+2026-02-10 21:53:45,963 - app.core.conversation_orchestrator - INFO - Intent detected: noise (confidence: 0.50)
+2026-02-10 21:53:45,963 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=noise, fsm_enabled=False
+2026-02-10 21:53:46,562 - aiogram.event - INFO - Update id=897835539 is handled. Duration 600 ms by bot id=8201932079
+2026-02-10 21:54:04,717 - app.core.conversation_orchestrator - INFO - Intent detected: noise (confidence: 0.30)
+2026-02-10 21:54:04,718 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=noise, fsm_enabled=False
+2026-02-10 21:54:05,194 - aiogram.event - INFO - Update id=897835540 is handled. Duration 476 ms by bot id=8201932079
+2026-02-10 22:01:15,062 - aiogram.dispatcher - INFO - Polling stopped
+2026-02-10 22:01:15,063 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-02-10 22:01:15,063 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-02-10 22:01:15,314 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 22:01:18,642 - __main__ - INFO - 🚀 Инициализация сервисов...
+2026-02-10 22:01:18,643 - __main__ - INFO - 🗄️ Инициализация пула соединений БД...
+2026-02-10 22:01:18,654 - app.services.database_pool - INFO - Database pool initialized: pool_size=5, max_overflow=10
+2026-02-10 22:01:18,657 - __main__ - INFO - 🔄 Запуск миграций базы данных...
+2026-02-10 22:01:18,657 - app.storage.migrations - INFO - Running database migrations...
+2026-02-10 22:01:18,658 - app.storage.migrations - INFO - Column 'operation_chain_json' already exists. Skipping migration.
+2026-02-10 22:01:18,658 - app.storage.migrations - INFO - All migrations completed
+2026-02-10 22:01:18,658 - __main__ - INFO - ✅ Миграции выполнены успешно
+2026-02-10 22:01:18,658 - __main__ - INFO - 💾 Инициализация репозитория контекста...
+2026-02-10 22:01:18,659 - __main__ - INFO - 📚 Загрузка базы знаний...
+2026-02-10 22:01:18,659 - app.services.knowledge_service - INFO - Loading knowledge base...
+2026-02-10 22:01:18,660 - app.services.knowledge_service - INFO - Knowledge base loaded: 4 materials, 2 tools, 3 machines
+2026-02-10 22:01:18,660 - __main__ - INFO - 📸 Инициализация парсера изображений...
+2026-02-10 22:01:18,660 - app.core.image_parser - WARNING - ⚠️ Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-10 22:01:18,660 - app.core.image_parser - INFO - 💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH
+2026-02-10 22:01:18,660 - __main__ - WARNING - ⚠️ OCR недоступен (Tesseract не найден или не настроен)
+2026-02-10 22:01:18,660 - __main__ - INFO - 📨 Инициализация обработчика сообщений...
+2026-02-10 22:01:18,660 - app.core.image_parser - WARNING - ⚠️ Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-10 22:01:18,660 - app.core.image_parser - INFO - 💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH
+2026-02-10 22:01:18,661 - app.services.standard_service - INFO - Loaded 0 standards
+2026-02-10 22:01:18,741 - app.knowledge.internet_parser.browser_parser - WARNING - requests/beautifulsoup4 not available. Install: pip install requests beautifulsoup4
+2026-02-10 22:01:18,741 - __main__ - INFO - ✅ Все сервисы инициализированы
+2026-02-10 22:01:19,560 - aiogram.dispatcher - INFO - Start polling
+2026-02-10 22:01:19,616 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 22:01:46,715 - aiogram.event - INFO - Update id=897835541 is handled. Duration 1122 ms by bot id=8201932079
+2026-02-10 22:11:04,151 - aiogram.dispatcher - INFO - Polling stopped
+2026-02-10 22:11:04,152 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-02-10 22:11:04,152 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-02-10 22:11:04,414 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 22:11:10,259 - __main__ - INFO - 🚀 Инициализация сервисов...
+2026-02-10 22:11:10,259 - __main__ - INFO - 🗄️ Инициализация пула соединений БД...
+2026-02-10 22:11:10,317 - app.services.database_pool - INFO - Database pool initialized: pool_size=5, max_overflow=10
+2026-02-10 22:11:10,322 - __main__ - INFO - 🔄 Запуск миграций базы данных...
+2026-02-10 22:11:10,322 - app.storage.migrations - INFO - Running database migrations...
+2026-02-10 22:11:10,323 - app.storage.migrations - INFO - Column 'operation_chain_json' already exists. Skipping migration.
+2026-02-10 22:11:10,323 - app.storage.migrations - INFO - All migrations completed
+2026-02-10 22:11:10,323 - __main__ - INFO - ✅ Миграции выполнены успешно
+2026-02-10 22:11:10,323 - __main__ - INFO - 💾 Инициализация репозитория контекста...
+2026-02-10 22:11:10,324 - __main__ - INFO - 📚 Загрузка базы знаний...
+2026-02-10 22:11:10,324 - app.services.knowledge_service - INFO - Loading knowledge base...
+2026-02-10 22:11:10,325 - app.services.knowledge_service - INFO - Knowledge base loaded: 4 materials, 2 tools, 3 machines
+2026-02-10 22:11:10,325 - __main__ - INFO - 📸 Инициализация парсера изображений...
+2026-02-10 22:11:10,325 - app.core.image_parser - WARNING - ⚠️ Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-10 22:11:10,325 - app.core.image_parser - INFO - 💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH
+2026-02-10 22:11:10,325 - __main__ - WARNING - ⚠️ OCR недоступен (Tesseract не найден или не настроен)
+2026-02-10 22:11:10,325 - __main__ - INFO - 📨 Инициализация обработчика сообщений...
+2026-02-10 22:11:10,325 - app.core.image_parser - WARNING - ⚠️ Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-10 22:11:10,325 - app.core.image_parser - INFO - 💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH
+2026-02-10 22:11:10,326 - app.services.standard_service - INFO - Loaded 0 standards
+2026-02-10 22:11:10,470 - app.knowledge.internet_parser.browser_parser - WARNING - requests/beautifulsoup4 not available. Install: pip install requests beautifulsoup4
+2026-02-10 22:11:10,470 - __main__ - INFO - ✅ Все сервисы инициализированы
+2026-02-10 22:11:13,144 - aiogram.dispatcher - INFO - Start polling
+2026-02-10 22:11:13,631 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-10 22:11:33,724 - aiogram.event - INFO - Update id=897835542 is handled. Duration 732 ms by bot id=8201932079
+2026-02-10 22:16:15,296 - app.core.conversation_orchestrator - INFO - Intent detected: noise (confidence: 0.30)
+2026-02-10 22:16:15,297 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=noise, fsm_enabled=False
+2026-02-10 22:16:15,492 - aiogram.event - INFO - Update id=897835543 is handled. Duration 217 ms by bot id=8201932079
+2026-02-10 22:16:23,148 - app.core.conversation_orchestrator - INFO - Intent detected: engineering (confidence: 0.80)
+2026-02-10 22:16:23,149 - app.bot.handler - INFO - Orchestrator decision: mode=engineering, action=engineering, fsm_enabled=True
+2026-02-10 22:16:23,998 - aiogram.event - INFO - Update id=897835544 is handled. Duration 851 ms by bot id=8201932079
+2026-02-10 23:46:09,694 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ClientOSError: [WinError 121] Превышен таймаут семафора
+2026-02-10 23:46:09,694 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-02-10 23:47:21,332 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - Request timeout error
+2026-02-10 23:47:21,332 - aiogram.dispatcher - WARNING - Sleep for 1.259878 seconds and try again... (tryings = 1, bot id = 8201932079)
+2026-02-10 23:47:33,158 - aiogram.dispatcher - INFO - Connection established (tryings = 2, bot id = 8201932079)
+2026-02-10 23:56:18,327 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - Request timeout error
+2026-02-10 23:56:18,327 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-02-10 23:56:30,121 - aiogram.dispatcher - INFO - Connection established (tryings = 1, bot id = 8201932079)
+2026-02-11 00:06:49,427 - app.core.conversation_orchestrator - INFO - Intent detected: engineering (confidence: 0.80)
+2026-02-11 00:06:49,427 - app.bot.handler - INFO - Orchestrator decision: mode=engineering, action=engineering, fsm_enabled=True
+2026-02-11 00:06:49,939 - aiogram.event - INFO - Update id=897835545 is handled. Duration 514 ms by bot id=8201932079
+2026-02-11 00:06:57,033 - app.core.conversation_orchestrator - INFO - Intent detected: noise (confidence: 0.30)
+2026-02-11 00:06:57,033 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=noise, fsm_enabled=False
+2026-02-11 00:06:57,577 - aiogram.event - INFO - Update id=897835546 is handled. Duration 543 ms by bot id=8201932079
+2026-02-11 00:07:02,600 - app.core.conversation_orchestrator - INFO - Intent detected: noise (confidence: 0.30)
+2026-02-11 00:07:02,600 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=noise, fsm_enabled=False
+2026-02-11 00:07:03,122 - aiogram.event - INFO - Update id=897835547 is handled. Duration 522 ms by bot id=8201932079
+2026-02-11 00:07:19,082 - aiogram.dispatcher - INFO - Polling stopped
+2026-02-11 00:07:19,083 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-02-11 00:07:19,084 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-02-11 00:07:19,342 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-13 11:51:04,349 - __main__ - INFO - 🚀 Инициализация сервисов...
+2026-02-13 11:51:04,349 - __main__ - INFO - 🗄️ Инициализация пула соединений БД...
+2026-02-13 11:51:04,446 - app.services.database_pool - INFO - Database pool initialized: pool_size=5, max_overflow=10
+2026-02-13 11:51:04,480 - __main__ - INFO - 🔄 Запуск миграций базы данных...
+2026-02-13 11:51:04,480 - app.storage.migrations - INFO - Running database migrations...
+2026-02-13 11:51:04,482 - app.storage.migrations - INFO - Column 'operation_chain_json' already exists. Skipping migration.
+2026-02-13 11:51:04,482 - app.storage.migrations - INFO - All migrations completed
+2026-02-13 11:51:04,482 - __main__ - INFO - ✅ Миграции выполнены успешно
+2026-02-13 11:51:04,483 - __main__ - INFO - 💾 Инициализация репозитория контекста...
+2026-02-13 11:51:04,485 - __main__ - INFO - 📚 Загрузка базы знаний...
+2026-02-13 11:51:04,485 - app.services.knowledge_service - INFO - Loading knowledge base...
+2026-02-13 11:51:04,486 - app.services.knowledge_service - INFO - Knowledge base loaded: 4 materials, 2 tools, 3 machines
+2026-02-13 11:51:04,486 - __main__ - INFO - 📸 Инициализация парсера изображений...
+2026-02-13 11:51:04,487 - app.core.image_parser - WARNING - ⚠️ Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-13 11:51:04,487 - app.core.image_parser - INFO - 💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH
+2026-02-13 11:51:04,487 - __main__ - WARNING - ⚠️ OCR недоступен (Tesseract не найден или не настроен)
+2026-02-13 11:51:04,487 - __main__ - INFO - 📨 Инициализация обработчика сообщений...
+2026-02-13 11:51:04,487 - app.core.image_parser - WARNING - ⚠️ Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-13 11:51:04,487 - app.core.image_parser - INFO - 💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH
+2026-02-13 11:51:04,489 - app.services.standard_service - INFO - Loaded 0 standards
+2026-02-13 11:51:04,776 - app.knowledge.internet_parser.browser_parser - WARNING - requests/beautifulsoup4 not available. Install: pip install requests beautifulsoup4
+2026-02-13 11:51:04,776 - __main__ - INFO - ✅ Все сервисы инициализированы
+2026-02-13 11:51:05,525 - aiogram.dispatcher - INFO - Start polling
+2026-02-13 11:51:05,736 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-13 11:51:06,946 - aiogram.event - INFO - Update id=897835549 is not handled. Duration 792 ms by bot id=8201932079
+2026-02-13 11:51:06,946 - aiogram.event - ERROR - Cause exception while process update id=897835549 by bot id=8201932079
+TelegramForbiddenError: Telegram server says - Forbidden: bot was blocked by the user
+Traceback (most recent call last):
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\dispatcher.py", line 320, in _process_update
+    response = await self.feed_update(bot, update, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\dispatcher.py", line 164, in feed_update
+    response = await self.update.wrap_outer_middleware(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\middlewares\error.py", line 27, in __call__
+    return await handler(event, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\middlewares\user_context.py", line 58, in __call__
+    return await handler(event, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\fsm\middleware.py", line 43, in __call__
+    return await handler(event, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\event\telegram.py", line 126, in trigger
+    return await wrapped_inner(event, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\event\handler.py", line 71, in call
+    return await wrapped()
+           ^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\dispatcher.py", line 283, in _listen_update
+    return await self.propagate_event(update_type=update_type, event=event, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\router.py", line 161, in propagate_event
+    return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\router.py", line 153, in _wrapped
+    return await self._propagate_event(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\router.py", line 181, in _propagate_event
+    response = await observer.trigger(event, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\event\telegram.py", line 126, in trigger
+    return await wrapped_inner(event, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\event\handler.py", line 71, in call
+    return await wrapped()
+           ^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\app\bot\telegram_bot.py", line 429, in cmd_start
+    await message.answer(welcome_text)
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\methods\base.py", line 82, in emit
+    return await bot(self)
+           ^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\client\bot.py", line 484, in __call__
+    return await self.session(self, method, timeout=request_timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\client\session\base.py", line 259, in __call__
+    return cast(TelegramType, await middleware(bot, method))
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\client\session\aiohttp.py", line 177, in make_request
+    response = self.check_response(
+        bot=bot,
+    ...<2 lines>...
+        content=raw_result,
+    )
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\client\session\base.py", line 129, in check_response
+    raise TelegramForbiddenError(method=method, message=description)
+aiogram.exceptions.TelegramForbiddenError: Telegram server says - Forbidden: bot was blocked by the user
+2026-02-13 11:51:07,155 - aiogram.event - INFO - Update id=897835548 is not handled. Duration 1172 ms by bot id=8201932079
+2026-02-13 11:51:07,156 - aiogram.event - ERROR - Cause exception while process update id=897835548 by bot id=8201932079
+TelegramForbiddenError: Telegram server says - Forbidden: bot was blocked by the user
+Traceback (most recent call last):
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\dispatcher.py", line 320, in _process_update
+    response = await self.feed_update(bot, update, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\dispatcher.py", line 164, in feed_update
+    response = await self.update.wrap_outer_middleware(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\middlewares\error.py", line 27, in __call__
+    return await handler(event, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\middlewares\user_context.py", line 58, in __call__
+    return await handler(event, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\fsm\middleware.py", line 43, in __call__
+    return await handler(event, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\event\telegram.py", line 126, in trigger
+    return await wrapped_inner(event, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\event\handler.py", line 71, in call
+    return await wrapped()
+           ^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\dispatcher.py", line 283, in _listen_update
+    return await self.propagate_event(update_type=update_type, event=event, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\router.py", line 161, in propagate_event
+    return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\router.py", line 153, in _wrapped
+    return await self._propagate_event(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\router.py", line 181, in _propagate_event
+    response = await observer.trigger(event, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\event\telegram.py", line 126, in trigger
+    return await wrapped_inner(event, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\event\handler.py", line 71, in call
+    return await wrapped()
+           ^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\app\bot\telegram_bot.py", line 429, in cmd_start
+    await message.answer(welcome_text)
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\methods\base.py", line 82, in emit
+    return await bot(self)
+           ^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\client\bot.py", line 484, in __call__
+    return await self.session(self, method, timeout=request_timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\client\session\base.py", line 259, in __call__
+    return cast(TelegramType, await middleware(bot, method))
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\client\session\aiohttp.py", line 177, in make_request
+    response = self.check_response(
+        bot=bot,
+    ...<2 lines>...
+        content=raw_result,
+    )
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\client\session\base.py", line 129, in check_response
+    raise TelegramForbiddenError(method=method, message=description)
+aiogram.exceptions.TelegramForbiddenError: Telegram server says - Forbidden: bot was blocked by the user
+2026-02-13 11:51:14,321 - aiogram.event - INFO - Update id=897835550 is handled. Duration 274 ms by bot id=8201932079
+2026-02-13 11:51:24,979 - aiogram.event - INFO - Update id=897835551 is handled. Duration 299 ms by bot id=8201932079
+2026-02-13 11:51:33,000 - app.core.conversation_orchestrator - INFO - Command detected: work_load
+2026-02-13 11:51:33,001 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=work_load, fsm_enabled=False
+2026-02-13 11:51:33,305 - aiogram.event - INFO - Update id=897835552 is handled. Duration 325 ms by bot id=8201932079
+2026-02-13 11:51:37,866 - app.core.conversation_orchestrator - INFO - Intent detected: noise (confidence: 0.30)
+2026-02-13 11:51:37,866 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=noise, fsm_enabled=False
+2026-02-13 11:51:38,157 - aiogram.event - INFO - Update id=897835553 is handled. Duration 299 ms by bot id=8201932079
+2026-02-13 12:02:16,050 - aiogram.dispatcher - INFO - Polling stopped
+2026-02-13 12:02:16,051 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-02-13 12:02:16,051 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-02-13 12:02:16,314 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-13 12:02:20,174 - __main__ - INFO - 🚀 Инициализация сервисов...
+2026-02-13 12:02:20,175 - __main__ - INFO - 🗄️ Инициализация пула соединений БД...
+2026-02-13 12:02:20,187 - app.services.database_pool - INFO - Database pool initialized: pool_size=5, max_overflow=10
+2026-02-13 12:02:20,190 - __main__ - INFO - 🔄 Запуск миграций базы данных...
+2026-02-13 12:02:20,190 - app.storage.migrations - INFO - Running database migrations...
+2026-02-13 12:02:20,191 - app.storage.migrations - INFO - Column 'operation_chain_json' already exists. Skipping migration.
+2026-02-13 12:02:20,191 - app.storage.migrations - INFO - All migrations completed
+2026-02-13 12:02:20,191 - __main__ - INFO - ✅ Миграции выполнены успешно
+2026-02-13 12:02:20,192 - __main__ - INFO - 💾 Инициализация репозитория контекста...
+2026-02-13 12:02:20,192 - __main__ - INFO - 📚 Загрузка базы знаний...
+2026-02-13 12:02:20,192 - app.services.knowledge_service - INFO - Loading knowledge base...
+2026-02-13 12:02:20,193 - app.services.knowledge_service - INFO - Knowledge base loaded: 4 materials, 2 tools, 3 machines
+2026-02-13 12:02:20,193 - __main__ - INFO - 📸 Инициализация парсера изображений...
+2026-02-13 12:02:20,193 - app.core.image_parser - WARNING - ⚠️ Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-13 12:02:20,193 - app.core.image_parser - INFO - 💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH
+2026-02-13 12:02:20,193 - __main__ - WARNING - ⚠️ OCR недоступен (Tesseract не найден или не настроен)
+2026-02-13 12:02:20,193 - __main__ - INFO - 📨 Инициализация обработчика сообщений...
+2026-02-13 12:02:20,193 - app.core.image_parser - WARNING - ⚠️ Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-13 12:02:20,193 - app.core.image_parser - INFO - 💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH
+2026-02-13 12:02:20,194 - app.services.standard_service - INFO - Loaded 0 standards
+2026-02-13 12:02:20,287 - app.knowledge.internet_parser.browser_parser - WARNING - requests/beautifulsoup4 not available. Install: pip install requests beautifulsoup4
+2026-02-13 12:02:20,287 - __main__ - INFO - ✅ Все сервисы инициализированы
+2026-02-13 12:02:20,993 - aiogram.dispatcher - INFO - Start polling
+2026-02-13 12:02:21,210 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-13 12:02:32,096 - aiogram.event - INFO - Update id=897835554 is handled. Duration 939 ms by bot id=8201932079
+2026-02-13 12:02:40,750 - aiogram.event - INFO - Update id=897835555 is handled. Duration 357 ms by bot id=8201932079
+2026-02-13 12:02:46,252 - app.core.conversation_orchestrator - INFO - Command detected: work_load
+2026-02-13 12:02:46,252 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=work_load, fsm_enabled=False
+2026-02-13 12:02:46,553 - aiogram.event - INFO - Update id=897835556 is handled. Duration 306 ms by bot id=8201932079
+2026-02-13 12:02:51,409 - app.core.conversation_orchestrator - INFO - Intent detected: noise (confidence: 0.30)
+2026-02-13 12:02:51,409 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=noise, fsm_enabled=False
+2026-02-13 12:02:51,410 - aiogram.event - INFO - Update id=897835557 is handled. Duration 234 ms by bot id=8201932079
+2026-02-13 12:02:53,660 - app.core.conversation_orchestrator - INFO - Intent detected: noise (confidence: 0.30)
+2026-02-13 12:02:53,661 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=noise, fsm_enabled=False
+2026-02-13 12:02:53,661 - aiogram.event - INFO - Update id=897835558 is handled. Duration 260 ms by bot id=8201932079
+2026-02-13 12:03:02,844 - app.core.conversation_orchestrator - INFO - Intent detected: noise (confidence: 0.30)
+2026-02-13 12:03:02,844 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=noise, fsm_enabled=False
+2026-02-13 12:03:02,845 - aiogram.event - INFO - Update id=897835559 is handled. Duration 344 ms by bot id=8201932079
+2026-02-13 12:03:03,949 - app.core.conversation_orchestrator - INFO - Intent detected: noise (confidence: 0.30)
+2026-02-13 12:03:03,949 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=noise, fsm_enabled=False
+2026-02-13 12:03:03,949 - aiogram.event - INFO - Update id=897835560 is handled. Duration 263 ms by bot id=8201932079
+2026-02-13 12:03:04,680 - app.core.conversation_orchestrator - INFO - Intent detected: noise (confidence: 0.30)
+2026-02-13 12:03:04,680 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=noise, fsm_enabled=False
+2026-02-13 12:03:04,680 - aiogram.event - INFO - Update id=897835561 is handled. Duration 328 ms by bot id=8201932079
+2026-02-13 12:03:05,248 - app.core.conversation_orchestrator - INFO - Intent detected: noise (confidence: 0.30)
+2026-02-13 12:03:05,248 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=noise, fsm_enabled=False
+2026-02-13 12:03:05,248 - aiogram.event - INFO - Update id=897835562 is handled. Duration 238 ms by bot id=8201932079
+2026-02-13 12:03:08,846 - app.core.conversation_orchestrator - INFO - Intent detected: noise (confidence: 0.30)
+2026-02-13 12:03:08,847 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=noise, fsm_enabled=False
+2026-02-13 12:03:09,137 - aiogram.event - INFO - Update id=897835563 is handled. Duration 291 ms by bot id=8201932079
+2026-02-13 12:03:10,946 - app.core.conversation_orchestrator - INFO - Intent detected: noise (confidence: 0.30)
+2026-02-13 12:03:10,946 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=noise, fsm_enabled=False
+2026-02-13 12:03:10,947 - aiogram.event - INFO - Update id=897835564 is handled. Duration 283 ms by bot id=8201932079
+2026-02-13 12:05:21,885 - aiogram.dispatcher - INFO - Polling stopped
+2026-02-13 12:05:21,886 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-02-13 12:05:21,886 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-02-13 12:05:24,820 - __main__ - INFO - 🚀 Инициализация сервисов...
+2026-02-13 12:05:24,820 - __main__ - INFO - 🗄️ Инициализация пула соединений БД...
+2026-02-13 12:05:24,831 - app.services.database_pool - INFO - Database pool initialized: pool_size=5, max_overflow=10
+2026-02-13 12:05:24,835 - __main__ - INFO - 🔄 Запуск миграций базы данных...
+2026-02-13 12:05:24,835 - app.storage.migrations - INFO - Running database migrations...
+2026-02-13 12:05:24,836 - app.storage.migrations - INFO - Column 'operation_chain_json' already exists. Skipping migration.
+2026-02-13 12:05:24,836 - app.storage.migrations - INFO - All migrations completed
+2026-02-13 12:05:24,836 - __main__ - INFO - ✅ Миграции выполнены успешно
+2026-02-13 12:05:24,836 - __main__ - INFO - 💾 Инициализация репозитория контекста...
+2026-02-13 12:05:24,837 - __main__ - INFO - 📚 Загрузка базы знаний...
+2026-02-13 12:05:24,837 - app.services.knowledge_service - INFO - Loading knowledge base...
+2026-02-13 12:05:24,837 - app.services.knowledge_service - INFO - Knowledge base loaded: 4 materials, 2 tools, 3 machines
+2026-02-13 12:05:24,837 - __main__ - INFO - 📸 Инициализация парсера изображений...
+2026-02-13 12:05:24,837 - app.core.image_parser - WARNING - ⚠️ Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-13 12:05:24,837 - app.core.image_parser - INFO - 💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH
+2026-02-13 12:05:24,837 - __main__ - WARNING - ⚠️ OCR недоступен (Tesseract не найден или не настроен)
+2026-02-13 12:05:24,837 - __main__ - INFO - 📨 Инициализация обработчика сообщений...
+2026-02-13 12:05:24,837 - app.core.image_parser - WARNING - ⚠️ Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-13 12:05:24,838 - app.core.image_parser - INFO - 💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH
+2026-02-13 12:05:24,838 - app.services.standard_service - INFO - Loaded 0 standards
+2026-02-13 12:05:24,917 - app.knowledge.internet_parser.browser_parser - WARNING - requests/beautifulsoup4 not available. Install: pip install requests beautifulsoup4
+2026-02-13 12:05:24,917 - __main__ - INFO - ✅ Все сервисы инициализированы
+2026-02-13 12:05:25,600 - aiogram.dispatcher - INFO - Start polling
+2026-02-13 12:05:25,804 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-13 12:05:31,572 - __main__ - INFO - Continue work button pressed by user 7173846851
+2026-02-13 12:05:31,591 - app.core.conversation_orchestrator - INFO - Intent detected: noise (confidence: 0.30)
+2026-02-13 12:05:31,591 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=noise, fsm_enabled=False
+2026-02-13 12:05:31,596 - aiogram.event - INFO - Update id=897835565 is handled. Duration 958 ms by bot id=8201932079
+2026-02-13 12:05:36,754 - aiogram.event - INFO - Update id=897835566 is handled. Duration 245 ms by bot id=8201932079
+2026-02-13 12:05:42,416 - aiogram.event - INFO - Update id=897835567 is handled. Duration 305 ms by bot id=8201932079
+2026-02-13 12:05:48,327 - app.core.conversation_orchestrator - INFO - Command detected: work_load
+2026-02-13 12:05:48,328 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=work_load, fsm_enabled=False
+2026-02-13 12:05:48,684 - aiogram.event - INFO - Update id=897835568 is handled. Duration 357 ms by bot id=8201932079
+2026-02-13 12:05:50,281 - __main__ - INFO - Continue work button pressed by user 7173846851
+2026-02-13 12:05:50,282 - app.core.conversation_orchestrator - INFO - Intent detected: noise (confidence: 0.30)
+2026-02-13 12:05:50,282 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=noise, fsm_enabled=False
+2026-02-13 12:05:50,282 - aiogram.event - INFO - Update id=897835569 is handled. Duration 218 ms by bot id=8201932079
+2026-02-13 12:05:51,943 - __main__ - INFO - Continue work button pressed by user 7173846851
+2026-02-13 12:05:51,943 - app.core.conversation_orchestrator - INFO - Intent detected: noise (confidence: 0.30)
+2026-02-13 12:05:51,943 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=noise, fsm_enabled=False
+2026-02-13 12:05:51,944 - aiogram.event - INFO - Update id=897835570 is handled. Duration 303 ms by bot id=8201932079
+2026-02-13 12:05:52,604 - __main__ - INFO - Continue work button pressed by user 7173846851
+2026-02-13 12:05:52,604 - app.core.conversation_orchestrator - INFO - Intent detected: noise (confidence: 0.30)
+2026-02-13 12:05:52,605 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=noise, fsm_enabled=False
+2026-02-13 12:05:52,605 - aiogram.event - INFO - Update id=897835571 is handled. Duration 216 ms by bot id=8201932079
+2026-02-13 12:05:53,529 - __main__ - INFO - Continue work button pressed by user 7173846851
+2026-02-13 12:05:53,529 - app.core.conversation_orchestrator - INFO - Intent detected: noise (confidence: 0.30)
+2026-02-13 12:05:53,529 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=noise, fsm_enabled=False
+2026-02-13 12:05:53,530 - aiogram.event - INFO - Update id=897835572 is handled. Duration 232 ms by bot id=8201932079
+2026-02-13 12:05:54,116 - __main__ - INFO - Continue work button pressed by user 7173846851
+2026-02-13 12:05:54,116 - app.core.conversation_orchestrator - INFO - Intent detected: noise (confidence: 0.30)
+2026-02-13 12:05:54,116 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=noise, fsm_enabled=False
+2026-02-13 12:05:54,116 - aiogram.event - INFO - Update id=897835573 is handled. Duration 225 ms by bot id=8201932079
+2026-02-13 12:05:58,414 - __main__ - INFO - Continue work button pressed by user 7173846851
+2026-02-13 12:05:58,415 - app.core.conversation_orchestrator - INFO - Intent detected: noise (confidence: 0.30)
+2026-02-13 12:05:58,415 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=noise, fsm_enabled=False
+2026-02-13 12:05:58,415 - aiogram.event - INFO - Update id=897835574 is handled. Duration 214 ms by bot id=8201932079
+2026-02-13 12:06:05,628 - app.core.conversation_orchestrator - INFO - Intent detected: noise (confidence: 0.30)
+2026-02-13 12:06:05,628 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=noise, fsm_enabled=False
+2026-02-13 12:06:05,907 - aiogram.event - INFO - Update id=897835575 is handled. Duration 279 ms by bot id=8201932079
+2026-02-13 12:06:30,250 - app.core.conversation_orchestrator - INFO - Intent detected: engineering (confidence: 0.80)
+2026-02-13 12:06:30,250 - app.bot.handler - INFO - Orchestrator decision: mode=engineering, action=engineering, fsm_enabled=True
+2026-02-13 12:06:30,251 - app.core.state_machine - INFO - State transition: SystemState.READY → SystemState.CALCULATED
+2026-02-13 12:06:30,258 - app.services.data_collector - ERROR - Error collecting interaction data: (sqlite3.OperationalError) no such column: experience_profiles.chain_operation_count
+[SQL: SELECT experience_profiles.user_id AS experience_profiles_user_id, experience_profiles.created_at AS experience_profiles_created_at, experience_profiles.updated_at AS experience_profiles_updated_at, experience_profiles.total_decisions AS experience_profiles_total_decisions, experience_profiles.adaptive_decisions AS experience_profiles_adaptive_decisions, experience_profiles.chain_operation_count AS experience_profiles_chain_operation_count, experience_profiles.avg_chain_length AS experience_profiles_avg_chain_length, experience_profiles.avg_rpm_coeff AS experience_profiles_avg_rpm_coeff, experience_profiles.avg_feed_coeff AS experience_profiles_avg_feed_coeff, experience_profiles.avg_ap_coeff AS experience_profiles_avg_ap_coeff, experience_profiles.material_adaptation_score AS experience_profiles_material_adaptation_score, experience_profiles.diameter_adaptation_score AS experience_profiles_diameter_adaptation_score, experience_profiles.operation_adaptation_score AS experience_profiles_operation_adaptation_score, experience_profiles.chain_adaptation_score AS experience_profiles_chain_adaptation_score, experience_profiles.risk_tolerance AS experience_profiles_risk_tolerance, experience_profiles.preferred_aggressiveness AS experience_profiles_preferred_aggressiveness, experience_profiles.preferred_chain_pattern_json AS experience_profiles_preferred_chain_pattern_json 
+FROM experience_profiles 
+WHERE experience_profiles.user_id = ?
+ LIMIT ? OFFSET ?]
+[parameters: ('7173846851', 1, 0)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+Traceback (most recent call last):
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.OperationalError: no such column: experience_profiles.chain_operation_count
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\projects\cnc-assistant\app\services\data_collector.py", line 96, in collect_interaction
+    decision = save_user_decision(
+        session=self.db_session,
+    ...<8 lines>...
+        full_context=context.to_dict()
+    )
+  File "C:\projects\cnc-assistant\app\storage\models.py", line 810, in save_user_decision
+    update_experience_profile(session, user_id, decision, operation_steps)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\app\storage\models.py", line 818, in update_experience_profile
+    profile = session.query(ExperienceProfile).filter_by(user_id=user_id).first()
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\orm\query.py", line 2759, in first
+    return self.limit(1)._iter().first()  # type: ignore
+           ~~~~~~~~~~~~~~~~~~~^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\orm\query.py", line 2857, in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                                  ~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+        params,
+        ^^^^^^^
+        execution_options={"_sa_orm_load_options": self.load_options},
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2351, in execute
+    return self._execute_internal(
+           ~~~~~~~~~~~~~~~~~~~~~~^
+        statement,
+        ^^^^^^^^^^
+    ...<4 lines>...
+        _add_event=_add_event,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2249, in _execute_internal
+    result: Result[Any] = compile_state_cls.orm_execute_statement(
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self,
+        ^^^^^
+    ...<4 lines>...
+        conn,
+        ^^^^^
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\orm\context.py", line 306, in orm_execute_statement
+    result = conn.execute(
+        statement, params or {}, execution_options=execution_options
+    )
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1419, in execute
+    return meth(
+        self,
+        distilled_parameters,
+        execution_options or NO_OPTIONS,
+    )
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\sql\elements.py", line 527, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self, distilled_params, execution_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1641, in _execute_clauseelement
+    ret = self._execute_context(
+        dialect,
+    ...<8 lines>...
+        cache_hit=cache_hit,
+    )
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        dialect, context, statement, parameters
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        e, str_statement, effective_parameters, cursor, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 2363, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) no such column: experience_profiles.chain_operation_count
+[SQL: SELECT experience_profiles.user_id AS experience_profiles_user_id, experience_profiles.created_at AS experience_profiles_created_at, experience_profiles.updated_at AS experience_profiles_updated_at, experience_profiles.total_decisions AS experience_profiles_total_decisions, experience_profiles.adaptive_decisions AS experience_profiles_adaptive_decisions, experience_profiles.chain_operation_count AS experience_profiles_chain_operation_count, experience_profiles.avg_chain_length AS experience_profiles_avg_chain_length, experience_profiles.avg_rpm_coeff AS experience_profiles_avg_rpm_coeff, experience_profiles.avg_feed_coeff AS experience_profiles_avg_feed_coeff, experience_profiles.avg_ap_coeff AS experience_profiles_avg_ap_coeff, experience_profiles.material_adaptation_score AS experience_profiles_material_adaptation_score, experience_profiles.diameter_adaptation_score AS experience_profiles_diameter_adaptation_score, experience_profiles.operation_adaptation_score AS experience_profiles_operation_adaptation_score, experience_profiles.chain_adaptation_score AS experience_profiles_chain_adaptation_score, experience_profiles.risk_tolerance AS experience_profiles_risk_tolerance, experience_profiles.preferred_aggressiveness AS experience_profiles_preferred_aggressiveness, experience_profiles.preferred_chain_pattern_json AS experience_profiles_preferred_chain_pattern_json 
+FROM experience_profiles 
+WHERE experience_profiles.user_id = ?
+ LIMIT ? OFFSET ?]
+[parameters: ('7173846851', 1, 0)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-02-13 12:06:31,189 - aiogram.event - INFO - Update id=897835576 is handled. Duration 939 ms by bot id=8201932079
+2026-02-13 12:07:07,346 - app.services.work_manager - INFO - Created work W004 for user 7173846851
+2026-02-13 12:07:07,635 - aiogram.event - INFO - Update id=897835577 is handled. Duration 545 ms by bot id=8201932079
+2026-02-13 12:09:59,993 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - Request timeout error
+2026-02-13 12:09:59,993 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-02-13 12:10:11,375 - aiogram.dispatcher - INFO - Connection established (tryings = 1, bot id = 8201932079)
+2026-02-13 13:29:32,995 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - Request timeout error
+2026-02-13 13:29:32,996 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-02-13 13:29:44,328 - aiogram.dispatcher - INFO - Connection established (tryings = 1, bot id = 8201932079)
+2026-02-13 14:21:42,308 - aiogram.dispatcher - INFO - Polling stopped
+2026-02-13 14:21:42,309 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-02-13 14:21:42,309 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-02-13 14:21:42,564 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-13 14:21:46,483 - __main__ - INFO - 🚀 Инициализация сервисов...
+2026-02-13 14:21:46,483 - __main__ - INFO - 🗄️ Инициализация пула соединений БД...
+2026-02-13 14:21:46,494 - app.services.database_pool - INFO - Database pool initialized: pool_size=5, max_overflow=10
+2026-02-13 14:21:46,498 - __main__ - INFO - 🔄 Запуск миграций базы данных...
+2026-02-13 14:21:46,498 - app.storage.migrations - INFO - Running database migrations...
+2026-02-13 14:21:46,498 - app.storage.migrations - INFO - Column 'operation_chain_json' already exists. Skipping migration.
+2026-02-13 14:21:46,499 - app.storage.migrations - INFO - All migrations completed
+2026-02-13 14:21:46,499 - __main__ - INFO - ✅ Миграции выполнены успешно
+2026-02-13 14:21:46,499 - __main__ - INFO - 💾 Инициализация репозитория контекста...
+2026-02-13 14:21:46,499 - __main__ - INFO - 📚 Загрузка базы знаний...
+2026-02-13 14:21:46,500 - app.services.knowledge_service - INFO - Loading knowledge base...
+2026-02-13 14:21:46,500 - app.services.knowledge_service - INFO - Knowledge base loaded: 4 materials, 2 tools, 3 machines
+2026-02-13 14:21:46,500 - __main__ - INFO - 📸 Инициализация парсера изображений...
+2026-02-13 14:21:46,500 - app.core.image_parser - WARNING - ⚠️ Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-13 14:21:46,500 - app.core.image_parser - INFO - 💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH
+2026-02-13 14:21:46,500 - __main__ - WARNING - ⚠️ OCR недоступен (Tesseract не найден или не настроен)
+2026-02-13 14:21:46,500 - __main__ - INFO - 📨 Инициализация обработчика сообщений...
+2026-02-13 14:21:46,500 - app.core.image_parser - WARNING - ⚠️ Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-13 14:21:46,500 - app.core.image_parser - INFO - 💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH
+2026-02-13 14:21:46,501 - app.services.standard_service - INFO - Loaded 0 standards
+2026-02-13 14:21:46,584 - app.knowledge.internet_parser.browser_parser - WARNING - requests/beautifulsoup4 not available. Install: pip install requests beautifulsoup4
+2026-02-13 14:21:46,584 - __main__ - INFO - ✅ Все сервисы инициализированы
+2026-02-13 14:21:47,007 - aiogram.dispatcher - INFO - Start polling
+2026-02-13 14:21:47,084 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-13 14:21:53,006 - aiogram.event - INFO - Update id=897835578 is handled. Duration 334 ms by bot id=8201932079
+2026-02-13 14:22:07,464 - aiogram.event - INFO - Update id=897835579 is not handled. Duration 3 ms by bot id=8201932079
+2026-02-13 14:22:07,464 - aiogram.event - ERROR - Cause exception while process update id=897835579 by bot id=8201932079
+AttributeError: 'TextParser' object has no attribute '_parse_tool_diameter'
+Traceback (most recent call last):
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\dispatcher.py", line 320, in _process_update
+    response = await self.feed_update(bot, update, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\dispatcher.py", line 164, in feed_update
+    response = await self.update.wrap_outer_middleware(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\middlewares\error.py", line 27, in __call__
+    return await handler(event, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\middlewares\user_context.py", line 58, in __call__
+    return await handler(event, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\fsm\middleware.py", line 43, in __call__
+    return await handler(event, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\event\telegram.py", line 126, in trigger
+    return await wrapped_inner(event, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\event\handler.py", line 71, in call
+    return await wrapped()
+           ^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\dispatcher.py", line 283, in _listen_update
+    return await self.propagate_event(update_type=update_type, event=event, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\router.py", line 161, in propagate_event
+    return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\router.py", line 153, in _wrapped
+    return await self._propagate_event(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\router.py", line 181, in _propagate_event
+    response = await observer.trigger(event, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\event\telegram.py", line 126, in trigger
+    return await wrapped_inner(event, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\event\handler.py", line 71, in call
+    return await wrapped()
+           ^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\app\bot\telegram_bot.py", line 1696, in handle_message
+    parsed_data = handler.parser.parse(user_text)
+  File "C:\projects\cnc-assistant\app\core\parser.py", line 194, in parse
+    parsed.tool_diameter = self._parse_tool_diameter(text_lower)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'TextParser' object has no attribute '_parse_tool_diameter'. Did you mean: '_parse_tool_name'?
+2026-02-13 14:22:21,652 - aiogram.dispatcher - INFO - Polling stopped
+2026-02-13 14:22:21,654 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-02-13 14:22:21,654 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-02-13 14:22:21,905 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-13 15:31:09,767 - __main__ - INFO - 🚀 Инициализация сервисов...
+2026-02-13 15:31:09,767 - __main__ - INFO - 🗄️ Инициализация пула соединений БД...
+2026-02-13 15:31:09,778 - app.services.database_pool - INFO - Database pool initialized: pool_size=5, max_overflow=10
+2026-02-13 15:31:09,782 - __main__ - INFO - 🔄 Запуск миграций базы данных...
+2026-02-13 15:31:09,782 - app.storage.migrations - INFO - Running database migrations...
+2026-02-13 15:31:09,783 - app.storage.migrations - INFO - Column 'operation_chain_json' already exists. Skipping migration.
+2026-02-13 15:31:09,783 - app.storage.migrations - INFO - All migrations completed
+2026-02-13 15:31:09,783 - __main__ - INFO - ✅ Миграции выполнены успешно
+2026-02-13 15:31:09,783 - __main__ - INFO - 💾 Инициализация репозитория контекста...
+2026-02-13 15:31:09,784 - __main__ - INFO - 📚 Загрузка базы знаний...
+2026-02-13 15:31:09,784 - app.services.knowledge_service - INFO - Loading knowledge base...
+2026-02-13 15:31:09,785 - app.services.knowledge_service - INFO - Knowledge base loaded: 4 materials, 2 tools, 3 machines
+2026-02-13 15:31:09,785 - __main__ - INFO - 📸 Инициализация парсера изображений...
+2026-02-13 15:31:09,785 - app.core.image_parser - WARNING - ⚠️ Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-13 15:31:09,785 - app.core.image_parser - INFO - 💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH
+2026-02-13 15:31:09,785 - __main__ - WARNING - ⚠️ OCR недоступен (Tesseract не найден или не настроен)
+2026-02-13 15:31:09,785 - __main__ - INFO - 📨 Инициализация обработчика сообщений...
+2026-02-13 15:31:09,785 - app.core.image_parser - WARNING - ⚠️ Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-13 15:31:09,785 - app.core.image_parser - INFO - 💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH
+2026-02-13 15:31:09,786 - app.services.standard_service - INFO - Loaded 0 standards
+2026-02-13 15:31:09,885 - app.knowledge.internet_parser.browser_parser - WARNING - requests/beautifulsoup4 not available. Install: pip install requests beautifulsoup4
+2026-02-13 15:31:09,885 - __main__ - INFO - ✅ Все сервисы инициализированы
+2026-02-13 15:31:10,443 - aiogram.dispatcher - INFO - Start polling
+2026-02-13 15:31:10,514 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-13 15:31:39,852 - aiogram.event - INFO - Update id=897835580 is handled. Duration 351 ms by bot id=8201932079
+2026-02-13 15:31:49,858 - aiogram.event - INFO - Update id=897835581 is not handled. Duration 3 ms by bot id=8201932079
+2026-02-13 15:31:49,858 - aiogram.event - ERROR - Cause exception while process update id=897835581 by bot id=8201932079
+AttributeError: 'TextParser' object has no attribute '_parse_tool_diameter'
+Traceback (most recent call last):
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\dispatcher.py", line 320, in _process_update
+    response = await self.feed_update(bot, update, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\dispatcher.py", line 164, in feed_update
+    response = await self.update.wrap_outer_middleware(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\middlewares\error.py", line 27, in __call__
+    return await handler(event, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\middlewares\user_context.py", line 58, in __call__
+    return await handler(event, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\fsm\middleware.py", line 43, in __call__
+    return await handler(event, data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\event\telegram.py", line 126, in trigger
+    return await wrapped_inner(event, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\event\handler.py", line 71, in call
+    return await wrapped()
+           ^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\dispatcher.py", line 283, in _listen_update
+    return await self.propagate_event(update_type=update_type, event=event, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\router.py", line 161, in propagate_event
+    return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\router.py", line 153, in _wrapped
+    return await self._propagate_event(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+    )
+    ^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\router.py", line 181, in _propagate_event
+    response = await observer.trigger(event, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\event\telegram.py", line 126, in trigger
+    return await wrapped_inner(event, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\.venv\Lib\site-packages\aiogram\dispatcher\event\handler.py", line 71, in call
+    return await wrapped()
+           ^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\app\bot\telegram_bot.py", line 1696, in handle_message
+    parsed_data = handler.parser.parse(user_text)
+  File "C:\projects\cnc-assistant\app\core\parser.py", line 194, in parse
+    parsed.tool_diameter = self._parse_tool_diameter(text_lower)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'TextParser' object has no attribute '_parse_tool_diameter'. Did you mean: '_parse_tool_name'?
+2026-02-13 15:39:00,269 - aiogram.dispatcher - INFO - Polling stopped
+2026-02-13 15:39:00,270 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-02-13 15:39:00,271 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-02-13 15:39:00,535 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-13 15:39:04,918 - __main__ - INFO - 🚀 Инициализация сервисов...
+2026-02-13 15:39:04,918 - __main__ - INFO - 🗄️ Инициализация пула соединений БД...
+2026-02-13 15:39:04,929 - app.services.database_pool - INFO - Database pool initialized: pool_size=5, max_overflow=10
+2026-02-13 15:39:04,933 - __main__ - INFO - 🔄 Запуск миграций базы данных...
+2026-02-13 15:39:04,933 - app.storage.migrations - INFO - Running database migrations...
+2026-02-13 15:39:04,934 - app.storage.migrations - INFO - Column 'operation_chain_json' already exists. Skipping migration.
+2026-02-13 15:39:04,934 - app.storage.migrations - INFO - All migrations completed
+2026-02-13 15:39:04,934 - __main__ - INFO - ✅ Миграции выполнены успешно
+2026-02-13 15:39:04,934 - __main__ - INFO - 💾 Инициализация репозитория контекста...
+2026-02-13 15:39:04,935 - __main__ - INFO - 📚 Загрузка базы знаний...
+2026-02-13 15:39:04,935 - app.services.knowledge_service - INFO - Loading knowledge base...
+2026-02-13 15:39:04,935 - app.services.knowledge_service - INFO - Knowledge base loaded: 4 materials, 2 tools, 3 machines
+2026-02-13 15:39:04,935 - __main__ - INFO - 📸 Инициализация парсера изображений...
+2026-02-13 15:39:04,935 - app.core.image_parser - WARNING - ⚠️ Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-13 15:39:04,936 - app.core.image_parser - INFO - 💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH
+2026-02-13 15:39:04,936 - __main__ - WARNING - ⚠️ OCR недоступен (Tesseract не найден или не настроен)
+2026-02-13 15:39:04,936 - __main__ - INFO - 📨 Инициализация обработчика сообщений...
+2026-02-13 15:39:04,936 - app.core.image_parser - WARNING - ⚠️ Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-13 15:39:04,936 - app.core.image_parser - INFO - 💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH
+2026-02-13 15:39:04,937 - app.services.standard_service - INFO - Loaded 0 standards
+2026-02-13 15:39:05,027 - app.knowledge.internet_parser.browser_parser - WARNING - requests/beautifulsoup4 not available. Install: pip install requests beautifulsoup4
+2026-02-13 15:39:05,027 - __main__ - INFO - ✅ Все сервисы инициализированы
+2026-02-13 15:39:05,313 - aiogram.dispatcher - INFO - Start polling
+2026-02-13 15:39:05,416 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-13 15:39:12,186 - aiogram.dispatcher - INFO - Polling stopped
+2026-02-13 15:39:12,187 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-02-13 15:39:12,187 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-02-13 15:39:12,452 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-13 15:41:38,262 - __main__ - INFO - 🚀 Инициализация сервисов...
+2026-02-13 15:41:38,262 - __main__ - INFO - 🗄️ Инициализация пула соединений БД...
+2026-02-13 15:41:38,277 - app.services.database_pool - INFO - Database pool initialized: pool_size=5, max_overflow=10
+2026-02-13 15:41:38,282 - __main__ - INFO - 🔄 Запуск миграций базы данных...
+2026-02-13 15:41:38,282 - app.storage.migrations - INFO - Running database migrations...
+2026-02-13 15:41:38,283 - app.storage.migrations - INFO - Column 'operation_chain_json' already exists. Skipping migration.
+2026-02-13 15:41:38,283 - app.storage.migrations - INFO - All migrations completed
+2026-02-13 15:41:38,283 - __main__ - INFO - ✅ Миграции выполнены успешно
+2026-02-13 15:41:38,284 - __main__ - INFO - 💾 Инициализация репозитория контекста...
+2026-02-13 15:41:38,285 - __main__ - INFO - 📚 Загрузка базы знаний...
+2026-02-13 15:41:38,285 - app.services.knowledge_service - INFO - Loading knowledge base...
+2026-02-13 15:41:38,285 - app.services.knowledge_service - INFO - Knowledge base loaded: 4 materials, 2 tools, 3 machines
+2026-02-13 15:41:38,286 - __main__ - INFO - 📸 Инициализация парсера изображений...
+2026-02-13 15:41:38,286 - app.core.image_parser - WARNING - ⚠️ Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-13 15:41:38,286 - app.core.image_parser - INFO - 💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH
+2026-02-13 15:41:38,286 - __main__ - WARNING - ⚠️ OCR недоступен (Tesseract не найден или не настроен)
+2026-02-13 15:41:38,286 - __main__ - INFO - 📨 Инициализация обработчика сообщений...
+2026-02-13 15:41:38,286 - app.core.image_parser - WARNING - ⚠️ Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-13 15:41:38,286 - app.core.image_parser - INFO - 💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH
+2026-02-13 15:41:38,287 - app.services.standard_service - INFO - Loaded 0 standards
+2026-02-13 15:41:38,434 - app.knowledge.internet_parser.browser_parser - WARNING - requests/beautifulsoup4 not available. Install: pip install requests beautifulsoup4
+2026-02-13 15:41:38,434 - __main__ - INFO - ✅ Все сервисы инициализированы
+2026-02-13 15:41:38,770 - aiogram.dispatcher - INFO - Start polling
+2026-02-13 15:41:38,839 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-13 15:41:48,080 - aiogram.event - INFO - Update id=897835582 is handled. Duration 1305 ms by bot id=8201932079
+2026-02-13 15:41:52,405 - app.core.conversation_orchestrator - INFO - Intent detected: noise (confidence: 0.30)
+2026-02-13 15:41:52,405 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=noise, fsm_enabled=False
+2026-02-13 15:41:52,571 - aiogram.event - INFO - Update id=897835583 is handled. Duration 176 ms by bot id=8201932079
+2026-02-13 15:42:01,793 - app.core.conversation_orchestrator - INFO - Intent detected: noise (confidence: 0.30)
+2026-02-13 15:42:01,794 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=noise, fsm_enabled=False
+2026-02-13 15:42:01,972 - aiogram.event - INFO - Update id=897835584 is handled. Duration 178 ms by bot id=8201932079
+2026-02-13 15:44:11,534 - aiogram.dispatcher - INFO - Polling stopped
+2026-02-13 15:44:11,535 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-02-13 15:44:11,536 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-02-13 15:44:11,790 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-13 15:44:15,679 - __main__ - INFO - 🚀 Инициализация сервисов...
+2026-02-13 15:44:15,680 - __main__ - INFO - 🗄️ Инициализация пула соединений БД...
+2026-02-13 15:44:15,692 - app.services.database_pool - INFO - Database pool initialized: pool_size=5, max_overflow=10
+2026-02-13 15:44:15,695 - __main__ - INFO - 🔄 Запуск миграций базы данных...
+2026-02-13 15:44:15,695 - app.storage.migrations - INFO - Running database migrations...
+2026-02-13 15:44:15,696 - app.storage.migrations - INFO - Column 'operation_chain_json' already exists. Skipping migration.
+2026-02-13 15:44:15,696 - app.storage.migrations - INFO - All migrations completed
+2026-02-13 15:44:15,696 - __main__ - INFO - ✅ Миграции выполнены успешно
+2026-02-13 15:44:15,696 - __main__ - INFO - 💾 Инициализация репозитория контекста...
+2026-02-13 15:44:15,697 - __main__ - INFO - 📚 Загрузка базы знаний...
+2026-02-13 15:44:15,697 - app.services.knowledge_service - INFO - Loading knowledge base...
+2026-02-13 15:44:15,697 - app.services.knowledge_service - INFO - Knowledge base loaded: 4 materials, 2 tools, 3 machines
+2026-02-13 15:44:15,698 - __main__ - INFO - 📸 Инициализация парсера изображений...
+2026-02-13 15:44:15,698 - app.core.image_parser - WARNING - ⚠️ Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-13 15:44:15,698 - app.core.image_parser - INFO - 💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH
+2026-02-13 15:44:15,698 - __main__ - WARNING - ⚠️ OCR недоступен (Tesseract не найден или не настроен)
+2026-02-13 15:44:15,698 - __main__ - INFO - 📨 Инициализация обработчика сообщений...
+2026-02-13 15:44:15,698 - app.core.image_parser - WARNING - ⚠️ Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-13 15:44:15,698 - app.core.image_parser - INFO - 💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH
+2026-02-13 15:44:15,699 - app.services.standard_service - INFO - Loaded 0 standards
+2026-02-13 15:44:15,781 - app.knowledge.internet_parser.browser_parser - WARNING - requests/beautifulsoup4 not available. Install: pip install requests beautifulsoup4
+2026-02-13 15:44:15,781 - __main__ - INFO - ✅ Все сервисы инициализированы
+2026-02-13 15:44:16,079 - aiogram.dispatcher - INFO - Start polling
+2026-02-13 15:44:16,143 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-13 15:44:20,579 - aiogram.event - INFO - Update id=897835585 is handled. Duration 644 ms by bot id=8201932079
+2026-02-13 15:44:25,636 - app.services.machine_saver - INFO - Saved unknown machine: nef500 (ID: 5)
+2026-02-13 15:44:25,749 - aiogram.event - INFO - Update id=897835586 is handled. Duration 127 ms by bot id=8201932079
+2026-02-13 15:44:39,237 - app.core.conversation_orchestrator - INFO - Intent detected: noise (confidence: 0.30)
+2026-02-13 15:44:39,237 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=noise, fsm_enabled=False
+2026-02-13 15:44:39,237 - app.bot.handler - INFO - Affirmative response detected with context data, activating FSM
+2026-02-13 15:44:39,429 - aiogram.event - INFO - Update id=897835587 is handled. Duration 195 ms by bot id=8201932079
+2026-02-13 15:48:14,142 - aiogram.dispatcher - INFO - Polling stopped
+2026-02-13 15:48:14,143 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-02-13 15:48:14,144 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-02-13 15:48:14,404 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-13 15:48:19,848 - __main__ - INFO - 🚀 Инициализация сервисов...
+2026-02-13 15:48:19,848 - __main__ - INFO - 🗄️ Инициализация пула соединений БД...
+2026-02-13 15:48:19,859 - app.services.database_pool - INFO - Database pool initialized: pool_size=5, max_overflow=10
+2026-02-13 15:48:19,862 - __main__ - INFO - 🔄 Запуск миграций базы данных...
+2026-02-13 15:48:19,862 - app.storage.migrations - INFO - Running database migrations...
+2026-02-13 15:48:19,863 - app.storage.migrations - INFO - Column 'operation_chain_json' already exists. Skipping migration.
+2026-02-13 15:48:19,863 - app.storage.migrations - INFO - All migrations completed
+2026-02-13 15:48:19,863 - __main__ - INFO - ✅ Миграции выполнены успешно
+2026-02-13 15:48:19,863 - __main__ - INFO - 💾 Инициализация репозитория контекста...
+2026-02-13 15:48:19,864 - __main__ - INFO - 📚 Загрузка базы знаний...
+2026-02-13 15:48:19,864 - app.services.knowledge_service - INFO - Loading knowledge base...
+2026-02-13 15:48:19,865 - app.services.knowledge_service - INFO - Knowledge base loaded: 4 materials, 2 tools, 3 machines
+2026-02-13 15:48:19,865 - __main__ - INFO - 📸 Инициализация парсера изображений...
+2026-02-13 15:48:19,865 - app.core.image_parser - WARNING - ⚠️ Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-13 15:48:19,865 - app.core.image_parser - INFO - 💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH
+2026-02-13 15:48:19,865 - __main__ - WARNING - ⚠️ OCR недоступен (Tesseract не найден или не настроен)
+2026-02-13 15:48:19,865 - __main__ - INFO - 📨 Инициализация обработчика сообщений...
+2026-02-13 15:48:19,865 - app.core.image_parser - WARNING - ⚠️ Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-13 15:48:19,865 - app.core.image_parser - INFO - 💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH
+2026-02-13 15:48:19,866 - app.services.standard_service - INFO - Loaded 0 standards
+2026-02-13 15:48:19,973 - app.knowledge.internet_parser.browser_parser - WARNING - requests/beautifulsoup4 not available. Install: pip install requests beautifulsoup4
+2026-02-13 15:48:19,973 - __main__ - INFO - ✅ Все сервисы инициализированы
+2026-02-13 15:48:20,270 - aiogram.dispatcher - INFO - Start polling
+2026-02-13 15:48:20,367 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-13 15:48:37,186 - app.core.conversation_orchestrator - INFO - Intent detected: noise (confidence: 0.30)
+2026-02-13 15:48:37,186 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=noise, fsm_enabled=False
+2026-02-13 15:48:37,805 - aiogram.event - INFO - Update id=897835588 is handled. Duration 649 ms by bot id=8201932079
+2026-02-13 15:48:40,817 - aiogram.event - INFO - Update id=897835589 is handled. Duration 0 ms by bot id=8201932079
+2026-02-13 15:48:54,254 - app.core.conversation_orchestrator - INFO - Intent detected: noise (confidence: 0.30)
+2026-02-13 15:48:54,254 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=noise, fsm_enabled=False
+2026-02-13 15:48:54,445 - aiogram.event - INFO - Update id=897835590 is handled. Duration 192 ms by bot id=8201932079
+2026-02-13 15:49:04,244 - app.core.conversation_orchestrator - INFO - Intent detected: noise (confidence: 0.30)
+2026-02-13 15:49:04,244 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=noise, fsm_enabled=False
+2026-02-13 15:49:04,244 - app.bot.handler - INFO - Affirmative response detected with context data, activating FSM
+2026-02-13 15:49:04,377 - aiogram.event - INFO - Update id=897835591 is handled. Duration 134 ms by bot id=8201932079
+2026-02-13 15:49:10,124 - aiogram.event - INFO - Update id=897835592 is handled. Duration 307 ms by bot id=8201932079
+2026-02-13 15:49:17,737 - app.core.conversation_orchestrator - INFO - Intent detected: noise (confidence: 0.30)
+2026-02-13 15:49:17,737 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=noise, fsm_enabled=False
+2026-02-13 15:49:17,737 - aiogram.event - INFO - Update id=897835593 is handled. Duration 307 ms by bot id=8201932079
+2026-02-13 15:49:19,611 - aiogram.event - INFO - Update id=897835594 is handled. Duration 258 ms by bot id=8201932079
+2026-02-13 15:49:59,607 - app.core.conversation_orchestrator - INFO - Intent detected: noise (confidence: 0.30)
+2026-02-13 15:49:59,607 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=noise, fsm_enabled=False
+2026-02-13 15:49:59,733 - aiogram.event - INFO - Update id=897835595 is handled. Duration 126 ms by bot id=8201932079
+2026-02-13 15:50:14,779 - app.core.conversation_orchestrator - INFO - Intent detected: standard_part (confidence: 0.95)
+2026-02-13 15:50:14,779 - app.bot.handler - INFO - Orchestrator decision: mode=project, action=standard_part, fsm_enabled=True
+2026-02-13 15:50:14,883 - aiogram.event - INFO - Update id=897835596 is handled. Duration 103 ms by bot id=8201932079
+2026-02-13 15:50:26,527 - app.core.conversation_orchestrator - INFO - Intent detected: noise (confidence: 0.50)
+2026-02-13 15:50:26,527 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=noise, fsm_enabled=False
+2026-02-13 15:50:26,630 - aiogram.event - INFO - Update id=897835597 is handled. Duration 104 ms by bot id=8201932079
+2026-02-13 15:50:33,496 - app.core.conversation_orchestrator - INFO - Intent detected: noise (confidence: 0.50)
+2026-02-13 15:50:33,496 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=noise, fsm_enabled=False
+2026-02-13 15:50:33,777 - aiogram.event - INFO - Update id=897835598 is handled. Duration 281 ms by bot id=8201932079
+2026-02-13 15:50:39,166 - app.core.conversation_orchestrator - INFO - Intent detected: noise (confidence: 0.30)
+2026-02-13 15:50:39,166 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=noise, fsm_enabled=False
+2026-02-13 15:50:39,271 - aiogram.event - INFO - Update id=897835599 is handled. Duration 104 ms by bot id=8201932079
+2026-02-13 15:50:54,626 - app.core.conversation_orchestrator - INFO - Intent detected: noise (confidence: 0.70)
+2026-02-13 15:50:54,626 - app.bot.handler - INFO - Orchestrator decision: mode=chat, action=noise, fsm_enabled=False
+2026-02-13 15:50:54,719 - aiogram.event - INFO - Update id=897835600 is handled. Duration 93 ms by bot id=8201932079
+2026-02-13 15:55:08,367 - aiogram.dispatcher - INFO - Polling stopped
+2026-02-13 15:55:08,368 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-02-13 15:55:08,369 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-02-13 15:55:08,622 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-13 15:55:13,490 - __main__ - INFO - 🚀 Инициализация сервисов...
+2026-02-13 15:55:13,490 - __main__ - INFO - 🗄️ Инициализация пула соединений БД...
+2026-02-13 15:55:13,504 - app.services.database_pool - INFO - Database pool initialized: pool_size=5, max_overflow=10
+2026-02-13 15:55:13,508 - __main__ - INFO - 🔄 Запуск миграций базы данных...
+2026-02-13 15:55:13,508 - app.storage.migrations - INFO - Running database migrations...
+2026-02-13 15:55:13,509 - app.storage.migrations - INFO - Column 'operation_chain_json' already exists. Skipping migration.
+2026-02-13 15:55:13,509 - app.storage.migrations - INFO - All migrations completed
+2026-02-13 15:55:13,509 - __main__ - INFO - ✅ Миграции выполнены успешно
+2026-02-13 15:55:13,509 - __main__ - INFO - 💾 Инициализация репозитория контекста...
+2026-02-13 15:55:13,510 - __main__ - INFO - 📚 Загрузка базы знаний...
+2026-02-13 15:55:13,510 - app.services.knowledge_service - INFO - Loading knowledge base...
+2026-02-13 15:55:13,511 - app.services.knowledge_service - INFO - Knowledge base loaded: 4 materials, 2 tools, 3 machines
+2026-02-13 15:55:13,511 - __main__ - INFO - 📸 Инициализация парсера изображений...
+2026-02-13 15:55:13,511 - app.core.image_parser - WARNING - ⚠️ Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-13 15:55:13,511 - app.core.image_parser - INFO - 💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH
+2026-02-13 15:55:13,511 - __main__ - WARNING - ⚠️ OCR недоступен (Tesseract не найден или не настроен)
+2026-02-13 15:55:13,511 - __main__ - INFO - 📨 Инициализация обработчика сообщений...
+2026-02-13 15:55:13,511 - app.core.image_parser - WARNING - ⚠️ Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-13 15:55:13,511 - app.core.image_parser - INFO - 💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH
+2026-02-13 15:55:13,512 - app.services.standard_service - INFO - Loaded 0 standards
+2026-02-13 15:55:13,609 - app.knowledge.internet_parser.browser_parser - WARNING - requests/beautifulsoup4 not available. Install: pip install requests beautifulsoup4
+2026-02-13 15:55:13,609 - __main__ - INFO - ✅ Все сервисы инициализированы
+2026-02-13 15:55:13,915 - aiogram.dispatcher - INFO - Start polling
+2026-02-13 15:55:13,990 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-13 16:03:45,772 - aiogram.dispatcher - INFO - Polling stopped
+2026-02-13 16:03:45,773 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-02-13 16:03:45,773 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-02-13 16:03:46,028 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-16 00:00:04,623 - __main__ - INFO - 🚀 Инициализация сервисов...
+2026-02-16 00:00:04,623 - __main__ - INFO - 🗄️ Инициализация пула соединений БД...
+2026-02-16 00:00:04,640 - app.services.database_pool - INFO - Database pool initialized: pool_size=5, max_overflow=10
+2026-02-16 00:00:04,650 - __main__ - INFO - 🔄 Запуск миграций базы данных...
+2026-02-16 00:00:04,650 - app.storage.migrations - INFO - Running database migrations...
+2026-02-16 00:00:04,651 - app.storage.migrations - INFO - Column 'operation_chain_json' already exists. Skipping migration.
+2026-02-16 00:00:04,651 - app.storage.migrations - INFO - All migrations completed
+2026-02-16 00:00:04,651 - __main__ - INFO - ✅ Миграции выполнены успешно
+2026-02-16 00:00:04,651 - __main__ - INFO - 💾 Инициализация репозитория контекста...
+2026-02-16 00:00:04,653 - __main__ - INFO - 📚 Загрузка базы знаний...
+2026-02-16 00:00:04,653 - app.services.knowledge_service - INFO - Loading knowledge base...
+2026-02-16 00:00:04,654 - app.services.knowledge_service - INFO - Knowledge base loaded: 4 materials, 2 tools, 3 machines
+2026-02-16 00:00:04,654 - __main__ - INFO - 📸 Инициализация парсера изображений...
+2026-02-16 00:00:04,654 - app.core.image_parser - WARNING - ⚠️ Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-16 00:00:04,654 - app.core.image_parser - INFO - 💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH
+2026-02-16 00:00:04,654 - __main__ - WARNING - ⚠️ OCR недоступен (Tesseract не найден или не настроен)
+2026-02-16 00:00:04,654 - __main__ - INFO - 📨 Инициализация обработчика сообщений...
+2026-02-16 00:00:04,654 - app.core.image_parser - WARNING - ⚠️ Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-16 00:00:04,654 - app.core.image_parser - INFO - 💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH
+2026-02-16 00:00:04,656 - app.services.standard_service - INFO - Loaded 0 standards
+2026-02-16 00:00:04,779 - app.knowledge.internet_parser.browser_parser - WARNING - requests/beautifulsoup4 not available. Install: pip install requests beautifulsoup4
+2026-02-16 00:00:04,780 - __main__ - INFO - ✅ Все сервисы инициализированы
+2026-02-16 00:00:07,606 - aiogram.dispatcher - INFO - Start polling
+2026-02-16 00:00:07,711 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-16 00:08:35,485 - aiogram.dispatcher - INFO - Polling stopped
+2026-02-16 00:08:35,485 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-02-16 00:08:35,486 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-02-16 00:08:35,747 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-16 00:08:39,297 - __main__ - INFO - 🚀 Инициализация сервисов...
+2026-02-16 00:08:39,297 - __main__ - INFO - 🗄️ Инициализация пула соединений БД...
+2026-02-16 00:08:39,308 - app.services.database_pool - INFO - Database pool initialized: pool_size=5, max_overflow=10
+2026-02-16 00:08:39,311 - __main__ - INFO - 🔄 Запуск миграций базы данных...
+2026-02-16 00:08:39,311 - app.storage.migrations - INFO - Running database migrations...
+2026-02-16 00:08:39,312 - app.storage.migrations - INFO - Column 'operation_chain_json' already exists. Skipping migration.
+2026-02-16 00:08:39,312 - app.storage.migrations - INFO - All migrations completed
+2026-02-16 00:08:39,312 - __main__ - INFO - ✅ Миграции выполнены успешно
+2026-02-16 00:08:39,312 - __main__ - INFO - 💾 Инициализация репозитория контекста...
+2026-02-16 00:08:39,313 - __main__ - INFO - 📚 Загрузка базы знаний...
+2026-02-16 00:08:39,313 - app.services.knowledge_service - INFO - Loading knowledge base...
+2026-02-16 00:08:39,313 - app.services.knowledge_service - INFO - Knowledge base loaded: 4 materials, 2 tools, 3 machines
+2026-02-16 00:08:39,313 - __main__ - INFO - 📸 Инициализация парсера изображений...
+2026-02-16 00:08:39,359 - app.core.image_parser - INFO - ✅ Tesseract OCR configured from .env: C:\Program Files\Tesseract-OCR\tesseract.exe
+2026-02-16 00:08:39,380 - app.core.image_parser - INFO - ✅ OCR ready: Tesseract 5.5.0.20241111
+2026-02-16 00:08:39,380 - __main__ - INFO - ✅ OCR готов к работе (Tesseract доступен)
+2026-02-16 00:08:39,380 - __main__ - INFO - 📨 Инициализация обработчика сообщений...
+2026-02-16 00:08:39,380 - app.core.image_parser - WARNING - ⚠️ Tesseract OCR engine not found. Image parsing will be limited.
+2026-02-16 00:08:39,380 - app.core.image_parser - INFO - 💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH
+2026-02-16 00:08:39,381 - app.services.standard_service - INFO - Loaded 0 standards
+2026-02-16 00:08:39,473 - app.knowledge.internet_parser.browser_parser - WARNING - requests/beautifulsoup4 not available. Install: pip install requests beautifulsoup4
+2026-02-16 00:08:39,473 - __main__ - INFO - ✅ Все сервисы инициализированы
+2026-02-16 00:08:39,729 - aiogram.dispatcher - INFO - Start polling
+2026-02-16 00:08:39,793 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-16 00:10:37,601 - aiogram.dispatcher - INFO - Polling stopped
+2026-02-16 00:10:37,602 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-02-16 00:10:37,602 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-02-16 00:10:37,864 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-16 00:10:41,704 - __main__ - INFO - 🚀 Инициализация сервисов...
+2026-02-16 00:10:41,704 - __main__ - INFO - 🗄️ Инициализация пула соединений БД...
+2026-02-16 00:10:41,715 - app.services.database_pool - INFO - Database pool initialized: pool_size=5, max_overflow=10
+2026-02-16 00:10:41,719 - __main__ - INFO - 🔄 Запуск миграций базы данных...
+2026-02-16 00:10:41,719 - app.storage.migrations - INFO - Running database migrations...
+2026-02-16 00:10:41,720 - app.storage.migrations - INFO - Column 'operation_chain_json' already exists. Skipping migration.
+2026-02-16 00:10:41,720 - app.storage.migrations - INFO - All migrations completed
+2026-02-16 00:10:41,720 - __main__ - INFO - ✅ Миграции выполнены успешно
+2026-02-16 00:10:41,720 - __main__ - INFO - 💾 Инициализация репозитория контекста...
+2026-02-16 00:10:41,721 - __main__ - INFO - 📚 Загрузка базы знаний...
+2026-02-16 00:10:41,721 - app.services.knowledge_service - INFO - Loading knowledge base...
+2026-02-16 00:10:41,721 - app.services.knowledge_service - INFO - Knowledge base loaded: 4 materials, 2 tools, 3 machines
+2026-02-16 00:10:41,721 - __main__ - INFO - 📸 Инициализация парсера изображений...
+2026-02-16 00:10:41,745 - app.core.image_parser - INFO - ✅ Tesseract OCR configured from .env: C:\Program Files\Tesseract-OCR\tesseract.exe
+2026-02-16 00:10:41,769 - app.core.image_parser - INFO - ✅ OCR ready: Tesseract 5.5.0.20241111
+2026-02-16 00:10:41,769 - __main__ - INFO - ✅ OCR готов к работе (Tesseract доступен)
+2026-02-16 00:10:41,769 - __main__ - INFO - 📨 Инициализация обработчика сообщений...
+2026-02-16 00:10:41,792 - app.core.image_parser - INFO - ✅ Tesseract OCR configured from .env: C:\Program Files\Tesseract-OCR\tesseract.exe
+2026-02-16 00:10:41,815 - app.core.image_parser - INFO - ✅ OCR ready: Tesseract 5.5.0.20241111
+2026-02-16 00:10:41,816 - app.services.standard_service - INFO - Loaded 0 standards
+2026-02-16 00:10:41,900 - app.knowledge.internet_parser.browser_parser - WARNING - requests/beautifulsoup4 not available. Install: pip install requests beautifulsoup4
+2026-02-16 00:10:41,900 - __main__ - INFO - ✅ Все сервисы инициализированы
+2026-02-16 00:10:42,144 - aiogram.dispatcher - INFO - Start polling
+2026-02-16 00:10:42,231 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-16 00:21:12,410 - aiogram.dispatcher - INFO - Polling stopped
+2026-02-16 00:21:12,411 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-02-16 00:21:12,411 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-02-16 00:21:12,666 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'

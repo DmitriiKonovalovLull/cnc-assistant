@@ -4,6 +4,7 @@
 """
 
 import logging
+import os
 from typing import Dict, Any, Optional, List
 from pathlib import Path
 import io
@@ -14,7 +15,15 @@ try:
     import pytesseract
     from PIL import Image
     OCR_AVAILABLE = True
-    # Проверяем доступность Tesseract
+    # Задаём путь до проверки (на Windows Tesseract часто не в PATH)
+    _tesseract_cmd = os.getenv("TESSERACT_CMD") or os.getenv("TESSERACT_PATH")
+    if not _tesseract_cmd and os.name == "nt":
+        _win = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+        if os.path.isfile(_win):
+            _tesseract_cmd = _win
+    if _tesseract_cmd:
+        pytesseract.pytesseract.tesseract_cmd = _tesseract_cmd
+    # Проверяем доступность Tesseract (или из PATH, или уже заданный путь)
     try:
         pytesseract.get_tesseract_version()
         TESSERACT_AVAILABLE = True
@@ -73,6 +82,22 @@ class ImageParser:
             logger.warning("⚠️ Tesseract OCR engine not found. Image parsing will be limited.")
             logger.info("💡 To enable OCR: set TESSERACT_CMD in .env or install Tesseract in PATH")
     
+    def get_text_from_image(self, image_data: bytes) -> str:
+        """
+        Извлечь сырой текст с изображения через OCR (для спектра вибрации, FFT и т.д.).
+        Returns:
+            Текст, распознанный с изображения, или пустая строка при ошибке.
+        """
+        if not self.ocr_available:
+            return ""
+        try:
+            image = Image.open(io.BytesIO(image_data))
+            image = self._preprocess_image(image)
+            return pytesseract.image_to_string(image, lang='eng+rus')
+        except Exception as e:
+            logger.warning(f"OCR get_text_from_image failed: {e}")
+            return ""
+
     def parse_tool_image(self, image_data: bytes) -> Dict[str, Any]:
         """
         Распарсить изображение инструмента.

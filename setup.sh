@@ -40,13 +40,21 @@ fi
 echo "🔌 Активация виртуального окружения..."
 source $VENV_DIR/bin/activate
 
-# Обновление pip
+# Обновление pip (python -m pip — из текущего окружения)
 echo "⬆️ Обновление pip..."
-pip install --upgrade pip setuptools wheel
+python3 -m pip install --upgrade pip setuptools wheel
 
 # Установка зависимостей
 echo "📥 Установка базовых зависимостей..."
-pip install -r requirements.txt
+python3 -m pip install -r requirements.txt
+
+# Проверка установки основных зависимостей
+echo ""
+echo "🔍 Проверка установки зависимостей..."
+python3 -c "import aiogram; import sqlalchemy; import dotenv; import yaml; import requests; import bs4; print('✅ Все основные зависимости установлены')" 2>/dev/null || echo "⚠️ Некоторые зависимости не установлены (проверьте requirements.txt)"
+
+# Проверка опциональных зависимостей
+python3 -c "import lxml; print('✅ lxml установлен (быстрый HTML парсер)')" 2>/dev/null || echo "ℹ️ lxml не установлен (будет использован встроенный html.parser)"
 
 # Установка OCR (опционально)
 echo ""
@@ -54,7 +62,7 @@ read -p "Установить OCR для распознавания фотогр
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]; then
     echo "📥 Установка OCR зависимостей..."
-    pip install -r requirements_ocr.txt
+    python3 -m pip install -r requirements_ocr.txt
     
     # Проверка Tesseract
     if ! command -v tesseract &> /dev/null; then
@@ -106,8 +114,11 @@ echo "📁 Создание необходимых директорий..."
 mkdir -p logs
 mkdir -p app/storage
 mkdir -p app/knowledge/knowledge_base
+mkdir -p app/knowledge/internet_parser
+mkdir -p app/domain/part_templates
 mkdir -p data/rules
 mkdir -p data/limits
+mkdir -p data/standards
 mkdir -p training/datasets
 mkdir -p training/prompts
 mkdir -p training/finetune
@@ -167,13 +178,11 @@ echo "   • Понимание контекста между сообщения
 echo "   • Умные предположения вместо лишних вопросов"
 echo "   • Различение интентов (приветствие, помощь, инженерные запросы)"
 echo "   • Распознавание инструментов с фотографий (если установлен OCR)"
+echo "   • Поиск информации об инструментах и станках в интернете"
+echo "   • Парсинг чертежей и технической документации"
+echo "   • Работа со стандартами ГОСТ/ОСТ/DIN/ISO"
 echo "   • Сохранение и управление работами"
 echo "   • История диалогов и контекста"
 echo ""
-echo "📚 Документация:"
-echo "   • INSTALL.md - подробная инструкция по установке"
-echo "   • AI_BOT.md - описание AI-бота"
-echo "   • ARCHITECTURE.md - архитектура системы"
-echo "   • ARCHITECTURE_FINAL.md - финальная архитектура"
-echo "   • SCALABILITY.md - масштабируемость и LLM готовность"
+echo "📚 Документация: README.md, INSTALL.md, ARCHITECTURE.md, INTERNET_SEARCH.md"
 echo ""

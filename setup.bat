@@ -50,20 +50,28 @@ REM Активация виртуального окружения
 echo 🔌 Активация виртуального окружения...
 call %VENV_DIR%\Scripts\activate.bat
 
-REM Обновление pip
+REM Обновление pip (используем python -m pip — всегда из текущего окружения)
 echo ⬆️ Обновление pip...
 python -m pip install --upgrade pip setuptools wheel
 
 REM Установка зависимостей
 echo 📥 Установка базовых зависимостей...
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
+
+REM Проверка установки основных зависимостей
+echo.
+echo 🔍 Проверка установки зависимостей...
+python -c "import aiogram; import sqlalchemy; import dotenv; import yaml; import requests; import bs4; print('✅ Все основные зависимости установлены')" 2>nul || echo ⚠️ Некоторые зависимости не установлены (проверьте requirements.txt)
+
+REM Проверка опциональных зависимостей
+python -c "import lxml; print('✅ lxml установлен (быстрый HTML парсер)')" 2>nul || echo ℹ️ lxml не установлен (будет использован встроенный html.parser)
 
 REM Установка OCR (опционально)
 echo.
 set /p install_ocr="Установить OCR для распознавания фотографий инструментов? (y/n): "
 if /i "!install_ocr!"=="y" (
     echo 📥 Установка OCR зависимостей...
-    pip install -r requirements_ocr.txt
+    python -m pip install -r requirements_ocr.txt
     
     echo.
     echo ⚠️ Не забудьте установить Tesseract OCR:
@@ -102,8 +110,11 @@ echo 📁 Создание необходимых директорий...
 if not exist "logs" mkdir logs
 if not exist "app\storage" mkdir app\storage
 if not exist "app\knowledge\knowledge_base" mkdir app\knowledge\knowledge_base
+if not exist "app\knowledge\internet_parser" mkdir app\knowledge\internet_parser
+if not exist "app\domain\part_templates" mkdir app\domain\part_templates
 if not exist "data\rules" mkdir data\rules
 if not exist "data\limits" mkdir data\limits
+if not exist "data\standards" mkdir data\standards
 if not exist "training" mkdir training
 if not exist "training\datasets" mkdir training\datasets
 if not exist "training\prompts" mkdir training\prompts
@@ -153,14 +164,12 @@ echo    • Понимание контекста между сообщения�
 echo    • Умные предположения вместо лишних вопросов
 echo    • Различение интентов (приветствие, помощь, инженерные запросы)
 echo    • Распознавание инструментов с фотографий (если установлен OCR)
+echo    • Поиск информации об инструментах и станках в интернете
+echo    • Парсинг чертежей и технической документации
+echo    • Работа со стандартами ГОСТ/ОСТ/DIN/ISO
 echo    • Сохранение и управление работами
 echo    • История диалогов и контекста
 echo.
-echo 📚 Документация:
-echo    • INSTALL.md - подробная инструкция по установке
-echo    • AI_BOT.md - описание AI-бота
-echo    • ARCHITECTURE.md - архитектура системы
-echo    • ARCHITECTURE_FINAL.md - финальная архитектура
-echo    • SCALABILITY.md - масштабируемость и LLM готовность
+echo 📚 Документация: README.md, INSTALL.md, ARCHITECTURE.md, INTERNET_SEARCH.md
 echo.
 pause

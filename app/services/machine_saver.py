@@ -94,6 +94,38 @@ class MachineSaver:
             self.session.rollback()
             return None
     
+    def update_machine_params(
+        self,
+        machine_name: str,
+        power_kw: Optional[float] = None,
+        max_rpm: Optional[float] = None,
+    ) -> bool:
+        """
+        Обновить мощность и/или макс. обороты у уже сохранённого станка.
+        Ищет запись по model (название) и tool_type, начинающемуся с "станок_".
+        """
+        try:
+            from app.storage.models import ToolLibrary
+            record = self.session.query(ToolLibrary).filter(
+                ToolLibrary.model == machine_name,
+                ToolLibrary.tool_type.like("станок_%"),
+            ).first()
+            if not record:
+                return False
+            params = dict(record.recommended_params)
+            if power_kw is not None:
+                params["power_kw"] = power_kw
+            if max_rpm is not None:
+                params["max_rpm"] = max_rpm
+            record.recommended_params = params
+            self.session.commit()
+            logger.info(f"Updated machine {machine_name}: power_kw={power_kw}, max_rpm={max_rpm}")
+            return True
+        except Exception as e:
+            logger.error(f"Error updating machine {machine_name}: {e}", exc_info=True)
+            self.session.rollback()
+            return False
+    
     def _determine_machine_type_from_name(self, machine_name: str) -> str:
         """
         Определить тип станка по названию.

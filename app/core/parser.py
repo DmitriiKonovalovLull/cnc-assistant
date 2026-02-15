@@ -22,9 +22,14 @@ class ParsedData:
     tool_material: Optional[str] = None
     tool_radius: Optional[float] = None
     tool_overhang: Optional[float] = None
+    tool_diameter: Optional[float] = None  # Диаметр инструмента (державки/фрезы)
     tool_name: Optional[str] = None  # Название инструмента (CNMG, WNMG и т.д.)
     tool_manufacturer: Optional[str] = None  # Производитель
     tool_grade: Optional[str] = None  # Марка/градация
+    
+    # Параметры детали
+    thread_size: Optional[str] = None  # Размер резьбы (M6, M12 и т.д.)
+    quantity: Optional[int] = None  # Количество деталей
     
     # Числовые параметры режимов
     vc: Optional[float] = None  # м/мин
@@ -49,6 +54,7 @@ class ParsedData:
             'machine_type', 'machine_power',
             'tool_material', 'tool_radius', 'tool_overhang',
             'tool_name', 'tool_manufacturer', 'tool_grade',
+            'thread_size', 'quantity',
             'vc', 'rpm', 'feed', 'ap',
             'parsed_fields', 'confidence'
         ]:
@@ -184,6 +190,11 @@ class TextParser:
         if parsed.tool_overhang:
             parsed.parsed_fields.append('tool_overhang')
         
+        # 10.1. Диаметр инструмента (державки/фрезы)
+        parsed.tool_diameter = self._parse_tool_diameter(text_lower)
+        if parsed.tool_diameter:
+            parsed.parsed_fields.append('tool_diameter')
+        
         # 10.5. Название инструмента (ISO код)
         parsed.tool_name = self._parse_tool_name(text)
         if parsed.tool_name:
@@ -216,8 +227,18 @@ class TextParser:
         if parsed.ap:
             parsed.parsed_fields.append('ap')
         
+        # 12. Размер резьбы (M6, M12, M16 и т.д.)
+        parsed.thread_size = self._parse_thread_size(text)
+        if parsed.thread_size:
+            parsed.parsed_fields.append('thread_size')
+        
+        # 13. Количество деталей
+        parsed.quantity = self._parse_quantity(text_lower)
+        if parsed.quantity:
+            parsed.parsed_fields.append('quantity')
+        
         # Рассчитываем уверенность парсинга
-        parsed.confidence = len(parsed.parsed_fields) / 15.0  # Максимум 15 полей
+        parsed.confidence = len(parsed.parsed_fields) / 17.0  # Максимум 17 полей
         
         return parsed
     
@@ -229,22 +250,39 @@ class TextParser:
                 if keyword in text:
                     return material
         
-        # Если не нашли известный материал, ищем паттерны марок сталей и сплавов
-        # Паттерны: марки сталей (40Х, 30ХГСА, Ст45), сплавы (Д16Т, ВТ6)
+        # Ищем паттерны марок сталей и сплавов в разных системах маркировки
+        # ГОСТ (Россия): Ст3, Ст45, 40Х, 30ХГСА, 12Х18Н10Т, Д16Т, ВТ6
+        # GB/T (Китай): 08, 20, 45, 40Cr, 6061, 7075
+        # ASTM/SAE (США): 1008, 1020, 1045, 304, 321, 6061, Ti-6Al-4V
+        # EN/DIN (Европа): C45, 1.0503, X5CrNi18-10, 1.4301, EN AW-6061
+        
         material_patterns = [
-            r'\b([А-Яа-я]{1,3}\d{1,3}[А-Яа-я]{0,3})\b',  # Марки сталей: 40Х, 30ХГСА, Ст45
-            r'\b([А-Яа-я]{1,2}\d{1,3}[А-Яа-я]{0,2})\b',  # Сплавы: Д16Т, ВТ6
-            r'\b(Ст\d{1,3})\b',  # Сталь Ст3, Ст45
-            r'\b(\d{1,2}Х\d{1,2}[А-Яа-я]{0,5})\b',  # Легированные стали: 40Х, 30ХГСА
+            # ГОСТ марки (более специфичные паттерны первыми)
+            r'\b(Ст\d{1,3})\b',  # Ст3, Ст45
+            r'\b(\d{1,2}[Хх][А-Яа-я]{2,10})\b',  # 12ХГСА, 30ХГСА, 14ХГСА, 12Х18Н10Т (только буквы после Х) - ПЕРВЫМ!
+            r'\b(\d{1,2}[Хх]\d{1,2}[А-Яа-я]{0,5})\b',  # 40Х, 12Х18Н10Т (с цифрами после Х)
+            r'\b([А-Яа-я]{1,3}\d{1,3}[А-Яа-я]{0,3})\b',  # Д16Т, ВТ6, АМг6
+            # GB/T марки
+            r'\b(GB\s*\d+|GB/T\s*\d+)\b',  # GB 45, GB/T 6061
+            r'\b(\d{4}[A-Z]?)\b',  # 6061, 7075, 2024
+            # ASTM/SAE марки
+            r'\b(AISI\s*\d+|SAE\s*\d+|ASTM\s*\d+)\b',  # AISI 304, SAE 1045
+            r'\b(\d{4})\b',  # 304, 316, 321, 1045, 4140
+            r'\b(Ti-[\dA-Z-]+|Grade\s*\d+)\b',  # Ti-6Al-4V, Grade 5
+            # EN/DIN марки
+            r'\b([XC]\d+[A-Za-z]+[\d-]+)\b',  # X5CrNi18-10, X10CrNiTi18-9
+            r'\b(EN\s*AW-[\d]+|CW\d+)\b',  # EN AW-6061, CW508L
+            r'\b(\d\.\d{4})\b',  # 1.4301, 1.4541, 1.0503
+            r'\b([CS]\d+|St\d+)\b',  # C45, St37-2
         ]
         
         for pattern in material_patterns:
-            match = re.search(pattern, text)
+            match = re.search(pattern, text, re.IGNORECASE)
             if match:
                 material_name = match.group(1).strip()
                 # Проверяем, что это похоже на марку материала
                 if len(material_name) >= 2:
-                    # Возвращаем как неизвестный материал (будет сохранен в БД)
+                    # Возвращаем найденную марку материала
                     return material_name
         
         return None
@@ -296,12 +334,71 @@ class TextParser:
         
         return None, None
     
-    def _parse_length(self, text: str) -> Optional[float]:
-        """Парсить длину."""
+    def _parse_thread_size(self, text: str) -> Optional[str]:
+        """
+        Парсить размер резьбы (M6, M12, M16 и т.д.).
+        
+        Улучшенный парсер: распознает "м6", "м 6", "M6", "М12" и т.д.
+        """
+        # Паттерны: M6, м6, М12, м 12, M 16, м6, м 6
         patterns = [
-            r'длин[аойы]\s*(\d+(?:[.,]\d+)?)',
-            r'l\s*[=:]\s*(\d+(?:[.,]\d+)?)',
-            r'(\d+(?:[.,]\d+)?)\s*мм\s*длин'
+            r'\b[MМм]\s*(\d+(?:[.,]\d+)?)\b',  # M6, М12, м 16, м6, м 6 (универсальный паттерн)
+            r'\bрезьб[аы]\s*[MМм]?\s*(\d+(?:[.,]\d+)?)\b',  # резьба M6, резьба 12
+            r'\b[MМм]\s*(\d+(?:[.,]\d+)?)\s*[xх×]\s*\d+',  # M6x30, М12×50
+        ]
+        
+        for pattern in patterns:
+            match = re.search(pattern, text, re.IGNORECASE)
+            if match:
+                thread_num = match.group(1).replace(',', '.')
+                try:
+                    # Проверяем что это разумный размер резьбы (M3-M100)
+                    thread_float = float(thread_num)
+                    if 3 <= thread_float <= 100:
+                        return f"M{int(thread_float)}"
+                except ValueError:
+                    continue
+        
+        return None
+    
+    def _parse_quantity(self, text: str) -> Optional[int]:
+        """
+        Парсить количество деталей.
+        
+        Улучшенный парсер: распознает "кол 50", "кол-во 100", "серия 100 шт" и т.д.
+        """
+        # Паттерны: серия 100 шт, 100 шт, 100 штук, количество 50, кол 50, кол-во 100
+        patterns = [
+            r'серия\s+(\d+)\s*(?:шт|штук|штуки)',
+            r'(\d+)\s*(?:шт|штук|штуки)',
+            r'количество\s+(\d+)',
+            r'(\d+)\s*(?:шт|штук|штуки)\s+серия',
+            r'\bкол[-\s]?(?:во|вость)?\s*(\d+)\b',  # кол 50, кол-во 100, количество 50 (покрывает все варианты)
+        ]
+        
+        for pattern in patterns:
+            match = re.search(pattern, text, re.IGNORECASE)
+            if match:
+                try:
+                    quantity = int(match.group(1))
+                    if quantity > 0:
+                        return quantity
+                except ValueError:
+                    continue
+        
+        return None
+    
+    def _parse_length(self, text: str) -> Optional[float]:
+        """
+        Парсить длину.
+        
+        Улучшенный парсер: распознает "длина 20", "дл 30", "l=50" и т.д.
+        """
+        patterns = [
+            r'длин[аойы]\s*(\d+(?:[.,]\d+)?)',  # длина 20, длиной 30
+            r'l\s*[=:]\s*(\d+(?:[.,]\d+)?)',  # l=50, l: 30
+            r'(\d+(?:[.,]\d+)?)\s*мм\s*длин',  # 20 мм длин
+            r'\bдл[.\s]*(\d+(?:[.,]\d+)?)\b',  # дл 20, дл. 30 (короткая форма)
         ]
         
         for pattern in patterns:
@@ -315,11 +412,46 @@ class TextParser:
         return None
     
     def _parse_machine_type(self, text: str) -> Optional[str]:
-        """Парсить тип станка."""
+        """Парсить тип станка или название станка."""
+        """
+        Парсить тип станка.
+        
+        ВАЖНО: НЕ распознает стандарты (ГОСТ/ОСТ/DIN/ISO) как станки.
+        """
+        text_lower = text.lower()
+        
+        # КРИТИЧЕСКОЕ ПРАВИЛО: Если есть ГОСТ/ОСТ/DIN/ISO - это НЕ станок
+        if re.search(r'\b(гост|ост|din|iso)\s+\d+', text_lower, re.IGNORECASE):
+            return None  # Это стандарт, не станок
+        
+        # Проверяем наличие ключевых слов станка (включая опечатку "чпе" вместо "чпу")
+        has_machine_keyword = any(
+            keyword in text_lower 
+            for keyword in ['станок', 'чпу', 'чпе', 'cnc', 'обрабатывающий центр', 'токарн', 'фрезер', 'машина']
+        )
+        
+        # Если нет ключевых слов станка, но текст похож на название станка (буквы + цифры)
+        # Например: "Gamma 1250", "NEF500", "16К20"
+        if not has_machine_keyword:
+            # Паттерны для названий станков без ключевых слов
+            simple_machine_patterns = [
+                r'^([А-Яа-яA-Z]{2,}\s*\d{2,}[А-Яа-яA-Z0-9\s]*)$',  # "Gamma 1250", "NEF500"
+                r'^([А-Яа-яA-Z]{1,2}\d{2,}[А-Яа-яA-Z0-9]*)$',  # "16К20", "Гамма1250"
+                r'^([А-Яа-яA-Za-z]{3,}\s+\d{3,})$',  # "Haas 1000", "DMG 500"
+            ]
+            for pattern in simple_machine_patterns:
+                match = re.match(pattern, text.strip(), re.IGNORECASE)
+                if match:
+                    machine_name = match.group(1).strip()
+                    # Проверяем, что это не просто число и не слишком короткое
+                    if len(machine_name) >= 3 and not machine_name.isdigit():
+                        return machine_name
+            return None
+        
         # Сначала проверяем известные типы
         for machine_type, keywords in self.MACHINE_KEYWORDS.items():
             for keyword in keywords:
-                if keyword in text:
+                if keyword in text_lower:
                     # Если нашли известный тип, но есть еще название станка - извлекаем его
                     # Паттерны для названий станков после типа
                     name_patterns = [
@@ -337,10 +469,11 @@ class TextParser:
         # Если не нашли известный тип, ищем паттерны неизвестных станков
         # Паттерны: "работаю на...", "станок...", названия моделей
         machine_patterns = [
+            r'станок\s+([А-Яа-яA-Za-z0-9\s]{3,}?)(?:\s|$|,|\.|\?)',  # "станок NEF500", "станок Gamma 1250"
             r'работаю\s+на\s+([А-Яа-яA-Za-z0-9\s]{3,}?)(?:\s|$|,|\.|\?)',  # "работаю на Gamma 1250 tc"
-            r'станок\s+([А-Яа-яA-Za-z0-9\s]{3,}?)(?:\s|$|,|\.|\?)',  # "станок Gamma 1250"
             r'на\s+([А-Яа-яA-Za-z0-9\s]{3,}?)\s+(?:работаю|станок)',  # "на Gamma 1250 работаю"
-            r'([А-Яа-яA-Za-z]{2,}\s*\d+\s*[А-Яа-яA-Za-z]*)',  # "Gamma 1250 tc", "16К20"
+            r'\b([А-Яа-яA-Z]{2,}\d{2,}[А-Яа-яA-Z0-9]*)\b',  # "NEF500", "16К20", "Гамма1250"
+            r'([А-Яа-яA-Za-z]{2,}\s*\d+\s*[А-Яа-яA-Za-z]*)',  # "Gamma 1250 tc"
             r'([А-Яа-яA-Za-z]+\s*\d{3,})',  # "Гамма 1250", "Haas 1000"
         ]
         
@@ -407,6 +540,30 @@ class TextParser:
             r'вылет\s*(\d+(?:[.,]\d+)?)',
             r'overhang\s*[=:]?\s*(\d+(?:[.,]\d+)?)',
             r'(\d+(?:[.,]\d+)?)\s*мм\s*вылет'
+        ]
+        
+        for pattern in patterns:
+            match = re.search(pattern, text, re.IGNORECASE)
+            if match:
+                try:
+                    return float(match.group(1).replace(',', '.'))
+                except (ValueError, IndexError):
+                    continue
+        
+        return None
+    
+    def _parse_tool_diameter(self, text: str) -> Optional[float]:
+        """Парсить диаметр инструмента (державки/фрезы)."""
+        patterns = [
+            r'фреза\s+(\d+(?:[.,]\d+)?)',  # фреза 10, фреза 12.5
+            r'фреза\s+[Dd]\s*[=:]\s*(\d+(?:[.,]\d+)?)',  # фреза D=10
+            r'[Dd]\s*[=:]\s*(\d+(?:[.,]\d+)?)\s*мм',  # D=12 мм
+            r'диаметр\s+инструмента\s+(\d+(?:[.,]\d+)?)',  # диаметр инструмента 16
+            r'диаметр\s+фрезы\s+(\d+(?:[.,]\d+)?)',  # диаметр фрезы 20
+            r'диаметр\s+державки\s+(\d+(?:[.,]\d+)?)',  # диаметр державки 25
+            r'державка\s+(\d+(?:[.,]\d+)?)',  # державка 20
+            r'[ØDd]\s*(\d+(?:[.,]\d+)?)\s*мм\s*(?:фрезы|инструмента|державки)',  # Ø10 мм фрезы
+            r'(\d+(?:[.,]\d+)?)\s*мм\s*(?:фрезы|инструмента|державки)',  # 10 мм фрезы
         ]
         
         for pattern in patterns:
