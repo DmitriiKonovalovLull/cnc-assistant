@@ -52,6 +52,9 @@ class ToolSaver:
         Returns:
             ID сохраненного инструмента или None при ошибке
         """
+        if not tool_name or not str(tool_name).strip():
+            logger.warning("save_unknown_tool called with empty or None tool_name, skipping")
+            return None
         try:
             from app.storage.models import ToolRecord, ToolLibrary
             
@@ -151,7 +154,9 @@ class ToolSaver:
         Returns:
             Тип инструмента
         """
-        tool_upper = tool_name.upper()
+        if tool_name is None or not str(tool_name).strip():
+            return "неизвестный"
+        tool_upper = str(tool_name).strip().upper()
         
         # Определяем форму по первой букве
         shape_map = {

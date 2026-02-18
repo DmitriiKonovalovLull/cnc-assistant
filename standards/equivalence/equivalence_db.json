@@ -1,0 +1,187 @@
+{
+  "thread_standards": {
+    "metric": {
+      "ISO": "ISO 965-1",
+      "GOST": "ГОСТ 24705",
+      "DIN": "DIN 13-1",
+      "GB": "GB/T 192",
+      "JIS": "JIS B 0205",
+      "ANSI": "ANSI/ASME B1.13M"
+    },
+    "unified_inch": {
+      "ANSI": "ANSI/ASME B1.1",
+      "BS": "BS 1580",
+      "ISO": "ISO 5864"
+    },
+    "pipe": {
+      "ISO": "ISO 228",
+      "ANSI": "ANSI/ASME B1.20.1",
+      "BS": "BS 2779",
+      "JIS": "JIS B 0202"
+    },
+    "trapezoidal": {
+      "ISO": "ISO 2901",
+      "GOST": "ГОСТ 9484",
+      "DIN": "DIN 103"
+    }
+  },
+  "tolerance_standards": {
+    "ISO": "ISO 286",
+    "GOST": "ГОСТ 25346",
+    "DIN": "DIN 7150",
+    "GB": "GB/T 1800",
+    "JIS": "JIS B 0401",
+    "ANSI": "ANSI B4.1"
+  },
+  "fit_standards": {
+    "ISO": "ISO 286",
+    "GOST": "ГОСТ 25347",
+    "DIN": "DIN 7157",
+    "GB": "GB/T 1801",
+    "JIS": "JIS B 0401"
+  },
+  "surface_standards": {
+    "ISO": "ISO 4287",
+    "GOST": "ГОСТ 2789",
+    "DIN": "DIN 4760",
+    "GB": "GB/T 1031",
+    "JIS": "JIS B 0601",
+    "ANSI": "ANSI/ASME B46.1"
+  },
+  "equivalence_mappings": {
+    "GOST_ISO": [
+      {
+        "gost": "24705",
+        "iso": "965-1",
+        "category": "thread",
+        "confidence": 0.95,
+        "note": "Метрическая резьба"
+      },
+      {
+        "gost": "25346",
+        "iso": "286-1",
+        "category": "tolerance",
+        "confidence": 0.95,
+        "note": "Допуски и посадки"
+      },
+      {
+        "gost": "25347",
+        "iso": "286-2",
+        "category": "tolerance",
+        "confidence": 0.95
+      },
+      {
+        "gost": "2789",
+        "iso": "4287",
+        "category": "surface",
+        "confidence": 0.90
+      }
+    ],
+    "GB_ISO": [
+      {
+        "gb": "192",
+        "iso": "965-1",
+        "category": "thread",
+        "confidence": 0.90,
+        "note": "GB/T 192-2003 mod ISO 965-1"
+      },
+      {
+        "gb": "1800",
+        "iso": "286-1",
+        "category": "tolerance",
+        "confidence": 0.95
+      },
+      {
+        "gb": "1801",
+        "iso": "286-2",
+        "category": "tolerance",
+        "confidence": 0.95
+      }
+    ],
+    "JIS_ISO": [
+      {
+        "jis": "B0205",
+        "iso": "965-1",
+        "category": "thread",
+        "confidence": 0.90
+      },
+      {
+        "jis": "B0401",
+        "iso": "286-1",
+        "category": "tolerance",
+        "confidence": 0.95
+      }
+    ],
+    "DIN_ISO": [
+      {
+        "din": "13-1",
+        "iso": "965-1",
+        "category": "thread",
+        "confidence": 0.95,
+        "note": "DIN EN ISO 965-1"
+      },
+      {
+        "din": "7150",
+        "iso": "286-1",
+        "category": "tolerance",
+        "confidence": 0.95
+      }
+    ],
+    "ANSI_ISO": [
+      {
+        "ansi": "B1.13M",
+        "iso": "965-1",
+        "category": "thread",
+        "confidence": 0.75,
+        "note": "Метрическая резьба ANSI"
+      },
+      {
+        "ansi": "B4.1",
+        "iso": "286-1",
+        "category": "tolerance",
+        "confidence": 0.80,
+        "note": "Дюймовая система"
+      }
+    ]
+  },
+  "thread_equivalents": {
+    "M20": {
+      "gost": "24705",
+      "iso": "965-1",
+      "din": "13-1",
+      "gb": "192",
+      "jis": "B0205"
+    },
+    "M42x1.5": {
+      "gost": "8724",
+      "iso": "261",
+      "din": "13",
+      "gb": "193"
+    },
+    "1/4-20": {
+      "ansi": "B1.1",
+      "bs": "1580",
+      "iso": "5864"
+    }
+  },
+  "tolerance_equivalents": {
+    "IT7": {
+      "gost": "25346",
+      "iso": "286-1",
+      "din": "7150",
+      "gb": "1800",
+      "jis": "B0401"
+    },
+    "H7": {
+      "gost": "25347",
+      "iso": "286-2",
+      "gb": "1801",
+      "jis": "B0401"
+    },
+    "g6": {
+      "gost": "25347",
+      "iso": "286-2",
+      "jis": "B0401"
+    }
+  }
+}

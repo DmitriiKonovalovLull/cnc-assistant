@@ -1,0 +1,23 @@
+# Production-ready система стандартов
+# Основные зависимости
+
+# FastAPI
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+pydantic>=2.0.0
+pydantic-settings>=2.0.0
+
+# База данных
+sqlalchemy>=2.0.0
+alembic>=1.12.0
+psycopg2-binary>=2.9.9
+
+# Redis
+redis>=5.0.0
+
+# PDF парсинг
+pdfplumber>=0.10.0
+PyPDF2>=3.0.0
+
+# Утилиты
+python-multipart>=0.0.6  # Для загрузки файлов в FastAPI

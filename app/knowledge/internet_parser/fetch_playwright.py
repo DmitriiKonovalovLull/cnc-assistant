@@ -43,13 +43,19 @@ async def fetch_via_playwright_search(
         HTML страницы (после загрузки JS) или None
     """
     if not PLAYWRIGHT_AVAILABLE:
-        logger.debug("Playwright not installed; SPA search skipped")
+        logger.warning("Playwright not installed; SPA search skipped")
         return None
+    
     try:
         async with async_playwright() as p:
-            browser = await p.chromium.launch(headless=True)
+            try:
+                browser = await p.chromium.launch(headless=True)
+            except Exception as browser_error:
+                logger.error(f"Failed to launch Playwright browser. Run: playwright install. Error: {browser_error}")
+                return None
             try:
                 page = await browser.new_page()
+                logger.debug(f"Navigating to {base_url}")
                 await page.goto(base_url, wait_until="domcontentloaded", timeout=15000)
                 await asyncio.sleep(1.0)
                 # Ищем поле поиска (может быть несколько селекторов)
@@ -59,36 +65,47 @@ async def fetch_via_playwright_search(
                     try:
                         input_el = await page.query_selector(sel)
                         if input_el:
+                            logger.debug(f"Found search input with selector: {sel}")
                             break
-                    except Exception:
+                    except Exception as e:
+                        logger.debug(f"Selector {sel} failed: {e}")
                         continue
                 if not input_el:
-                    logger.debug(f"Playwright: search input not found on {base_url}")
+                    logger.warning(f"Playwright: search input not found on {base_url} with selectors: {selectors}")
                     return None
+                logger.debug(f"Filling search input with query: {query}")
                 await input_el.fill(query)
                 if search_submit_selector:
                     submit = await page.query_selector(search_submit_selector)
                     if submit:
+                        logger.debug("Clicking submit button")
                         await submit.click()
+                    else:
+                        logger.debug("Submit button not found, pressing Enter")
+                        await input_el.press("Enter")
                 else:
+                    logger.debug("No submit selector, pressing Enter")
                     await input_el.press("Enter")
                 if results_container_selector:
                     try:
+                        logger.debug(f"Waiting for results container: {results_container_selector}")
                         await page.wait_for_selector(
                             results_container_selector,
                             timeout=int(wait_after_sec * 1000) + 2000,
                         )
-                    except Exception:
+                        logger.debug("Results container found")
+                    except Exception as e:
+                        logger.debug(f"Results container not found or timeout: {e}")
                         pass
                 await asyncio.sleep(wait_after_sec)
                 content = await page.content()
+                logger.debug(f"Retrieved {len(content)} characters of content from {base_url}")
                 return content
             finally:
                 await browser.close()
     except Exception as e:
-        logger.debug(f"Playwright search failed {base_url}: {e}")
+        logger.error(f"Playwright search failed {base_url}: {e}", exc_info=True)
         return None
-    return None
 
 
 async def fetch_url_playwright(url: str, wait_sec: float = 2.0) -> Optional[str]:
@@ -96,17 +113,26 @@ async def fetch_url_playwright(url: str, wait_sec: float = 2.0) -> Optional[str]
     Открыть URL в headless Chrome и вернуть HTML после выполнения JS.
     """
     if not PLAYWRIGHT_AVAILABLE:
+        logger.warning("Playwright not installed; URL fetch skipped")
         return None
+    
     try:
         async with async_playwright() as p:
-            browser = await p.chromium.launch(headless=True)
+            try:
+                browser = await p.chromium.launch(headless=True)
+            except Exception as browser_error:
+                logger.error(f"Failed to launch Playwright browser. Run: playwright install. Error: {browser_error}")
+                return None
             try:
                 page = await browser.new_page()
+                logger.debug(f"Fetching URL: {url}")
                 await page.goto(url, wait_until="networkidle", timeout=20000)
                 await asyncio.sleep(wait_sec)
-                return await page.content()
+                content = await page.content()
+                logger.debug(f"Retrieved {len(content)} characters from {url}")
+                return content
             finally:
                 await browser.close()
     except Exception as e:
-        logger.debug(f"Playwright fetch failed {url}: {e}")
+        logger.error(f"Playwright fetch failed {url}: {e}", exc_info=True)
         return None

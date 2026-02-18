@@ -1,0 +1,215 @@
+{
+  "material": "алюминий",
+  "operation": "токарка",
+  "mode": "черновая",
+  "diameter_start": 0.03,
+  "diameter_end": 80.0,
+  "length": 31.0,
+  "machine_type": "токарный",
+  "tool_name": "Инструмент с фото",
+  "pending_standard_search": "ОСТ 31103-80",
+  "thread_size": "M5",
+  "quantity": 40,
+  "collecting_params": false,
+  "overall_confidence": 0.0,
+  "user_id": "758350745",
+  "session_id": "session_20260217_134030",
+  "assumptions_made": [],
+  "defaults_used": [],
+  "dialog_history": [
+    {
+      "timestamp": "2026-02-17T13:40:30.775476",
+      "event": "user_message",
+      "data": {
+        "text": {
+          "material": "сталь",
+          "parsed_fields": [
+            "material"
+          ],
+          "confidence": 0.058823529411764705
+        },
+        "parsed_fields": [
+          "material"
+        ]
+      }
+    },
+    {
+      "timestamp": "2026-02-17T13:40:30.775559",
+      "event": "unknown_intent",
+      "data": {
+        "text": "материал сталь"
+      }
+    },
+    {
+      "timestamp": "2026-02-17T13:40:46.782521",
+      "event": "user_message",
+      "data": {
+        "text": {
+          "operation": "токарка",
+          "machine_type": "токарный",
+          "parsed_fields": [
+            "operation",
+            "machine_type"
+          ],
+          "confidence": 0.11764705882352941
+        },
+        "parsed_fields": [
+          "operation",
+          "machine_type"
+        ]
+      }
+    },
+    {
+      "timestamp": "2026-02-17T13:43:07.970162",
+      "event": "user_message",
+      "data": {
+        "text": {
+          "parsed_fields": [],
+          "confidence": 0.0
+        },
+        "parsed_fields": []
+      }
+    },
+    {
+      "timestamp": "2026-02-17T13:44:12.776317",
+      "event": "user_message",
+      "data": {
+        "text": {
+          "diameter_start": 28.0,
+          "length": 28.0,
+          "thread_size": "M5",
+          "parsed_fields": [
+            "diameter_start",
+            "length",
+            "thread_size"
+          ],
+          "confidence": 0.17647058823529413
+        },
+        "parsed_fields": [
+          "diameter_start",
+          "length",
+          "thread_size"
+        ]
+      }
+    },
+    {
+      "timestamp": "2026-02-17T13:44:41.310547",
+      "event": "user_message",
+      "data": {
+        "text": {
+          "diameter_start": 31103.0,
+          "diameter_end": 80.0,
+          "parsed_fields": [
+            "diameter_start",
+            "diameter_end"
+          ],
+          "confidence": 0.11764705882352941
+        },
+        "parsed_fields": [
+          "diameter_start",
+          "diameter_end"
+        ]
+      }
+    },
+    {
+      "timestamp": "2026-02-17T14:31:51.912509",
+      "event": "user_message",
+      "data": {
+        "text": {
+          "diameter_start": 31.0,
+          "length": 31.0,
+          "parsed_fields": [
+            "diameter_start",
+            "length"
+          ],
+          "confidence": 0.11764705882352941
+        },
+        "parsed_fields": [
+          "diameter_start",
+          "length"
+        ]
+      }
+    },
+    {
+      "timestamp": "2026-02-17T14:32:23.158114",
+      "event": "user_message",
+      "data": {
+        "text": {
+          "material": "алюминий",
+          "mode": "черновая",
+          "quantity": 40,
+          "parsed_fields": [
+            "material",
+            "mode",
+            "quantity"
+          ],
+          "confidence": 0.17647058823529413
+        },
+        "parsed_fields": [
+          "material",
+          "mode",
+          "quantity"
+        ]
+      }
+    },
+    {
+      "timestamp": "2026-02-17T19:47:43.355200",
+      "event": "user_message",
+      "data": {
+        "text": {
+          "parsed_fields": [],
+          "confidence": 0.0
+        },
+        "parsed_fields": []
+      }
+    },
+    {
+      "timestamp": "2026-02-17T19:48:12.520891",
+      "event": "tool_saved",
+      "data": {
+        "tool_name": "Инструмент с фото",
+        "tool_id": null
+      }
+    },
+    {
+      "timestamp": "2026-02-17T19:49:16.765776",
+      "event": "user_message",
+      "data": {
+        "text": {
+          "diameter_start": 0.03,
+          "rpm": 2500.0,
+          "parsed_fields": [
+            "diameter_start",
+            "rpm"
+          ],
+          "confidence": 0.11764705882352941
+        },
+        "parsed_fields": [
+          "diameter_start",
+          "rpm"
+        ]
+      }
+    },
+    {
+      "timestamp": "2026-02-17T19:49:35.902634",
+      "event": "user_message",
+      "data": {
+        "text": {
+          "diameter_start": 0.03,
+          "rpm": 2500.0,
+          "parsed_fields": [
+            "diameter_start",
+            "rpm"
+          ],
+          "confidence": 0.11764705882352941
+        },
+        "parsed_fields": [
+          "diameter_start",
+          "rpm"
+        ]
+      }
+    }
+  ],
+  "_version": "1.2",
+  "_updated_at": "2026-02-17T19:49:36.209534"
+}

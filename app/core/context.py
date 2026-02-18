@@ -8,6 +8,9 @@ from dataclasses import dataclass, field
 from typing import Dict, Any, Optional, List
 from enum import Enum
 from datetime import datetime
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class DataSource(Enum):
@@ -16,6 +19,7 @@ class DataSource(Enum):
     ASSUMED = "assumed"  # Система предположила
     DEFAULT = "default"  # Значение по умолчанию
     INFERRED = "inferred"  # Выведено из других данных
+    EXTERNAL = "external"  # Данные из внешних источников (интернет, БД и т.д.)
 
 
 @dataclass
@@ -76,6 +80,7 @@ class Context:
     # Стандартные детали (ГОСТ/ОСТ/DIN/ISO)
     standard_id: Optional[str] = None  # ГОСТ_7798-30, ОСТ_1_31102-80
     pending_standard_search: Optional[str] = None  # Ожидаем "да" на поиск: "ОСТ 30560-80"
+    pending_standard_apply: Optional[str] = None  # standard_id — ждём "номер работы" или "Новая"
     part_type: Optional[str] = None  # болт, винт, шпилька, вал, втулка, гайка
     thread_size: Optional[str] = None  # M6, M12, M16 и т.д.
     quantity: Optional[int] = None  # Количество деталей
@@ -111,7 +116,8 @@ class Context:
     # Пользовательские данные
     user_id: Optional[str] = None
     session_id: Optional[str] = None
-    
+    lang: Optional[str] = None  # ru, en, zh — язык интерфейса
+
     # ========== МЕТОДЫ ==========
     
     def set_field(
@@ -162,6 +168,39 @@ class Context:
         metadata = self.get_field_metadata(field_name)
         return metadata is not None and metadata.source == DataSource.USER
     
+    def reset_temp(self) -> None:
+        """
+        Сбросить временные данные сессии.
+        Очищает временные флаги и ожидания, но сохраняет основные данные.
+        """
+        self.pending_standard_search = None
+        self.pending_standard_apply = None
+        self.collecting_params = False
+        # Очищаем временные данные, но сохраняем основные (material, machine_type и т.д.)
+        logger.debug("Temporary session data reset")
+    
+    def clear_current_object(self) -> None:
+        """
+        Очистить текущий объект из сессии.
+        Используется при отмене операции.
+        """
+        # Очищаем данные о стандартной детали
+        self.standard_id = None
+        self.part_type = None
+        self.thread_size = None
+        self.quantity = None
+        self.collecting_params = False
+        self.pending_standard_search = None
+        self.pending_standard_apply = None
+        # Очищаем результаты расчетов
+        self.recommended_vc = None
+        self.recommended_rpm = None
+        self.recommended_feed = None
+        self.recommended_ap = None
+        self.recommended_power = None
+        self.passes_strategy = None
+        logger.debug("Current object cleared from session")
+    
     def get_missing_fields(self, required_fields: List[str]) -> List[str]:
         """Получить список недостающих обязательных полей."""
         missing = []
@@ -181,10 +220,10 @@ class Context:
             'machine_type', 'machine_power', 'machine_max_rpm',
             'tool_material', 'tool_radius', 'tool_diameter', 'tool_overhang', 'tool_type',
             'tool_name', 'tool_display_name', 'tool_manufacturer', 'tool_grade',
-            'standard_id', 'pending_standard_search', 'part_type', 'thread_size', 'quantity', 'collecting_params',
+            'standard_id', 'pending_standard_search', 'pending_standard_apply', 'part_type', 'thread_size', 'quantity', 'collecting_params',
             'recommended_vc', 'recommended_rpm', 'recommended_feed',
             'recommended_ap', 'recommended_power',
-            'overall_confidence', 'user_id', 'session_id'
+            'overall_confidence', 'user_id', 'session_id', 'lang'
         ]:
             value = getattr(self, field_name, None)
             if value is not None:
@@ -225,10 +264,10 @@ class Context:
             'machine_type', 'machine_power', 'machine_max_rpm',
             'tool_material', 'tool_radius', 'tool_diameter', 'tool_overhang', 'tool_type',
             'tool_name', 'tool_display_name', 'tool_manufacturer', 'tool_grade',
-            'standard_id', 'pending_standard_search', 'part_type', 'thread_size', 'quantity', 'collecting_params',
+            'standard_id', 'pending_standard_search', 'pending_standard_apply', 'part_type', 'thread_size', 'quantity', 'collecting_params',
             'recommended_vc', 'recommended_rpm', 'recommended_feed',
             'recommended_ap', 'recommended_power',
-            'overall_confidence', 'user_id', 'session_id'
+            'overall_confidence', 'user_id', 'session_id', 'lang'
         ]:
             if field_name in data:
                 setattr(context, field_name, data[field_name])

@@ -75,8 +75,18 @@ class TextParser:
         'титан': ['титан', 'titanium', 'тита', 'вт'],
         'чугун': ['чугун', 'cast iron', 'сч'],
         'латунь': ['латунь', 'brass'],
-        'медь': ['медь', 'copper', 'cu']
+        'медь': ['медь', 'copper', 'cu'],
     }
+    # Марки сталей с пробелом (30 хгса → 30ХГСА), чтобы не путать с числом станка
+    MATERIAL_STEEL_GRADE_SPACE = re.compile(
+        r'\b(\d{1,2})\s*[хХ]\s*([а-яА-Я]{2,10})\b',
+        re.IGNORECASE
+    )
+    # Только известные 4-значные марки (не номера моделей станков вроде 1250)
+    VALID_4DIGIT_GRADES = frozenset({
+        '1045', '1020', '1008', '4140', '4340', '304', '316', '321', '316l',
+        '2024', '6061', '7075', '5083', '5052',
+    })
     
     OPERATION_KEYWORDS = {
         'токарка': ['токар', 'точение', 'обтачивание', 'turning'],
@@ -250,41 +260,41 @@ class TextParser:
                 if keyword in text:
                     return material
         
-        # Ищем паттерны марок сталей и сплавов в разных системах маркировки
-        # ГОСТ (Россия): Ст3, Ст45, 40Х, 30ХГСА, 12Х18Н10Т, Д16Т, ВТ6
-        # GB/T (Китай): 08, 20, 45, 40Cr, 6061, 7075
-        # ASTM/SAE (США): 1008, 1020, 1045, 304, 321, 6061, Ti-6Al-4V
-        # EN/DIN (Европа): C45, 1.0503, X5CrNi18-10, 1.4301, EN AW-6061
-        
+        # Марка с пробелом: "30 хгса" → 30ХГСА (раньше общих 4-значных чисел)
+        match = self.MATERIAL_STEEL_GRADE_SPACE.search(text)
+        if match:
+            num, letters = match.group(1), match.group(2).upper()
+            return f"{num}Х{letters}"
+
+        # ГОСТ (Россия): Ст3, 40Х, 30ХГСА, 12Х18Н10Т, Д16Т, ВТ6
+        # GB/T, ASTM, EN/DIN марки
         material_patterns = [
-            # ГОСТ марки (более специфичные паттерны первыми)
-            r'\b(Ст\d{1,3})\b',  # Ст3, Ст45
-            r'\b(\d{1,2}[Хх][А-Яа-я]{2,10})\b',  # 12ХГСА, 30ХГСА, 14ХГСА, 12Х18Н10Т (только буквы после Х) - ПЕРВЫМ!
-            r'\b(\d{1,2}[Хх]\d{1,2}[А-Яа-я]{0,5})\b',  # 40Х, 12Х18Н10Т (с цифрами после Х)
+            r'\b(Ст\d{1,3})\b',
+            r'\b(\d{1,2}[Хх][А-Яа-я]{2,10})\b',  # 30ХГСА, 12ХГСА без пробела
+            r'\b(\d{1,2}[Хх]\d{1,2}[А-Яа-я]{0,5})\b',  # 40Х, 12Х18Н10Т
             r'\b([А-Яа-я]{1,3}\d{1,3}[А-Яа-я]{0,3})\b',  # Д16Т, ВТ6, АМг6
-            # GB/T марки
-            r'\b(GB\s*\d+|GB/T\s*\d+)\b',  # GB 45, GB/T 6061
+            r'\b(GB\s*\d+|GB/T\s*\d+)\b',
             r'\b(\d{4}[A-Z]?)\b',  # 6061, 7075, 2024
-            # ASTM/SAE марки
-            r'\b(AISI\s*\d+|SAE\s*\d+|ASTM\s*\d+)\b',  # AISI 304, SAE 1045
-            r'\b(\d{4})\b',  # 304, 316, 321, 1045, 4140
-            r'\b(Ti-[\dA-Z-]+|Grade\s*\d+)\b',  # Ti-6Al-4V, Grade 5
-            # EN/DIN марки
-            r'\b([XC]\d+[A-Za-z]+[\d-]+)\b',  # X5CrNi18-10, X10CrNiTi18-9
-            r'\b(EN\s*AW-[\d]+|CW\d+)\b',  # EN AW-6061, CW508L
-            r'\b(\d\.\d{4})\b',  # 1.4301, 1.4541, 1.0503
-            r'\b([CS]\d+|St\d+)\b',  # C45, St37-2
+            r'\b(AISI\s*\d+|SAE\s*\d+|ASTM\s*\d+)\b',
+            r'\b(Ti-[\dA-Z-]+|Grade\s*\d+)\b',
+            r'\b([XC]\d+[A-Za-z]+[\d-]+)\b',
+            r'\b(EN\s*AW-[\d]+|CW\d+)\b',
+            r'\b(\d\.\d{4})\b',
+            r'\b([CS]\d+|St\d+)\b',
         ]
-        
         for pattern in material_patterns:
             match = re.search(pattern, text, re.IGNORECASE)
             if match:
                 material_name = match.group(1).strip()
-                # Проверяем, что это похоже на марку материала
-                if len(material_name) >= 2:
-                    # Возвращаем найденную марку материала
-                    return material_name
-        
+                if len(material_name) < 2:
+                    continue
+                # Не считать материалом 4 цифры подряд, если это не известная марка
+                if re.fullmatch(r'\d{4}[A-Z]?', material_name) and material_name[:4] not in self.VALID_4DIGIT_GRADES:
+                    continue
+                if re.fullmatch(r'\d{4}', material_name) and material_name not in self.VALID_4DIGIT_GRADES:
+                    continue
+                return material_name
+
         return None
     
     def _parse_operation(self, text: str) -> Optional[str]:

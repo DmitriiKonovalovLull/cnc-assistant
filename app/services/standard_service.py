@@ -10,6 +10,11 @@ from typing import Dict, Any, Optional, List
 
 from app.domain.standard_classes import get_standard_class
 from app.domain.part_templates import get_template
+from standards.utils.standard_normalizer import (
+    normalize_standard_text,
+    parse_standard_designation,
+    normalize_standard_number
+)
 
 logger = logging.getLogger(__name__)
 
@@ -61,26 +66,61 @@ class StandardService:
         """
         Найти стандарт по типу и номеру в базе данных (YAML файлы).
         
+        Использует нормализацию для правильного поиска различных форматов.
+        
         Args:
             standard_type: Тип стандарта (ГОСТ, ОСТ, DIN, ISO)
-            standard_number: Номер стандарта (например, "7798-30")
+            standard_number: Номер стандарта (например, "7798-30", "33080-80", "1 33056-80")
             
         Returns:
             Данные стандарта из YAML или None
         """
-        # Нормализуем номер стандарта
-        standard_number = standard_number.replace(' ', '-').replace('_', '-')
-        standard_id = f"{standard_type}_{standard_number}"
+        # Нормализуем тип и номер стандарта
+        normalized_type = standard_type.upper().strip()
+        if normalized_type == 'ОСТ':
+            normalized_type = 'OST'
+        
+        normalized_number = normalize_standard_text(standard_number)
+        
+        # Парсим обозначение для правильной обработки
+        parsed = parse_standard_designation(f"{normalized_type} {normalized_number}")
+        
+        if parsed:
+            # Используем распарсенные данные
+            full_number = parsed.get('full_number', normalized_number)
+            standard_id = f"{normalized_type}_{full_number}"
+        else:
+            # Если не распарсилось, используем нормализованный номер
+            standard_id = normalize_standard_number(normalized_type, normalized_number)
         
         # Ищем точное совпадение
         if standard_id in self._standards_cache:
+            logger.debug(f"Found exact match: {standard_id}")
             return self._standards_cache[standard_id]
         
-        # Ищем частичное совпадение
-        for cached_id, standard_data in self._standards_cache.items():
-            if standard_type.lower() in cached_id.lower() and standard_number in cached_id:
-                return standard_data
+        # Ищем варианты с разными форматами дефисов и пробелов
+        search_variants = [
+            standard_id,
+            standard_id.replace('-', ''),
+            standard_id.replace('-', ' '),
+            standard_id.replace('_', '-'),
+        ]
         
+        for variant in search_variants:
+            if variant in self._standards_cache:
+                logger.debug(f"Found variant match: {variant}")
+                return self._standards_cache[variant]
+        
+        # Ищем частичное совпадение (номер стандарта)
+        if parsed:
+            number = parsed.get('number', '')
+            if number:
+                for cached_id, standard_data in self._standards_cache.items():
+                    if normalized_type.lower() in cached_id.lower() and number in cached_id:
+                        logger.debug(f"Found partial match: {cached_id}")
+                        return standard_data
+        
+        logger.debug(f"Standard not found: {standard_id}")
         return None
     
     def get_standard_info(self, standard_type: str, standard_number: str) -> Dict[str, Any]:

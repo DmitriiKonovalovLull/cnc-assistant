@@ -1,0 +1,166 @@
+{
+  "material": "титан",
+  "operation": "токарка",
+  "diameter_start": 200.0,
+  "diameter_end": 50.0,
+  "machine_type": "до 050",
+  "collecting_params": false,
+  "overall_confidence": 0.75,
+  "user_id": "7173846851",
+  "session_id": "work_W001",
+  "assumptions_made": [],
+  "defaults_used": [
+    "machine_type",
+    "machine_power",
+    "tool_material",
+    "tool_radius",
+    "length"
+  ],
+  "dialog_history": [
+    {
+      "timestamp": "2026-02-16T13:13:58.012459",
+      "event": "user_message",
+      "data": {
+        "text": {
+          "material": "30ХГСА",
+          "parsed_fields": [
+            "material"
+          ],
+          "confidence": 0.058823529411764705
+        },
+        "parsed_fields": [
+          "material"
+        ]
+      }
+    },
+    {
+      "timestamp": "2026-02-16T13:13:58.012509",
+      "event": "unknown_intent",
+      "data": {
+        "text": "30 хгса диаметр от 50"
+      }
+    },
+    {
+      "timestamp": "2026-02-17T14:31:11.802617",
+      "event": "user_message",
+      "data": {
+        "text": {
+          "diameter_start": 50.0,
+          "diameter_end": 15.0,
+          "parsed_fields": [
+            "diameter_start",
+            "diameter_end"
+          ],
+          "confidence": 0.11764705882352941
+        },
+        "parsed_fields": [
+          "diameter_start",
+          "diameter_end"
+        ]
+      }
+    },
+    {
+      "timestamp": "2026-02-17T14:31:11.802686",
+      "event": "unknown_intent",
+      "data": {
+        "text": "С 50 до 15"
+      }
+    },
+    {
+      "timestamp": "2026-02-17T15:34:49.755513",
+      "event": "user_message",
+      "data": {
+        "text": {
+          "material": "30ХГСА",
+          "diameter_start": 50.0,
+          "diameter_end": 7.2,
+          "machine_type": "неф",
+          "parsed_fields": [
+            "material",
+            "diameter_start",
+            "diameter_end",
+            "machine_type"
+          ],
+          "confidence": 0.23529411764705882
+        },
+        "parsed_fields": [
+          "material",
+          "diameter_start",
+          "diameter_end",
+          "machine_type"
+        ]
+      }
+    },
+    {
+      "timestamp": "2026-02-17T15:34:49.755579",
+      "event": "unknown_intent",
+      "data": {
+        "text": "30 хгса от 50 до7.2 станок неф"
+      }
+    },
+    {
+      "timestamp": "2026-02-17T15:35:16.335120",
+      "event": "user_message",
+      "data": {
+        "text": {
+          "material": "титан",
+          "operation": "токарка",
+          "diameter_start": 200.0,
+          "diameter_end": 50.0,
+          "machine_type": "до 050",
+          "parsed_fields": [
+            "material",
+            "operation",
+            "diameter_start",
+            "diameter_end",
+            "machine_type"
+          ],
+          "confidence": 0.29411764705882354
+        },
+        "parsed_fields": [
+          "material",
+          "operation",
+          "diameter_start",
+          "diameter_end",
+          "machine_type"
+        ]
+      }
+    },
+    {
+      "timestamp": "2026-02-17T15:37:39.580823",
+      "event": "user_message",
+      "data": {
+        "text": {
+          "parsed_fields": [],
+          "confidence": 0.0
+        },
+        "parsed_fields": []
+      }
+    },
+    {
+      "timestamp": "2026-02-17T15:37:46.368489",
+      "event": "user_message",
+      "data": {
+        "text": {
+          "parsed_fields": [],
+          "confidence": 0.0
+        },
+        "parsed_fields": []
+      }
+    }
+  ],
+  "field_metadata": {
+    "material": {
+      "source": "user",
+      "confidence": 1.0,
+      "reasoning": "Извлечено из текста пользователя"
+    },
+    "operation": {
+      "source": "user",
+      "confidence": 1.0,
+      "reasoning": "Извлечено из текста пользователя"
+    }
+  },
+  "_version": "1.2",
+  "_updated_at": "2026-02-17T15:37:46.980286"
+}

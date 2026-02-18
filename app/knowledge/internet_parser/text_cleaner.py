@@ -3,7 +3,6 @@
 """
 
 import re
-from typing import str as StringType
 
 
 class TextCleaner:

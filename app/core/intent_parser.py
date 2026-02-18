@@ -159,22 +159,41 @@ class IntentParser:
         
         # Паттерн для стандартов: "ОСТ 1 33056-80", "ГОСТ 7798-30", "DIN 912"
         # Для ОСТ может быть формат "1 33056-80" - нужно захватить весь номер
+        # Улучшенные паттерны с поддержкой разных дефисов
         standard_patterns = [
-            r'\b(гост|ост|din|iso)\s+(\d+\s+\d+[-\s]\d+)',  # ОСТ 1 33056-80
-            r'\b(гост|ост|din|iso)\s+(\d+[-\s]\d+)',  # ГОСТ 7798-30, ОСТ 33056-80
+            # ОСТ с префиксом: "ОСТ 1 33056-80", "ОСТ 1 33056–80" (с разными дефисами)
+            r'\b(гост|ост|din|iso)\s+(\d+)\s+(\d{5})[–\-](\d{2})',  # ОСТ 1 33056-80
+            # ГОСТ/ОСТ с дефисом: "ГОСТ 7798-30", "ОСТ 33080-80"
+            r'\b(гост|ост|din|iso)\s+(\d+)[–\-](\d{2})',  # ГОСТ 7798-30, ОСТ 33080-80
+            # ГОСТ/ОСТ с пробелом вместо дефиса: "ГОСТ 7798 30"
+            r'\b(гост|ост|din|iso)\s+(\d+)\s+(\d{2})',  # ГОСТ 7798 30
+            # Без года: "DIN 912", "ISO 4014"
             r'\b(гост|ост|din|iso)\s+(\d+)',  # DIN 912, ISO 4014
         ]
         
         for pattern in standard_patterns:
-            standard_match = re.search(pattern, text_lower, re.IGNORECASE)
+            standard_match = re.search(pattern, text, re.IGNORECASE)
             if standard_match:
                 standard_type = standard_match.group(1).upper()
-                standard_number = standard_match.group(2).strip()
                 
-                # Нормализуем номер: заменяем пробелы на дефисы где нужно
-                # "1 33056-80" -> "1 33056-80" (оставляем как есть)
-                # "33056-80" -> "33056-80"
-                # "7798 30" -> "7798-30"
+                # Обрабатываем разные форматы
+                if len(standard_match.groups()) == 4:
+                    # Формат "ОСТ 1 33056-80"
+                    prefix = standard_match.group(2)
+                    number = standard_match.group(3)
+                    year = standard_match.group(4)
+                    standard_number = f"{prefix} {number}-{year}"
+                elif len(standard_match.groups()) == 3:
+                    # Формат "ГОСТ 7798-30" или "ГОСТ 7798 30"
+                    number = standard_match.group(2)
+                    year = standard_match.group(3)
+                    standard_number = f"{number}-{year}"
+                else:
+                    # Формат "DIN 912"
+                    standard_number = standard_match.group(2).strip()
+                
+                # Нормализуем номер: заменяем разные типы дефисов на стандартный
+                standard_number = standard_number.replace('–', '-').replace('—', '-')
                 standard_number = re.sub(r'\s+', ' ', standard_number)  # Нормализуем пробелы
                 
                 return {

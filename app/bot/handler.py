@@ -5,8 +5,9 @@
 """
 
 import logging
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 from datetime import datetime
+from dataclasses import dataclass, field
 from app.core.context import Context, DataSource
 from app.core.parser import TextParser
 from app.core.image_parser import ImageParser
@@ -15,6 +16,7 @@ from app.core.calculator import PhysicsCalculator, CuttingParametersCalculator
 from app.core.pass_strategy import PassStrategy
 from app.core.validator import Validator
 from app.core.intent_parser import IntentParser, Intent
+from app.core.intent_detector import IntentDetector, IntentType
 from app.core.conversation_orchestrator import ConversationOrchestrator, ConversationMode
 from app.services.knowledge_service import KnowledgeService
 from app.services.standard_service import StandardService
@@ -26,6 +28,60 @@ from app.services.data_collector import DataCollector
 from app.core.state_machine import StateMachine, SystemState
 
 logger = logging.getLogger(__name__)
+
+# Константы для утвердительных ответов
+AFFIRMATIVE_WORDS = ['давай', 'да', 'ок', 'ага', 'хочу', 'попробуй', 'yes', 'окей', 'начать', 'продолжить']
+
+
+@dataclass
+class ProcessingResult:
+    """Типизированный результат обработки сообщения."""
+    action: str
+    mode: str
+    fsm_enabled: bool
+    message: Optional[str] = None
+    context: Optional[Dict[str, Any]] = None
+    recommendation: Optional[Dict[str, Any]] = None
+    is_command: bool = False
+    error: Optional[str] = None
+    missing_fields: List[str] = field(default_factory=list)
+    standard_info: Optional[Dict[str, Any]] = None
+    standard_id: Optional[str] = None
+    offer_apply_to_work: bool = False
+    
+    def to_dict(self) -> Dict[str, Any]:
+        """Преобразовать в словарь для обратной совместимости."""
+        result = {
+            'action': self.action,
+            'mode': self.mode,
+            'fsm_enabled': self.fsm_enabled,
+            'is_command': self.is_command,
+        }
+        if self.message:
+            result['message'] = self.message
+        if self.context:
+            result['context'] = self.context
+        if self.recommendation:
+            result['recommendation'] = self.recommendation
+        if self.error:
+            result['error'] = self.error
+        if self.missing_fields:
+            result['missing_fields'] = self.missing_fields
+        if self.standard_info:
+            result['standard_info'] = self.standard_info
+        if self.standard_id:
+            result['standard_id'] = self.standard_id
+        if self.offer_apply_to_work:
+            result['offer_apply_to_work'] = self.offer_apply_to_work
+        return result
+
+
+def _get_lang(context: Optional[Context]) -> str:
+    try:
+        from app.bot.i18n import get_lang
+        return get_lang(context)
+    except ImportError:
+        return 'ru'
 
 
 class MessageHandler:
@@ -60,6 +116,7 @@ class MessageHandler:
         self.image_parser = ImageParser(tesseract_cmd=tesseract_cmd)
         self.assumption_engine = assumption_engine or AssumptionEngine(knowledge_service)
         self.intent_parser = IntentParser()  # Парсер интентов
+        self.intent_detector = IntentDetector()  # Детектор намерений с правильным приоритетом
         self.orchestrator = ConversationOrchestrator()  # Оркестратор диалога
         self.standard_service = StandardService()  # Сервис стандартов
         self.calculator = calculator
@@ -81,6 +138,145 @@ class MessageHandler:
         self.state_machine = StateMachine()
         self.fsm_active = False  # Флаг активности FSM
     
+    def _sync_fsm_state(self, orchestrator_result: Dict[str, Any]) -> None:
+        """
+        Синхронизировать состояние FSM с оркестратором.
+        
+        Args:
+            orchestrator_result: Результат работы оркестратора
+        """
+        fsm_enabled = orchestrator_result.get('fsm_enabled', False)
+        self.fsm_active = fsm_enabled
+        
+        # Синхронизируем с оркестратором если есть метод
+        if hasattr(self.orchestrator, 'set_fsm_state'):
+            self.orchestrator.set_fsm_state(fsm_enabled)
+        
+        logger.debug(f"FSM state synchronized: fsm_active={self.fsm_active}")
+    
+    def _is_affirmative_response(self, text: str) -> bool:
+        """
+        Проверить, является ли текст утвердительным ответом.
+        
+        Args:
+            text: Текст для проверки
+            
+        Returns:
+            True если это утвердительный ответ
+        """
+        if not text:
+            return False
+        text_lower = text.strip().lower()
+        return any(w == text_lower or text_lower.startswith(w + ' ') for w in AFFIRMATIVE_WORDS)
+    
+    async def _save_unknown_entities_batch(self, parsed_data, context: Context) -> None:
+        """
+        Пакетное сохранение неизвестных сущностей в БД.
+        Оптимизирует работу с БД, объединяя проверки и сохранения.
+        
+        Args:
+            parsed_data: Распарсенные данные
+            context: Контекст для обновления истории
+        """
+        entities_to_save = []
+        
+        # 1. Проверяем и подготавливаем станок
+        if parsed_data.machine_type and self.machine_saver:
+            machine_info = self.knowledge_service.find_machine(parsed_data.machine_type)
+            if not machine_info:
+                known_types = ['токарный чпу', 'токарный ручной', 'фрезерный чпу', 'фрезерный ручной']
+                if parsed_data.machine_type.lower() not in known_types:
+                    entities_to_save.append(('machine', parsed_data.machine_type, parsed_data))
+        
+        # 2. Проверяем и подготавливаем материал
+        if parsed_data.material and self.material_saver:
+            material_info = self.knowledge_service.find_material(parsed_data.material)
+            if not material_info:
+                entities_to_save.append(('material', parsed_data.material, parsed_data))
+        
+        # 3. Проверяем и подготавливаем инструмент
+        if parsed_data.tool_name and self.tool_saver:
+            tool_info = self.knowledge_service.find_tool(
+                parsed_data.tool_type or 'токарный проходной',
+                parsed_data.tool_material or 'твердый сплав'
+            )
+            if not tool_info:
+                entities_to_save.append(('tool', parsed_data.tool_name, parsed_data))
+        
+        # Сохраняем все сущности
+        for entity_type, entity_name, data in entities_to_save:
+            try:
+                if entity_type == 'machine':
+                    machine_id = self.machine_saver.save_unknown_machine(
+                        machine_name=data.machine_type,
+                        machine_type=None,
+                        power_kw=data.machine_power,
+                        max_rpm=getattr(data, "rpm", None),
+                        manufacturer=None
+                    )
+                    if machine_id:
+                        context.add_to_history('machine_saved', {
+                            'machine_id': machine_id,
+                            'machine_name': data.machine_type
+                        })
+                        logger.info(f"Saved unknown machine: {data.machine_type}")
+                        
+                        # Поиск в интернете асинхронно
+                        if self.internet_search:
+                            try:
+                                search_result = await self.internet_search.search_and_save_machine(data.machine_type)
+                                if search_result.get('success'):
+                                    logger.info(f"Found machine info online: {search_result.get('data')}")
+                                    context.add_to_history('machine_info_found', {
+                                        'machine_name': data.machine_type,
+                                        'sources': search_result.get('sources', [])
+                                    })
+                            except Exception as e:
+                                logger.debug(f"Internet search failed: {e}")
+                
+                elif entity_type == 'material':
+                    material_id = self.material_saver.save_unknown_material(
+                        material_name=data.material,
+                        material_type=None
+                    )
+                    if material_id:
+                        context.add_to_history('material_saved', {
+                            'material_id': material_id,
+                            'material_name': data.material
+                        })
+                        logger.info(f"Saved unknown material: {data.material}")
+                
+                elif entity_type == 'tool':
+                    tool_id = self.tool_saver.save_unknown_tool(
+                        tool_name=data.tool_name,
+                        tool_type=data.tool_type,
+                        insert_material=data.tool_material,
+                        insert_grade=data.tool_grade,
+                        insert_radius_mm=data.tool_radius,
+                        manufacturer=data.tool_manufacturer
+                    )
+                    if tool_id:
+                        context.add_to_history('tool_saved', {
+                            'tool_id': tool_id,
+                            'tool_name': data.tool_name
+                        })
+                        logger.info(f"Saved unknown tool: {data.tool_name}")
+                        
+                        # Поиск в интернете асинхронно
+                        if self.internet_search:
+                            try:
+                                search_result = await self.internet_search.search_and_save_tool(data.tool_name)
+                                if search_result.get('success'):
+                                    logger.info(f"Found tool info online: {search_result.get('data')}")
+                                    context.add_to_history('tool_info_found', {
+                                        'tool_name': data.tool_name,
+                                        'sources': search_result.get('sources', [])
+                                    })
+                            except Exception as e:
+                                logger.debug(f"Internet search failed: {e}")
+            except Exception as e:
+                logger.error(f"Error saving {entity_type} {entity_name}: {e}", exc_info=True)
+    
     async def process_message(
         self,
         user_text: Optional[str] = None,
@@ -92,23 +288,119 @@ class MessageHandler:
         """
         Обработать сообщение пользователя.
         
-        Сначала определяет интент, затем решает что делать:
-        - Если не инженерный интент - возвращает ответ без FSM
-        - Если инженерный - активирует FSM и обрабатывает через него
-        """
-        """
-        Обработать сообщение пользователя.
-        
         Args:
             user_text: Текст сообщения
             user_id: ID пользователя
             session_id: ID сессии (опционально)
             existing_context: Существующий контекст (опционально)
+            image_data: Данные изображения (опционально)
             
         Returns:
             Словарь с результатом обработки
         """
-        # 0. ОРКЕСТРАТОР - единый управляющий слой
+        try:
+            return await self._process_message_internal(
+                user_text, user_id, session_id, existing_context, image_data
+            )
+        except Exception as e:
+            logger.error(f"Critical error in process_message: {e}", exc_info=True)
+            # Создаем минимальный контекст для ошибки
+            error_context = {}
+            if existing_context:
+                error_context = existing_context.to_dict()
+            elif user_id:
+                error_context = {'user_id': user_id}
+            
+            return {
+                'action': 'error',
+                'message': 'Произошла внутренняя ошибка. Пожалуйста, попробуйте еще раз.',
+                'error': str(e),
+                'context': error_context,
+                'fsm_enabled': False,
+                'mode': 'error'
+            }
+    
+    async def _process_message_internal(
+        self,
+        user_text: Optional[str] = None,
+        user_id: str = None,
+        session_id: Optional[str] = None,
+        existing_context: Optional[Context] = None,
+        image_data: Optional[bytes] = None
+    ) -> Dict[str, Any]:
+        """
+        Внутренняя реализация обработки сообщения.
+        
+        Сначала определяет интент, затем решает что делать:
+        - Если не инженерный интент - возвращает ответ без FSM
+        - Если инженерный - активирует FSM и обрабатывает через него
+        """
+        # ============================================================================
+        # ГЛОБАЛЬНЫЙ INTENT ROUTER (ПЕРВЫЙ ПРИОРИТЕТ)
+        # Intent управляет логикой, а не FSM!
+        # ============================================================================
+        intent = self.intent_detector.detect_intent(user_text, has_photo=bool(image_data))
+        logger.debug(f"Global intent detected: {intent.value}")
+        
+        # 1. Обработка приветствия (ПЕРВЫМ!)
+        if intent == IntentType.GREETING:
+            # Сбрасываем временные данные сессии
+            if existing_context:
+                existing_context.reset_temp()
+            return {
+                'action': 'greeting',
+                'mode': 'chat',
+                'fsm_enabled': False,
+                'message': '👋 Привет! Чем могу помочь?\n\n'
+                          'Я могу:\n'
+                          '• Рассчитать режимы резания\n'
+                          '• Работать со стандартами (ГОСТ, ОСТ, ISO)\n'
+                          '• Помочь с технологией обработки\n'
+                          '• Открыть инженерный калькулятор\n\n'
+                          'Просто опишите задачу!',
+                'context': existing_context.to_dict() if existing_context else None,
+                'is_command': False
+            }
+        
+        # 2. Обработка отмены
+        if intent == IntentType.CANCEL:
+            # Очищаем текущий объект из сессии
+            if existing_context:
+                existing_context.clear_current_object()
+                # Сбрасываем FSM если активен
+                self.fsm_active = False
+                if hasattr(self.orchestrator, 'disable_fsm'):
+                    self.orchestrator.disable_fsm()
+            return {
+                'action': 'cancel',
+                'mode': 'chat',
+                'fsm_enabled': False,
+                'message': '✅ Хорошо, отменяю.\n\nЧто нужно рассчитать?',
+                'context': existing_context.to_dict() if existing_context else None,
+                'is_command': False
+            }
+        
+        # 3. Обработка калькулятора
+        if intent == IntentType.CALCULATOR:
+            return {
+                'action': 'calculator',
+                'mode': 'calculator',
+                'fsm_enabled': False,
+                'message': (
+                    '🧮 <b>Инженерный калькулятор</b>\n\n'
+                    'Выберите тип расчета:\n'
+                    '1. Режимы резания\n'
+                    '2. Резьба (M, шаг, допуск)\n'
+                    '3. Допуски и посадки\n'
+                    '4. Шероховатость\n'
+                    '5. Мощность резания\n\n'
+                    'Или опишите задачу текстом.'
+                ),
+                'context': existing_context.to_dict() if existing_context else None,
+                'is_command': False
+            }
+        
+        # 0. ОРКЕСТРАТОР - единый управляющий слой (после intent router)
         # Определяет режим работы и разрешает ли запускать FSM
         orchestrator_result = self.orchestrator.process_message(
             text=user_text,
@@ -121,7 +413,20 @@ class MessageHandler:
         action = orchestrator_result.get('action', 'unknown')
         fsm_allowed = orchestrator_result.get('fsm_enabled', False)
         
-        logger.info(f"Orchestrator decision: mode={mode}, action={action}, fsm_enabled={fsm_allowed}")
+        # Синхронизируем состояние FSM с оркестратором
+        self._sync_fsm_state(orchestrator_result)
+        
+        logger.info(
+            "Processing message",
+            extra={
+                'user_id': user_id,
+                'session_id': session_id,
+                'has_image': bool(image_data),
+                'mode': mode,
+                'action': action,
+                'fsm_enabled': fsm_allowed
+            }
+        )
         
         # Создаем или получаем контекст
         if existing_context:
@@ -139,9 +444,7 @@ class MessageHandler:
         
         # Ожидание подтверждения поиска стандарта ("да давай" после standard_not_found)
         if context.pending_standard_search and user_text:
-            text_lower = user_text.strip().lower()
-            affirmative = any(w in text_lower for w in ['да', 'давай', 'ок', 'ага', 'хочу', 'попробуй', 'yes', 'окей'])
-            if affirmative:
+            if self._is_affirmative_response(user_text):
                 pending_std = context.pending_standard_search
                 context.pending_standard_search = None
                 if self.internet_search:
@@ -199,9 +502,7 @@ class MessageHandler:
         # Обработка простых утвердительных ответов ("давай", "ок" и т.д.) когда контекст уже загружен
         # Это позволяет продолжить работу после загрузки работы или когда есть данные в контексте
         if user_text and not orchestrator_result.get('is_command'):
-            text_lower = user_text.strip().lower()
-            affirmative_words = ['давай', 'да', 'ок', 'ага', 'хочу', 'попробуй', 'yes', 'окей', 'начать', 'продолжить']
-            is_affirmative = any(w == text_lower or text_lower.startswith(w + ' ') for w in affirmative_words)
+            is_affirmative = self._is_affirmative_response(user_text)
             
             # Проверяем, есть ли данные в контексте (материал, диаметры, операция, стандарт)
             has_context_data = bool(
@@ -215,12 +516,48 @@ class MessageHandler:
             
             # Если это простое утверждение и есть данные в контексте - активируем FSM
             if is_affirmative and has_context_data:
-                logger.info(f"Affirmative response detected with context data, activating FSM")
+                logger.info("Affirmative response detected with context data, activating FSM")
                 # Активируем FSM и переходим к обработке как инженерный запрос
                 self.fsm_active = True
+                # Синхронизируем с оркестратором
+                if hasattr(self.orchestrator, 'enable_fsm'):
+                    self.orchestrator.enable_fsm()
                 # Определяем действие на основе состояния контекста
                 action = self._determine_action(context)
                 return await self._execute_action(action, context, user_text)
+        
+        # ============================================================================
+        # ПРАВИЛЬНЫЙ ПОРЯДОК ОБРАБОТКИ (ЖЁСТКИЙ):
+        # 1. Команды (уже обработаны в orchestrator)
+        # 2. Фото (обрабатывается отдельно в telegram_bot.py)
+        # 3. Стандарты (только ЯВНЫЕ обозначения: M20, H7, Ra 1.6)
+        # 4. Технологический текст (режимы, расчеты)
+        # 5. Fallback
+        # ============================================================================
+        
+        # Определяем намерение с правильным приоритетом
+        intent = self.intent_detector.detect_intent(user_text, has_photo=bool(image_data))
+        logger.debug(f"Detected intent: {intent.value}")
+        
+        # 3. СТАНДАРТЫ - только если это ЯВНОЕ обозначение стандарта (M20, H7, Ra 1.6)
+        # НЕ упоминания ГОСТ/ОСТ в тексте технологического запроса
+        if intent == IntentType.STANDARD and user_text:
+            # Проверяем, что это действительно короткое обозначение стандарта
+            if self.intent_detector.is_standard_designation(user_text):
+                try:
+                    from standards.api.designation_handler import process_designation
+                    designation_result = process_designation(user_text.strip())
+                    if designation_result and designation_result.get("message"):
+                        return ProcessingResult(
+                            action="standard_designation",
+                            mode=mode,
+                            fsm_enabled=False,  # Стандарты не требуют FSM
+                            message=designation_result["message"],
+                            context=context.to_dict() if context else None,
+                        ).to_dict()
+                except Exception as e:
+                    logger.debug(f"Standards designation check failed: {e}")
+                    # Продолжаем обработку как обычный запрос
         
         # ВАЖНО: Парсим текст ПЕРЕД проверкой режима, чтобы извлечь данные
         # Парсер должен работать для ВСЕХ типов запросов (инженерных, проектных, команд)
@@ -253,93 +590,109 @@ class MessageHandler:
                 standard_number=orchestrator_result.get('standard_number')
             )
         
-        # Если это команда или не-инженерный запрос - обрабатываем отдельно
-        if orchestrator_result.get('is_command') or mode not in [ConversationMode.ENGINEERING.value]:
-            # FSM отключен для команд и не-инженерных запросов
-            self.fsm_active = False
+        # 4. ТЕХНОЛОГИЧЕСКИЙ ЗАПРОС - если это не команда и не стандарт
+        # Проверяем технологический запрос ПЕРЕД проверкой режима оркестратора
+        if intent == IntentType.PROCESS and not orchestrator_result.get('is_command'):
+            # Это технологический запрос - обрабатываем как инженерный
+            logger.info("Processing as engineering request (process intent)")
+            # Активируем FSM для технологических запросов
+            fsm_allowed = True
+            mode = ConversationMode.ENGINEERING.value
+            # Переопределяем режим для обработки как инженерный запрос
+            orchestrator_result['mode'] = ConversationMode.ENGINEERING.value
+            orchestrator_result['fsm_enabled'] = True
+        
+        # Если это команда - обрабатываем отдельно
+        if orchestrator_result.get('is_command'):
+            # Команды обрабатываются в telegram_bot.py
+            return {
+                'action': action,
+                'mode': mode,
+                'fsm_enabled': False,
+                'is_command': True,
+                'context': context.to_dict()
+            }
+        
+        # Если это PROJECT MODE (стандарты или технологический маршрут) - обрабатываем отдельно
+        if mode == ConversationMode.PROJECT.value:
+            # PROJECT MODE - работа по ГОСТ/чертежу или технологический маршрут
+            # Парсер уже вызван выше, данные уже в контексте
             
-            # Обрабатываем через соответствующий обработчик
-            if orchestrator_result.get('is_command'):
-                # Команды обрабатываются в telegram_bot.py
+            # Проверяем тип действия
+            if action == 'tech_process':
+                # Технологический маршрут (расточка, сверление, фрезерование)
+                operations = orchestrator_result.get('operations', [])
+                context.collecting_params = True
+                context.operation = ', '.join(operations) if operations else None
+                
+                # Парсим станок из текста если есть
+                if parsed_data and parsed_data.machine_type:
+                    context.set_field(
+                        'machine_type',
+                        parsed_data.machine_type,
+                        DataSource.USER,
+                        confidence=1.0,
+                        reasoning="Станок распознан из технологического маршрута"
+                    )
+                
                 return {
-                    'action': action,
-                    'mode': mode,
-                    'fsm_enabled': False,
-                    'is_command': True,
+                    'action': 'tech_process',
+                    'message': (
+                        f"✅ <b>Технологический маршрут распознан:</b>\n\n"
+                        f"📋 <b>Операции:</b> {', '.join(operations)}\n"
+                        f"{f'🏭 <b>Станок:</b> {context.machine_type}\n' if context.machine_type else ''}\n"
+                        f"💬 <b>Укажите параметры:</b>\n"
+                        f"• Материал заготовки\n"
+                        f"• Диаметры и размеры\n"
+                        f"• Количество деталей\n"
+                    ),
+                    'mode': 'project',
+                    'fsm_enabled': True,
                     'context': context.to_dict()
                 }
-            elif mode == ConversationMode.PROJECT.value:
-                # PROJECT MODE - работа по ГОСТ/чертежу или технологический маршрут
-                # Парсер уже вызван выше, данные уже в контексте
-                
-                # Проверяем тип действия
-                if action == 'tech_process':
-                    # Технологический маршрут (расточка, сверление, фрезерование)
-                    operations = orchestrator_result.get('operations', [])
-                    context.collecting_params = True
-                    context.operation = ', '.join(operations) if operations else None
-                    
-                    # Парсим станок из текста если есть
-                    if parsed_data and parsed_data.machine_type:
-                        context.set_field(
-                            'machine_type',
-                            parsed_data.machine_type,
-                            DataSource.USER,
-                            confidence=1.0,
-                            reasoning="Станок распознан из технологического маршрута"
-                        )
-                    
-                    return {
-                        'action': 'tech_process',
-                        'message': (
-                            f"✅ <b>Технологический маршрут распознан:</b>\n\n"
-                            f"📋 <b>Операции:</b> {', '.join(operations)}\n"
-                            f"{f'🏭 <b>Станок:</b> {context.machine_type}\n' if context.machine_type else ''}\n"
-                            f"💬 <b>Укажите параметры:</b>\n"
-                            f"• Материал заготовки\n"
-                            f"• Диаметры и размеры\n"
-                            f"• Количество деталей\n"
-                        ),
-                        'mode': 'project',
-                        'fsm_enabled': True,
-                        'context': context.to_dict()
-                    }
-                
-                # Стандартная деталь (ГОСТ/ОСТ)
-                standard_type = orchestrator_result.get('standard_type')
-                standard_number = orchestrator_result.get('standard_number')
-                
-                # ВАЖНО: Если стандарт уже есть в контексте, но новый стандарт не распознан
-                # значит это продолжение сбора параметров
-                if context.standard_id and not standard_type:
-                    # Стандарт уже был распознан - собираем параметры
-                    return await self._handle_project_mode(
-                        user_text or '', 
-                        context,
-                        standard_type=None,
-                        standard_number=None
-                    )
-                else:
-                    # Новый стандарт распознан или первый запрос
-                    return await self._handle_project_mode(
-                        user_text or '', 
-                        context,
-                        standard_type=standard_type,
-                        standard_number=standard_number
-                    )
-            else:
-                # Не-инженерные интенты
-                intent = Intent(orchestrator_result.get('intent', 'noise'))
-                intent_result = {
-                    'intent': intent,
-                    'confidence': orchestrator_result.get('confidence', 0.5)
-                }
-                return await self._handle_non_engineering_intent(
-                    intent, intent_result, user_text or '', context
+            
+            # Стандартная деталь (ГОСТ/ОСТ)
+            standard_type = orchestrator_result.get('standard_type')
+            standard_number = orchestrator_result.get('standard_number')
+            
+            # ВАЖНО: Если стандарт уже есть в контексте, но новый стандарт не распознан
+            # значит это продолжение сбора параметров
+            if context.standard_id and not standard_type:
+                # Стандарт уже был распознан - собираем параметры
+                return await self._handle_project_mode(
+                    user_text or '', 
+                    context,
+                    standard_type=None,
+                    standard_number=None
                 )
+            else:
+                # Новый стандарт распознан или первый запрос
+                return await self._handle_project_mode(
+                    user_text or '', 
+                    context,
+                    standard_type=standard_type,
+                    standard_number=standard_number
+                )
+        # Если это не команда и не PROJECT MODE - проверяем тип интента
+        # Технологические запросы (PROCESS intent) обрабатываются как ENGINEERING mode
+        if mode not in [ConversationMode.PROJECT.value, ConversationMode.ENGINEERING.value]:
+            # Не-инженерные интенты (help, greeting, etc.)
+            intent_enum = Intent(orchestrator_result.get('intent', 'noise'))
+            intent_result = {
+                'intent': intent_enum,
+                'confidence': orchestrator_result.get('confidence', 0.5)
+            }
+            return await self._handle_non_engineering_intent(
+                intent_enum, intent_result, user_text or '', context
+            )
         
-        # Инженерный запрос - FSM разрешен оркестратором
-        self.fsm_active = fsm_allowed
+        # Инженерный запрос (PROCESS intent или ENGINEERING mode) - FSM уже синхронизирован выше
+        # Активируем FSM если он еще не активен для технологических запросов
+        if (intent == IntentType.PROCESS or mode == ConversationMode.ENGINEERING.value) and not self.fsm_active:
+            logger.info("Activating FSM for engineering/process request")
+            self.fsm_active = True
+            if hasattr(self.orchestrator, 'enable_fsm'):
+                self.orchestrator.enable_fsm()
         
         # Контекст уже создан выше, user_id и session_id уже установлены
         
@@ -353,10 +706,11 @@ class MessageHandler:
                 # Сохраняем инструмент из изображения в БД
                 if self.tool_saver:
                     tool_id = self.tool_saver.save_tool_from_image(image_result)
-                    if tool_id:
-                        context.add_to_history('tool_from_image', {
+                    tool_name_img = image_result.get('tool_name') or 'Инструмент с фото'
+                    if tool_id or tool_name_img:
+                        context.add_to_history('tool_saved', {
                             'tool_id': tool_id,
-                            'tool_name': image_result.get('tool_name')
+                            'tool_name': tool_name_img
                         })
                 
                 # Обновляем контекст данными из изображения
@@ -389,102 +743,7 @@ class MessageHandler:
         
         # Сохраняем неизвестные сущности в БД (для всех режимов, где есть parsed_data)
         if parsed_data:
-            # 4.1. Сохраняем неизвестный станок если найден
-            if parsed_data.machine_type and self.machine_saver:
-                # Проверяем, известен ли станок
-                machine_info = self.knowledge_service.find_machine(parsed_data.machine_type)
-                
-                if not machine_info:
-                    # Проверяем, не является ли это просто типом (токарный ЧПУ) или реальным названием
-                    known_types = ['токарный чпу', 'токарный ручной', 'фрезерный чпу', 'фрезерный ручной']
-                    if parsed_data.machine_type.lower() not in known_types:
-                        # Это неизвестный станок - сохраняем
-                        machine_id = self.machine_saver.save_unknown_machine(
-                            machine_name=parsed_data.machine_type,
-                            machine_type=None,  # Будет определен автоматически
-                            power_kw=parsed_data.machine_power,
-                            max_rpm=getattr(parsed_data, "rpm", None),
-                            manufacturer=None  # Будет определен автоматически
-                        )
-                        if machine_id:
-                            context.add_to_history('machine_saved', {
-                                'machine_id': machine_id,
-                                'machine_name': parsed_data.machine_type
-                            })
-                            logger.info(f"Saved unknown machine: {parsed_data.machine_type}")
-                            
-                            # Пробуем найти информацию в интернете
-                            if self.internet_search:
-                                try:
-                                    search_result = await self.internet_search.search_and_save_machine(
-                                        parsed_data.machine_type
-                                    )
-                                    if search_result.get('success'):
-                                        logger.info(f"Found machine info online: {search_result.get('data')}")
-                                        context.add_to_history('machine_info_found', {
-                                            'machine_name': parsed_data.machine_type,
-                                            'sources': search_result.get('sources', [])
-                                        })
-                                except Exception as e:
-                                    logger.debug(f"Internet search failed: {e}")
-            
-            # 4.2. Сохраняем неизвестный материал если найден
-            if parsed_data.material and self.material_saver:
-                # Проверяем, известен ли материал
-                material_info = self.knowledge_service.find_material(parsed_data.material)
-                
-                if not material_info:
-                    # Это неизвестный материал - сохраняем
-                    material_id = self.material_saver.save_unknown_material(
-                        material_name=parsed_data.material,
-                        material_type=None  # Будет определен автоматически
-                    )
-                    if material_id:
-                        context.add_to_history('material_saved', {
-                            'material_id': material_id,
-                            'material_name': parsed_data.material
-                        })
-                        logger.info(f"Saved unknown material: {parsed_data.material}")
-            
-            # 4.3. Сохраняем неизвестный инструмент если найден
-            if parsed_data.tool_name and self.tool_saver:
-                # Проверяем, известен ли инструмент
-                tool_info = self.knowledge_service.find_tool(
-                    parsed_data.tool_type or 'токарный проходной',
-                    parsed_data.tool_material or 'твердый сплав'
-                )
-                
-                if not tool_info:
-                    # Сохраняем неизвестный инструмент
-                    tool_id = self.tool_saver.save_unknown_tool(
-                        tool_name=parsed_data.tool_name,
-                        tool_type=parsed_data.tool_type,
-                        insert_material=parsed_data.tool_material,
-                        insert_grade=parsed_data.tool_grade,
-                        insert_radius_mm=parsed_data.tool_radius,
-                        manufacturer=parsed_data.tool_manufacturer
-                    )
-                    if tool_id:
-                        context.add_to_history('tool_saved', {
-                            'tool_id': tool_id,
-                            'tool_name': parsed_data.tool_name
-                        })
-                        logger.info(f"Saved unknown tool: {parsed_data.tool_name}")
-                        
-                        # Пробуем найти информацию в интернете
-                        if self.internet_search:
-                            try:
-                                search_result = await self.internet_search.search_and_save_tool(
-                                    parsed_data.tool_name
-                                )
-                                if search_result.get('success'):
-                                    logger.info(f"Found tool info online: {search_result.get('data')}")
-                                    context.add_to_history('tool_info_found', {
-                                        'tool_name': parsed_data.tool_name,
-                                        'sources': search_result.get('sources', [])
-                                    })
-                            except Exception as e:
-                                logger.debug(f"Internet search failed: {e}")
+            await self._save_unknown_entities_batch(parsed_data, context)
         
         # 5. Делаем предположения (ТОЛЬКО если FSM активен)
         if self.fsm_active:
@@ -498,15 +757,22 @@ class MessageHandler:
             action = self._determine_action(context)
         else:
             # FSM не активен - возвращаем результат без обработки через FSM
+            lang = _get_lang(context)
+            try:
+                from app.bot.i18n import t
+                message = t('msg.fsm_disabled', lang=lang, default='FSM отключен, режим свободного диалога')
+            except ImportError:
+                message = 'FSM отключен, режим свободного диалога'
+            
             return {
                 'action': 'chat_mode',
                 'mode': 'chat',
                 'fsm_enabled': False,
                 'context': context.to_dict(),
-                'message': 'FSM отключен, режим свободного диалога'
+                'message': message
             }
         
-        # 7. Выполняем действие
+        # 7. Выполняем действие (для технологических запросов это расчет режимов)
         result = await self._execute_action(action, context, user_text or "")
         
         # 8. Сохраняем контекст после всех изменений (если есть work_manager, он может сохранить)
@@ -534,8 +800,7 @@ class MessageHandler:
         Returns:
             Результат обработки
         """
-        # Деактивируем FSM для не-инженерных запросов
-        self.fsm_active = False
+        # FSM уже деактивирован через синхронизацию с оркестратором
         
         if intent == Intent.GREETING:
             # Приветствие обрабатывается в telegram_bot.py
@@ -630,35 +895,43 @@ class MessageHandler:
             # Поиск не помог — вежливо уточняем
             unknown_count = sum(1 for item in context.dialog_history[-3:] if item.get('event') == 'unknown_intent')
             
+            lang = _get_lang(context)
+            try:
+                from app.bot.i18n import t
+                msg_fallback = t('msg.not_understood', lang=lang) + "\n\n" + t('msg.not_understood_fallback', lang=lang)
+                msg_noise = t('msg.not_understood', lang=lang) + "\n\n" + t('msg.not_understood_options', lang=lang)
+            except ImportError:
+                msg_fallback = (
+                    "🤔 <b>Не совсем понял ваш запрос.</b>\n\n"
+                    "💬 <b>Я могу помочь с:</b>\n\n"
+                    "1️⃣ <b>Рассчитать режимы резания</b>\n"
+                    "   (опиши задачу: материал, диаметры, тип обработки)\n\n"
+                    "2️⃣ <b>Сделать деталь по ГОСТ/ОСТ</b>\n"
+                    "   (напиши номер стандарта)\n\n"
+                    "3️⃣ <b>Помочь с технологией</b>\n"
+                    "   (задай вопрос или опиши проблему)\n\n"
+                    "💡 <i>Или просто опиши что нужно сделать, я пойму.</i>"
+                )
+                msg_noise = (
+                    "🤔 <b>Не совсем понял ваш запрос.</b>\n\n"
+                    "💬 <i>Вы можете:</i>\n"
+                    "• Описать задачу обработки\n"
+                    "• Указать ГОСТ/ОСТ для стандартной детали\n"
+                    "• Написать \"что ты можешь\" для описания возможностей\n"
+                    "• Написать \"помощь\" для инструкции\n\n"
+                    "<i>Просто опишите что нужно, я пойму.</i>"
+                )
             if unknown_count >= 2:
                 return {
                     'action': 'noise_fallback',
-                    'message': (
-                        "🤔 <b>Не совсем понял ваш запрос.</b>\n\n"
-                        "💬 <b>Я могу помочь с:</b>\n\n"
-                        "1️⃣ <b>Рассчитать режимы резания</b>\n"
-                        "   (опиши задачу: материал, диаметры, тип обработки)\n\n"
-                        "2️⃣ <b>Сделать деталь по ГОСТ/ОСТ</b>\n"
-                        "   (напиши номер стандарта, например: ГОСТ 7798-30)\n\n"
-                        "3️⃣ <b>Помочь с технологией</b>\n"
-                        "   (задай вопрос или опиши проблему)\n\n"
-                        "💡 <i>Или просто опиши что нужно сделать, я пойму.</i>"
-                    ),
+                    'message': msg_fallback,
                     'context': context.to_dict()
                 }
             else:
                 context.add_to_history('unknown_intent', {'text': user_text})
                 return {
                     'action': 'noise',
-                    'message': (
-                        "🤔 <b>Не совсем понял ваш запрос.</b>\n\n"
-                        "💬 <i>Вы можете:</i>\n"
-                        "• Описать задачу обработки\n"
-                        "• Указать ГОСТ/ОСТ для стандартной детали\n"
-                        "• Написать \"что ты можешь\" для описания возможностей\n"
-                        "• Написать \"помощь\" для инструкции\n\n"
-                        "<i>Просто опишите что нужно, я пойму.</i>"
-                    ),
+                    'message': msg_noise,
                     'context': context.to_dict()
                 }
         
@@ -938,17 +1211,21 @@ class MessageHandler:
                     f"💡 <i>После этого я подготовлю технологический маршрут с режимами резания.</i>"
                 )
             
+            msg = (
+                f"✅ <b>Нашёл параметры для {standard_display}.</b>\n\n"
+                f"{standard_info_text}\n\n"
+                f"📋 <b>Что именно будем делать?</b>\n\n"
+                f"{prompt_text}"
+            )
             return {
                 'action': 'standard_part',
-                'message': (
-                    f"✅ <b>Отлично! Стандарт {standard_display} распознан.</b>\n\n"
-                    f"{standard_info_text}\n\n"
-                    f"📋 <b>Что именно будем делать?</b>\n\n"
-                    f"{prompt_text}"
-                ),
+                'message': msg,
                 'mode': 'project',
                 'fsm_enabled': True,
                 'standard_info': standard_info,
+                'standard_display': standard_display,
+                'standard_id': standard_id,
+                'offer_apply_to_work': True,
                 'context': context.to_dict()
             }
         
@@ -1420,8 +1697,16 @@ class MessageHandler:
         
         except Exception as e:
             logger.error(f"Error in calculation: {e}", exc_info=True)
+            lang = _get_lang(context)
+            try:
+                from app.bot.i18n import t
+                error_message = t('msg.calculation_error', lang=lang, error=str(e), default=f'Ошибка расчета: {str(e)}')
+            except ImportError:
+                error_message = f'Ошибка расчета: {str(e)}'
+            
             return {
                 'action': 'error',
-                'message': f'Ошибка расчета: {str(e)}',
-                'context': context.to_dict()
+                'message': error_message,
+                'context': context.to_dict(),
+                'error': str(e)
             }

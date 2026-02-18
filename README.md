@@ -1,11 +1,47 @@
 # CNC Assistant
 
+## Быстрый старт
+
+### Интерактивный CLI для работы со стандартами
+
+Запустите `main.py` для интерактивной работы со всеми мировыми системами стандартов:
+
+```bash
+python main.py
+```
+
+**Возможности:**
+- Поддержка всех мировых систем стандартов (ГОСТ, ISO, DIN, GB, JIS, ANSI, BS)
+- Автоопределение системы по обозначению
+- Поиск аналогов стандартов в других системах с процентами совпадения
+- Региональные настройки (RU, CN, EU, US, JP, GB, GLOBAL)
+- Интерактивный режим с меню выбора
+
+**Пример использования:**
+```
+Выберите систему стандартов:
+  1. ГОСТ (Россия/СНГ)
+  2. ISO (международный)
+  ...
+  8. Автоопределение
+
+Введите обозначение: M20
+
+📊 Аналоги стандарта M20 (ISO):
+  GOST   24705          [████████████████████] 100%
+  DIN    13-1           [████████████████████] 100%
+  GB     192            [██████████████████░░]  98%
+```
+
+---
+
 AI-like industrial assistant for CNC operators: cutting modes, context, assumptions, and learning from feedback.
 
 ---
 
 ## Features
 
+- **Languages** — interface in Russian, English, Chinese (`/lang` to switch)
 - **Natural dialogue** — describe the task in text, get recommendations with reasoning
 - **Context** — remembers material, operation, tool, diameters between messages
 - **Assumptions** — fills missing data with sensible defaults
@@ -24,14 +60,81 @@ AI-like industrial assistant for CNC operators: cutting modes, context, assumpti
 **Windows:** `setup.bat`  
 **Linux/macOS:** `chmod +x setup.sh && ./setup.sh`
 
-Then set `TELEGRAM_TOKEN` in `.env` and run:
+### Запуск через main.py (рекомендуется)
+
+Главная точка входа с проверкой целостности проекта и автозагрузкой стандартов:
 
 ```bash
-python -m venv .venv
-.venv\Scripts\activate   # Windows
-# source .venv/bin/activate  # Linux/macOS
-pip install -r requirements.txt
+python main.py
+```
+
+**Возможности main.py:**
+- ✅ Автоматическая проверка структуры проекта
+- ✅ Проверка установленных зависимостей
+- ✅ Проверка наличия .env файла и токена
+- ✅ **Автозагрузка стандартов** (ГОСТ, ОСТ, ISO, DIN, GB, JIS, ANSI, BS) при старте
+- ✅ **Автоматический запуск бота** если токен найден
+- ✅ Меню настройки (если токен не найден):
+  - Запуск Telegram бота
+  - Проверка целостности проекта
+  - Установка зависимостей
+
+**Автозагрузка стандартов:**
+При запуске `main.py` автоматически загружаются:
+- ГОСТ резьбы и допуски
+- ISO допуски и резьбы
+- Реестр стандартов (WorldStandardRegistry)
+- Движок эквивалентности стандартов
+- База данных эквивалентности
+
+Стандарты интегрированы в логику Telegram бота - бот автоматически распознает обозначения стандартов (M20, H7, Ra 1.6 и т.д.) и предоставляет информацию о них.
+
+**Математические вычисления:**
+Все вычисления выполняются строго по формулам ISO/GOST:
+- Геометрия резьбы (ISO 965-1)
+- IT допуски (ISO 286)
+- Посадки (зазоры/натяги)
+- Шероховатость (связь с подачей)
+
+**Тестирование:**
+```bash
+# Запуск тестов через main.py (пункт 5)
+python main.py
+
+# Или напрямую
+pytest tests/standards -v
+```
+
+**Обновление стандартов:**
+```bash
+# Через main.py (пункт 4)
+python main.py
+
+# Или напрямую
+python standards/cli/update_standards.py update-standards
+```
+
+### Прямой запуск компонентов
+
+**Telegram бот:**
+```bash
 python app/bot/telegram_bot.py
+```
+
+**CLI режим:**
+```bash
+python app/bot/cli_bot.py
+```
+
+**Установка зависимостей:**
+```bash
+pip install -r requirements.txt
+```
+
+**Настройка .env:**
+Создайте файл `.env` в корне проекта:
+```
+TELEGRAM_TOKEN=ваш_токен_бота
 ```
 
 Details: [INSTALL.md](INSTALL.md).

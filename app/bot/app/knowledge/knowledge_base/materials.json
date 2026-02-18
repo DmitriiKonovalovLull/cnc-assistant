@@ -1,0 +1,11 @@
+{
+  "materials": [
+    {
+      "name": "1250",
+      "normalized_name": "1250",
+      "material_type": "сталь",
+      "hardness_hb": null,
+      "tensile_strength": null
+    }
+  ]
+}

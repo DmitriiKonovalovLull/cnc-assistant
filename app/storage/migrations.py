@@ -57,6 +57,55 @@ def migrate_add_operation_chain_json(db_path: str = "app/storage/cnc.db"):
         raise
 
 
+def _table_exists(cursor: sqlite3.Cursor, table_name: str) -> bool:
+    cursor.execute(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name=?", (table_name,)
+    )
+    return cursor.fetchone() is not None
+
+
+def migrate_experience_profiles_columns(db_path: str = "app/storage/cnc.db"):
+    """Добавить недостающие столбцы в experience_profiles (chain_operation_count и др.)."""
+    db_file = Path(db_path)
+    if not db_file.is_absolute():
+        project_root = Path(__file__).parent.parent.parent
+        db_file = project_root / db_path
+    if not db_file.exists():
+        logger.warning(f"Database file not found: {db_file}. Skipping migration.")
+        return
+    columns_to_add = [
+        ("chain_operation_count", "INTEGER DEFAULT 0"),
+        ("avg_chain_length", "REAL DEFAULT 1.0"),
+        ("avg_rpm_coeff", "REAL DEFAULT 1.0"),
+        ("avg_feed_coeff", "REAL DEFAULT 1.0"),
+        ("avg_ap_coeff", "REAL DEFAULT 1.0"),
+        ("material_adaptation_score", "REAL DEFAULT 0.0"),
+        ("diameter_adaptation_score", "REAL DEFAULT 0.0"),
+        ("operation_adaptation_score", "REAL DEFAULT 0.0"),
+        ("chain_adaptation_score", "REAL DEFAULT 0.0"),
+        ("risk_tolerance", "REAL DEFAULT 0.5"),
+        ("preferred_aggressiveness", "REAL DEFAULT 0.5"),
+        ("preferred_chain_pattern_json", "TEXT DEFAULT '{}'"),
+    ]
+    try:
+        conn = sqlite3.connect(str(db_file))
+        cursor = conn.cursor()
+        if not _table_exists(cursor, "experience_profiles"):
+            conn.close()
+            return
+        for col_name, col_def in columns_to_add:
+            if not check_column_exists(cursor, "experience_profiles", col_name):
+                logger.info("Adding column '%s' to experience_profiles", col_name)
+                cursor.execute(
+                    f"ALTER TABLE experience_profiles ADD COLUMN {col_name} {col_def}"
+                )
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        logger.error("Migration experience_profiles failed: %s", e)
+        raise
+
+
 def run_all_migrations(db_path: str = "app/storage/cnc.db"):
     """
     Запустить все миграции.
@@ -66,13 +115,16 @@ def run_all_migrations(db_path: str = "app/storage/cnc.db"):
     """
     logger.info("Running database migrations...")
     
-    # Миграция 1: operation_chain_json
     try:
         migrate_add_operation_chain_json(db_path)
     except Exception as e:
         logger.error(f"Migration failed: {e}")
         raise
-    
+    try:
+        migrate_experience_profiles_columns(db_path)
+    except Exception as e:
+        logger.error(f"Migration experience_profiles failed: {e}")
+        raise
     logger.info("All migrations completed")
 
 

@@ -1,0 +1,75 @@
+{
+  "equivalence_tables": {
+    "GOST_ISO": {
+      "description": "ГОСТ гармонизированные с ISO",
+      "mappings": [
+        {"gost": "24705", "iso": "965-1", "category": "thread", "confidence": 0.95},
+        {"gost": "8724", "iso": "261", "category": "thread", "confidence": 0.90},
+        {"gost": "9150", "iso": "68-1", "category": "thread", "confidence": 0.95},
+        {"gost": "25346", "iso": "286-1", "category": "tolerance", "confidence": 0.95},
+        {"gost": "25347", "iso": "286-2", "category": "tolerance", "confidence": 0.95}
+      ]
+    },
+    "GOST_DIN": {
+      "description": "ГОСТ исторические связи с DIN",
+      "mappings": [
+        {"gost": "24705", "din": "13-1", "category": "thread", "confidence": 0.85},
+        {"gost": "8724", "din": "13", "category": "thread", "confidence": 0.80},
+        {"gost": "25346", "din": "7157", "category": "tolerance", "confidence": 0.85}
+      ]
+    },
+    "GB_ISO": {
+      "description": "Китайские GB стандарты на основе ISO",
+      "mappings": [
+        {"gb": "192", "iso": "965-1", "category": "thread", "confidence": 0.90, "note": "GB/T 192-2003 mod ISO 965-1"},
+        {"gb": "193", "iso": "261", "category": "thread", "confidence": 0.90},
+        {"gb": "1800", "iso": "286-1", "category": "tolerance", "confidence": 0.95},
+        {"gb": "1801", "iso": "286-2", "category": "tolerance", "confidence": 0.95}
+      ]
+    },
+    "JIS_ISO": {
+      "description": "Японские JIS стандарты на основе ISO",
+      "mappings": [
+        {"jis": "B0205", "iso": "965-1", "category": "thread", "confidence": 0.90},
+        {"jis": "B0207", "iso": "261", "category": "thread", "confidence": 0.90},
+        {"jis": "B0401", "iso": "286-1", "category": "tolerance", "confidence": 0.95}
+      ]
+    },
+    "ANSI_ISO": {
+      "description": "Американские ANSI стандарты на основе ISO",
+      "mappings": [
+        {"ansi": "B1.1", "iso": "68-1", "category": "thread", "confidence": 0.75, "note": "Unified vs Metric"},
+        {"ansi": "B4.1", "iso": "286-1", "category": "tolerance", "confidence": 0.80}
+      ]
+    }
+  },
+  "thread_equivalents": {
+    "M20": {
+      "gost": "24705",
+      "iso": "965-1",
+      "din": "13-1",
+      "gb": "192",
+      "jis": "B0205"
+    },
+    "M42x1.5": {
+      "gost": "8724",
+      "iso": "261",
+      "din": "13",
+      "gb": "193"
+    }
+  },
+  "tolerance_equivalents": {
+    "IT7": {
+      "gost": "25346",
+      "iso": "286-1",
+      "din": "7157",
+      "gb": "1800",
+      "jis": "B0401"
+    },
+    "H7": {
+      "gost": "25347",
+      "iso": "286-2",
+      "gb": "1801"
+    }
+  }
+}

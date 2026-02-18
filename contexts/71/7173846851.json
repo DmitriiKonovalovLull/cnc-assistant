@@ -1,0 +1,413 @@
+{
+  "material": "алюминий",
+  "mode": "черновая",
+  "diameter_start": 33080.0,
+  "diameter_end": 80.0,
+  "length": 75.0,
+  "machine_power": 11.0,
+  "tool_material": "твердый сплав",
+  "tool_radius": 0.8,
+  "tool_overhang": 40.0,
+  "standard_id": "ОСТ_33056-80",
+  "quantity": 100,
+  "collecting_params": true,
+  "recommended_vc": 80.0,
+  "recommended_rpm": 890.4,
+  "recommended_feed": 0.2,
+  "recommended_ap": 4.0,
+  "recommended_power": 2.67,
+  "overall_confidence": 0.25,
+  "user_id": "7173846851",
+  "session_id": "work_W004",
+  "assumptions_made": [
+    "machine_power",
+    "tool_material",
+    "tool_radius",
+    "tool_overhang",
+    "length"
+  ],
+  "defaults_used": [
+    "machine_type",
+    "machine_power",
+    "tool_material",
+    "tool_radius",
+    "length"
+  ],
+  "dialog_history": [
+    {
+      "timestamp": "2026-02-13T12:05:50.282240",
+      "event": "user_message",
+      "data": {
+        "text": {
+          "parsed_fields": [],
+          "confidence": 0.0
+        },
+        "parsed_fields": []
+      }
+    },
+    {
+      "timestamp": "2026-02-13T12:05:50.282276",
+      "event": "unknown_intent",
+      "data": {
+        "text": "давай"
+      }
+    },
+    {
+      "timestamp": "2026-02-13T12:05:51.944022",
+      "event": "user_message",
+      "data": {
+        "text": {
+          "parsed_fields": [],
+          "confidence": 0.0
+        },
+        "parsed_fields": []
+      }
+    },
+    {
+      "timestamp": "2026-02-13T12:05:51.944052",
+      "event": "unknown_intent",
+      "data": {
+        "text": "давай"
+      }
+    },
+    {
+      "timestamp": "2026-02-13T12:05:52.605149",
+      "event": "user_message",
+      "data": {
+        "text": {
+          "parsed_fields": [],
+          "confidence": 0.0
+        },
+        "parsed_fields": []
+      }
+    },
+    {
+      "timestamp": "2026-02-13T12:05:52.605173",
+      "event": "unknown_intent",
+      "data": {
+        "text": "давай"
+      }
+    },
+    {
+      "timestamp": "2026-02-13T12:05:53.530075",
+      "event": "user_message",
+      "data": {
+        "text": {
+          "parsed_fields": [],
+          "confidence": 0.0
+        },
+        "parsed_fields": []
+      }
+    },
+    {
+      "timestamp": "2026-02-13T12:05:53.530100",
+      "event": "unknown_intent",
+      "data": {
+        "text": "давай"
+      }
+    },
+    {
+      "timestamp": "2026-02-13T12:05:54.116690",
+      "event": "user_message",
+      "data": {
+        "text": {
+          "parsed_fields": [],
+          "confidence": 0.0
+        },
+        "parsed_fields": []
+      }
+    },
+    {
+      "timestamp": "2026-02-13T12:05:54.116718",
+      "event": "unknown_intent",
+      "data": {
+        "text": "давай"
+      }
+    },
+    {
+      "timestamp": "2026-02-13T12:05:58.415389",
+      "event": "user_message",
+      "data": {
+        "text": {
+          "parsed_fields": [],
+          "confidence": 0.0
+        },
+        "parsed_fields": []
+      }
+    },
+    {
+      "timestamp": "2026-02-13T12:05:58.415415",
+      "event": "unknown_intent",
+      "data": {
+        "text": "давай"
+      }
+    },
+    {
+      "timestamp": "2026-02-13T12:06:05.628598",
+      "event": "user_message",
+      "data": {
+        "text": {
+          "material": "сталь",
+          "parsed_fields": [
+            "material"
+          ],
+          "confidence": 0.058823529411764705
+        },
+        "parsed_fields": [
+          "material"
+        ]
+      }
+    },
+    {
+      "timestamp": "2026-02-13T12:06:05.628621",
+      "event": "unknown_intent",
+      "data": {
+        "text": "сталь"
+      }
+    },
+    {
+      "timestamp": "2026-02-13T12:06:30.251142",
+      "event": "user_message",
+      "data": {
+        "text": {
+          "material": "сталь",
+          "mode": "черновая",
+          "diameter_start": 50.0,
+          "diameter_end": 7.2,
+          "parsed_fields": [
+            "material",
+            "mode",
+            "diameter_start",
+            "diameter_end"
+          ],
+          "confidence": 0.23529411764705882
+        },
+        "parsed_fields": [
+          "material",
+          "mode",
+          "diameter_start",
+          "diameter_end"
+        ]
+      }
+    },
+    {
+      "timestamp": "2026-02-13T12:06:30.275492",
+      "event": "calculation",
+      "data": {
+        "recommendation": {
+          "vc": 80.0,
+          "vc_m_min": 80.0,
+          "rpm": 890.4,
+          "feed": 0.2,
+          "feed_mm_rev": 0.2,
+          "ap": 4.0,
+          "ap_mm": 4.0,
+          "power_kw": 2.67,
+          "warnings": [],
+          "physical_limits": {},
+          "calculation_context": {}
+        },
+        "state": "calculated"
+      }
+    },
+    {
+      "timestamp": "2026-02-13T12:06:30.903456",
+      "event": "recommendation_shown",
+      "data": {
+        "recommendation": {
+          "vc": 80.0,
+          "vc_m_min": 80.0,
+          "rpm": 890.4,
+          "feed": 0.2,
+          "feed_mm_rev": 0.2,
+          "ap": 4.0,
+          "ap_mm": 4.0,
+          "power_kw": 2.67,
+          "warnings": [],
+          "physical_limits": {},
+          "calculation_context": {}
+        }
+      }
+    },
+    {
+      "timestamp": "2026-02-18T12:33:48.774610",
+      "event": "user_message",
+      "data": {
+        "text": {
+          "parsed_fields": [],
+          "confidence": 0.0
+        },
+        "parsed_fields": []
+      }
+    },
+    {
+      "timestamp": "2026-02-18T12:33:48.774698",
+      "event": "user_message",
+      "data": {
+        "text": {
+          "parsed_fields": [],
+          "confidence": 0.0
+        },
+        "parsed_fields": []
+      }
+    },
+    {
+      "timestamp": "2026-02-18T12:33:57.446465",
+      "event": "user_message",
+      "data": {
+        "text": {
+          "parsed_fields": [],
+          "confidence": 0.0
+        },
+        "parsed_fields": []
+      }
+    },
+    {
+      "timestamp": "2026-02-18T12:33:57.446530",
+      "event": "user_message",
+      "data": {
+        "text": {
+          "parsed_fields": [],
+          "confidence": 0.0
+        },
+        "parsed_fields": []
+      }
+    },
+    {
+      "timestamp": "2026-02-18T12:34:06.146382",
+      "event": "user_message",
+      "data": {
+        "text": {
+          "parsed_fields": [],
+          "confidence": 0.0
+        },
+        "parsed_fields": []
+      }
+    },
+    {
+      "timestamp": "2026-02-18T12:34:06.146443",
+      "event": "user_message",
+      "data": {
+        "text": {
+          "parsed_fields": [],
+          "confidence": 0.0
+        },
+        "parsed_fields": []
+      }
+    },
+    {
+      "timestamp": "2026-02-18T12:34:19.155965",
+      "event": "user_message",
+      "data": {
+        "text": {
+          "material": "алюминий",
+          "parsed_fields": [
+            "material"
+          ],
+          "confidence": 0.058823529411764705
+        },
+        "parsed_fields": [
+          "material"
+        ]
+      }
+    },
+    {
+      "timestamp": "2026-02-18T12:34:19.156044",
+      "event": "user_message",
+      "data": {
+        "text": {
+          "material": "алюминий",
+          "parsed_fields": [
+            "material"
+          ],
+          "confidence": 0.058823529411764705
+        },
+        "parsed_fields": [
+          "material"
+        ]
+      }
+    },
+    {
+      "timestamp": "2026-02-18T12:34:31.924942",
+      "event": "user_message",
+      "data": {
+        "text": {
+          "parsed_fields": [],
+          "confidence": 0.0
+        },
+        "parsed_fields": []
+      }
+    },
+    {
+      "timestamp": "2026-02-18T12:34:31.925007",
+      "event": "user_message",
+      "data": {
+        "text": {
+          "parsed_fields": [],
+          "confidence": 0.0
+        },
+        "parsed_fields": []
+      }
+    },
+    {
+      "timestamp": "2026-02-18T12:34:35.907118",
+      "event": "user_message",
+      "data": {
+        "text": {
+          "quantity": 100,
+          "parsed_fields": [
+            "quantity"
+          ],
+          "confidence": 0.058823529411764705
+        },
+        "parsed_fields": [
+          "quantity"
+        ]
+      }
+    },
+    {
+      "timestamp": "2026-02-18T12:34:35.907252",
+      "event": "user_message",
+      "data": {
+        "text": {
+          "quantity": 100,
+          "parsed_fields": [
+            "quantity"
+          ],
+          "confidence": 0.058823529411764705
+        },
+        "parsed_fields": [
+          "quantity"
+        ]
+      }
+    },
+    {
+      "timestamp": "2026-02-18T12:34:48.425217",
+      "event": "user_message",
+      "data": {
+        "text": {
+          "diameter_start": 33080.0,
+          "diameter_end": 80.0,
+          "parsed_fields": [
+            "diameter_start",
+            "diameter_end"
+          ],
+          "confidence": 0.11764705882352941
+        },
+        "parsed_fields": [
+          "diameter_start",
+          "diameter_end"
+        ]
+      }
+    }
+  ],
+  "field_metadata": {
+    "material": {
+      "source": "user",
+      "confidence": 1.0,
+      "reasoning": "Извлечено из текста пользователя"
+    }
+  },
+  "_version": "1.2",
+  "_updated_at": "2026-02-18T12:34:54.105803"
+}

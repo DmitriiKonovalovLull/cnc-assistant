@@ -12,10 +12,9 @@ from typing import Optional, Dict, Any, List, Union
 # Добавляем корень проекта в путь для импортов
 sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 
-from app.core.state_machine import StateMachine, AppState
+from app.core.state_machine import StateMachine, SystemState
 from app.bot.dialogs import DialogManager
 from app.core.validator import Validator
-from app.domain.models import CNCParameters
 
 
 class InputParser:
@@ -358,7 +357,7 @@ class CLIBot:
                 # 1. Получаем текущий вопрос от FSM
                 current_state = self.state_machine.get_current_state()
 
-                if current_state == AppState.COMPLETED:
+                if current_state == SystemState.CALCULATED:
                     # Все данные собраны, можно показывать результат
                     self._show_results()
                     if not self._ask_to_continue():

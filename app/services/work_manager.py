@@ -199,8 +199,8 @@ class WorkManager:
         Args:
             user_id: ID пользователя
             work_number: Номер работы
-            description: Новое описание
-            context: Новый контекст
+            description: Новое описание (если None - не обновляется)
+            context: Новый контекст (если None - не обновляется)
             
         Returns:
             True если успешно обновлено
@@ -218,20 +218,39 @@ class WorkManager:
                 session_id=f"work_{work_number}"
             ).first()
             
-            if decision:
-                full_context = json.loads(decision.full_context_json) if decision.full_context_json else {}
-                full_context['description'] = description or full_context.get('description', '')
-                if context:
-                    full_context['context'] = context.to_dict()
-                full_context['updated_at'] = datetime.now().isoformat()
-                
-                decision.full_context_json = json.dumps(full_context, ensure_ascii=False, default=str)
-                self.db_session.commit()
-                
-                logger.info(f"Updated work {work_number} for user {user_id}")
-                return True
+            if not decision:
+                return False
             
-            return False
+            # Загружаем существующий контекст
+            full_context = json.loads(decision.full_context_json) if decision.full_context_json else {}
+            
+            # Сохраняем важные поля
+            if 'is_saved_work' not in full_context:
+                full_context['is_saved_work'] = True
+            if 'work_number' not in full_context:
+                full_context['work_number'] = work_number
+            
+            # Обновляем описание только если оно передано (даже если пустое)
+            if description is not None:
+                full_context['description'] = description
+            
+            # Обновляем контекст только если он передан
+            if context:
+                full_context['context'] = context.to_dict()
+                # Обновляем диаметры в записи UserDecision
+                decision.diameter_start_mm = context.diameter_start if context.diameter_start is not None else 0
+                decision.diameter_end_mm = context.diameter_end if context.diameter_end is not None else 0
+                decision.length_mm = context.length if context.length is not None else 0
+            
+            # Обновляем время изменения
+            full_context['updated_at'] = datetime.now().isoformat()
+            
+            # Сохраняем обновленный контекст
+            decision.full_context_json = json.dumps(full_context, ensure_ascii=False, default=str)
+            self.db_session.commit()
+            
+            logger.info(f"Updated work {work_number} for user {user_id}")
+            return True
         
         except Exception as e:
             logger.error(f"Error updating work: {e}", exc_info=True)

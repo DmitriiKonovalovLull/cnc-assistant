@@ -5,8 +5,7 @@ ORM модели для базы данных.
 """
 from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime, Text, JSON, Boolean, Enum, Table, \
     ForeignKey
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, relationship, backref
+from sqlalchemy.orm import sessionmaker, relationship, backref, declarative_base
 from sqlalchemy.sql import func
 from datetime import datetime
 import json
@@ -14,6 +13,7 @@ from typing import Optional, Dict, Any, List
 from enum import Enum as PyEnum
 
 Base = declarative_base()
+Base.__allow_unmapped__ = True  # allow legacy relationship annotations (List[...] etc.)
 
 
 # ============================================================================
