@@ -539,6 +539,7 @@ def create_main_nav_keyboard(include_machine_tool: bool = True, lang: Optional[s
             InlineKeyboardButton(text=t('btn.select_tool', lang=lang), callback_data="select_tool"),
         ])
     buttons.append([
+        InlineKeyboardButton(text="🧮 Калькулятор режимов", callback_data="nav_calculator"),
         InlineKeyboardButton(text=t('btn.vibration_analysis', lang=lang), callback_data="nav_vibration"),
     ])
     return InlineKeyboardMarkup(inline_keyboard=buttons)
@@ -884,17 +885,39 @@ async def cmd_stats(message: types.Message, state: FSMContext):
 
 @dp.message(Command("start", "help"))
 async def cmd_start(message: types.Message, state: FSMContext):
-    """Начало работы с ботом."""
+    """Начало работы с ботом - полный reset."""
     await state.clear()
     
     user_id = str(message.from_user.id)
     user_name = message.from_user.first_name or "друг"
     
-    # Проверяем, есть ли история у пользователя
+    # ПОЛНЫЙ RESET при /start
+    # Удаляем контекст из всех хранилищ
+    if context_manager:
+        context_manager.delete(user_id)
+    if file_storage:
+        file_storage.delete(user_id)
     if context_repository:
-        existing_context = context_repository.get_context(user_id)
+        try:
+            # Удаляем контекст из репозитория если есть метод delete
+            if hasattr(context_repository, 'delete'):
+                context_repository.delete(user_id)
+            elif hasattr(context_repository, 'clear_context'):
+                context_repository.clear_context(user_id)
+        except Exception as e:
+            logger.warning(f"Could not delete context from repository: {e}")
+    if user_id in user_contexts:
+        del user_contexts[user_id]
+    
+    # Проверяем, есть ли история у пользователя (только для информации, не восстанавливаем)
+    if context_repository:
+        try:
+            existing_context = context_repository.get_context(user_id)
+        except:
+            existing_context = None
     else:
-        existing_context = user_contexts.get(user_id)
+        existing_context = None
+    
     has_history = existing_context and (
         existing_context.dialog_history or
         existing_context.material or
@@ -902,7 +925,8 @@ async def cmd_start(message: types.Message, state: FSMContext):
         existing_context.tool_name
     )
     
-    if has_history:
+    # НЕ показываем старую работу - всегда чистое приветствие
+    if False and has_history:  # Отключено - всегда чистое приветствие
         # Есть история - предлагаем продолжить или начать заново
         welcome_text = (
             f"👋 <b>Привет, {user_name}!</b>\n\n"
@@ -960,6 +984,7 @@ async def cmd_start(message: types.Message, state: FSMContext):
             f"Я <b>CNC Assistant</b> — помощник по режимам резания для токарки и фрезеровки.\n\n"
             f"📋 <b>Что умею:</b>\n"
             f"• Подбирать обороты, подачи, глубины резания\n"
+            f"• Калькулятор режимов резания (без стандартов)\n"
             f"• Работать по ГОСТ/ОСТ (болты, гайки и т.п.)\n"
             f"• Распознавать технологический маршрут (расточка, сверление, фрезер)\n"
             f"• Сохранять работы и загружать по номеру\n"
@@ -1013,7 +1038,8 @@ async def cmd_start(message: types.Message, state: FSMContext):
             welcome_text += (
                 f"💬 <b>Что написать:</b>\n"
                 f"• Задача: <code>сталь Ø100→90 черновая</code>, <code>титан с Ø200 до Ø50</code>\n"
-                f"• Стандарт: <code>добавим ОСТ 33057-80</code>, <code>ГОСТ 7798</code>\n"
+                f"• Калькулятор: <code>2+2</code>, <code>120*3.14</code>, <code>sqrt(16)</code>\n"
+                f"• Стандарт: <code>ОСТ 33057-80</code>, <code>ГОСТ 7798</code>\n"
                 f"• Или отправь фото инструмента\n\n"
                 f"<i>Используйте кнопки ниже или напишите что нужно.</i>"
             )
@@ -1650,6 +1676,24 @@ async def handle_select_machine(callback: CallbackQuery, state: FSMContext):
         "Можно написать одним сообщением: <b>название, мощность (кВт), макс. обороты (об/мин)</b>.\n"
         "Например: <code>NEF500 15 кВт 3000 об/мин</code>",
         reply_markup=keyboard
+    )
+
+
+@dp.callback_query(F.data == "nav_calculator")
+async def handle_nav_calculator(callback: CallbackQuery, state: FSMContext):
+    """Запустить калькулятор режимов резания."""
+    await callback.answer()
+    user_id = str(callback.from_user.id)
+    lang = get_lang(None, user_id)
+    
+    await state.set_state(CalculatorStates.waiting_operation)
+    
+    await callback.message.answer(
+        "🧮 <b>Калькулятор режимов резания</b>\n\n"
+        "Выберите тип обработки:\n"
+        "• <b>точение</b> или <b>turning</b>\n"
+        "• <b>фрезерование</b> или <b>milling</b>\n\n"
+        "Или напишите <b>/cancel</b> для отмены."
     )
 
 

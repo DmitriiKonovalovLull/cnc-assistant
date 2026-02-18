@@ -1,14 +1,16 @@
 {
-  "material": "алюминий",
+  "material": "сталь",
   "mode": "черновая",
-  "diameter_start": 33080.0,
+  "diameter_start": 33060.0,
   "diameter_end": 80.0,
   "length": 75.0,
   "machine_power": 11.0,
   "tool_material": "твердый сплав",
   "tool_radius": 0.8,
   "tool_overhang": 40.0,
-  "standard_id": "ОСТ_33056-80",
+  "standard_id": "ОСТ_33060-80",
+  "pending_standard_apply": "ОСТ_33060-80",
+  "part_type": "bolt",
   "quantity": 100,
   "collecting_params": true,
   "recommended_vc": 80.0,
@@ -16,7 +18,7 @@
   "recommended_feed": 0.2,
   "recommended_ap": 4.0,
   "recommended_power": 2.67,
-  "overall_confidence": 0.25,
+  "overall_confidence": 0.050000000000000044,
   "user_id": "7173846851",
   "session_id": "work_W004",
   "assumptions_made": [
@@ -399,15 +401,85 @@
           "diameter_end"
         ]
       }
+    },
+    {
+      "timestamp": "2026-02-18T13:04:58.274415",
+      "event": "user_message",
+      "data": {
+        "text": {
+          "diameter_start": 33079.0,
+          "diameter_end": 80.0,
+          "parsed_fields": [
+            "diameter_start",
+            "diameter_end"
+          ],
+          "confidence": 0.11764705882352941
+        },
+        "parsed_fields": [
+          "diameter_start",
+          "diameter_end"
+        ]
+      }
+    },
+    {
+      "timestamp": "2026-02-18T13:05:35.244046",
+      "event": "user_message",
+      "data": {
+        "text": {
+          "material": "чугун",
+          "parsed_fields": [
+            "material"
+          ],
+          "confidence": 0.058823529411764705
+        },
+        "parsed_fields": [
+          "material"
+        ]
+      }
+    },
+    {
+      "timestamp": "2026-02-18T13:05:35.244149",
+      "event": "user_message",
+      "data": {
+        "text": {
+          "material": "чугун",
+          "parsed_fields": [
+            "material"
+          ],
+          "confidence": 0.058823529411764705
+        },
+        "parsed_fields": [
+          "material"
+        ]
+      }
+    },
+    {
+      "timestamp": "2026-02-18T13:11:28.764541",
+      "event": "user_message",
+      "data": {
+        "text": {
+          "diameter_start": 33060.0,
+          "diameter_end": 80.0,
+          "parsed_fields": [
+            "diameter_start",
+            "diameter_end"
+          ],
+          "confidence": 0.11764705882352941
+        },
+        "parsed_fields": [
+          "diameter_start",
+          "diameter_end"
+        ]
+      }
     }
   ],
   "field_metadata": {
     "material": {
       "source": "user",
-      "confidence": 1.0,
-      "reasoning": "Извлечено из текста пользователя"
+      "confidence": 0.8,
+      "reasoning": "Материал по умолчанию для типа детали"
     }
   },
   "_version": "1.2",
-  "_updated_at": "2026-02-18T12:34:54.105803"
+  "_updated_at": "2026-02-18T13:12:33.147944"
 }

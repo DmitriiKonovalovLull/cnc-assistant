@@ -20815,3 +20815,147 @@ AttributeError: 'NoneType' object has no attribute 'upper'
 2026-02-18 12:48:20,133 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
 2026-02-18 12:48:20,133 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
 2026-02-18 12:48:20,389 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-18 13:03:48,703 - __main__ - INFO - ContextManager initialized: max_contexts=1000, ttl_hours=24
+2026-02-18 13:03:48,703 - __main__ - INFO - RateLimiter initialized: max_messages=10, per_seconds=60
+2026-02-18 13:03:48,704 - __main__ - INFO - FileContextStorage initialized: storage_dir=contexts
+2026-02-18 13:03:48,704 - __main__ - INFO - 🚀 Инициализация сервисов...
+2026-02-18 13:03:48,704 - __main__ - INFO - 📐 Автозагрузка стандартов...
+2026-02-18 13:03:48,724 - standards.loader - INFO - 📐 Начало загрузки стандартов...
+2026-02-18 13:03:48,724 - standards.loader - INFO - ✅ Загружено ГОСТ резьб: 22 записей
+2026-02-18 13:03:48,724 - standards.loader - INFO - ✅ Загружено ISO допусков: 6 классов
+2026-02-18 13:03:48,724 - standards.equivalence.equivalence_engine - INFO - Loaded equivalence data: 5 tables, 2 thread equivalents, 2 tolerance equivalents
+2026-02-18 13:03:48,724 - standards.loader - INFO - ✅ Реестр стандартов инициализирован
+2026-02-18 13:03:48,725 - standards.equivalence.equivalence_engine - INFO - Loaded equivalence data: 5 tables, 2 thread equivalents, 2 tolerance equivalents
+2026-02-18 13:03:48,725 - standards.loader - INFO - ✅ Движок эквивалентности инициализирован
+2026-02-18 13:03:48,725 - standards.equivalence.build_equivalence_db - INFO - Loaded equivalence_data.json: 5 tables
+2026-02-18 13:03:48,725 - standards.equivalence.build_equivalence_db - INFO - Loaded equivalence_db.json
+2026-02-18 13:03:48,725 - standards.equivalence.build_equivalence_db - INFO - Building equivalence graph...
+2026-02-18 13:03:48,726 - standards.equivalence.build_equivalence_db - INFO - Graph built: 28 nodes, 84 edges
+2026-02-18 13:03:48,726 - standards.loader - INFO - ✅ База данных эквивалентности построена
+2026-02-18 13:03:48,726 - standards.loader - INFO - 📐 Загрузка стандартов завершена
+2026-02-18 13:03:48,726 - __main__ - INFO - ✅ Стандарты загружены:
+2026-02-18 13:03:48,726 - __main__ - INFO -    • ГОСТ резьбы: 22
+2026-02-18 13:03:48,726 - __main__ - INFO -    • ISO допуски: 6
+2026-02-18 13:03:48,726 - __main__ - INFO -    • Реестр стандартов
+2026-02-18 13:03:48,726 - __main__ - INFO -    • Движок эквивалентности
+2026-02-18 13:03:48,726 - __main__ - INFO -    • База эквивалентности
+2026-02-18 13:03:48,726 - __main__ - INFO - 🗄️ Инициализация пула соединений БД...
+2026-02-18 13:03:48,736 - app.services.database_pool - INFO - Database pool initialized: pool_size=5, max_overflow=10
+2026-02-18 13:03:48,739 - __main__ - INFO - 🔄 Запуск миграций базы данных...
+2026-02-18 13:03:48,739 - app.storage.migrations - INFO - Running database migrations...
+2026-02-18 13:03:48,740 - app.storage.migrations - INFO - Column 'operation_chain_json' already exists. Skipping migration.
+2026-02-18 13:03:48,742 - app.storage.migrations - INFO - All migrations completed
+2026-02-18 13:03:48,742 - __main__ - INFO - ✅ Миграции выполнены успешно
+2026-02-18 13:03:48,742 - __main__ - INFO - 💾 Инициализация репозитория контекста...
+2026-02-18 13:03:48,743 - __main__ - INFO - 📚 Загрузка базы знаний...
+2026-02-18 13:03:48,743 - app.services.knowledge_service - INFO - Loading knowledge base...
+2026-02-18 13:03:48,744 - app.services.knowledge_service - INFO - Knowledge base loaded: 7 materials, 4 tools, 4 machines
+2026-02-18 13:03:48,744 - __main__ - INFO - 📸 Инициализация парсера изображений...
+2026-02-18 13:03:48,765 - app.core.image_parser - INFO - ✅ Tesseract OCR configured from .env: C:\Program Files\Tesseract-OCR\tesseract.exe
+2026-02-18 13:03:48,787 - app.core.image_parser - INFO - ✅ OCR ready: Tesseract 5.5.0.20241111
+2026-02-18 13:03:48,787 - __main__ - INFO - ✅ OCR готов к работе (Tesseract доступен)
+2026-02-18 13:03:48,787 - __main__ - INFO - 📨 Инициализация обработчика сообщений...
+2026-02-18 13:03:48,808 - app.core.image_parser - INFO - ✅ Tesseract OCR configured from .env: C:\Program Files\Tesseract-OCR\tesseract.exe
+2026-02-18 13:03:48,829 - app.core.image_parser - INFO - ✅ OCR ready: Tesseract 5.5.0.20241111
+2026-02-18 13:03:48,830 - app.services.standard_service - INFO - Loaded 0 standards
+2026-02-18 13:03:48,944 - app.knowledge.internet_parser.browser_parser - WARNING - Playwright not available for SPA sites. Install: pip install -r requirements_internet.txt && playwright install
+2026-02-18 13:03:48,944 - __main__ - INFO - ✅ Все сервисы инициализированы
+2026-02-18 13:03:49,239 - aiogram.dispatcher - INFO - Start polling
+2026-02-18 13:03:49,361 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-18 13:04:12,954 - aiogram.event - INFO - Update id=897835771 is handled. Duration 4 ms by bot id=8201932079
+2026-02-18 13:04:30,219 - aiogram.event - INFO - Update id=897835772 is handled. Duration 684 ms by bot id=8201932079
+2026-02-18 13:04:45,916 - aiogram.event - INFO - Update id=897835773 is handled. Duration 144 ms by bot id=8201932079
+2026-02-18 13:04:49,017 - __main__ - INFO - handle_new_task called, callback.data=new_task, user_id=7173846851
+2026-02-18 13:04:49,139 - __main__ - INFO - Creating new task for user 7173846851
+2026-02-18 13:04:49,139 - __main__ - INFO - Context saved to repository for user 7173846851
+2026-02-18 13:04:49,304 - __main__ - INFO - New task message sent to user 7173846851
+2026-02-18 13:04:49,305 - aiogram.event - INFO - Update id=897835774 is handled. Duration 290 ms by bot id=8201932079
+2026-02-18 13:04:58,267 - app.core.conversation_orchestrator - INFO - Intent detected: standard_part (confidence: 0.95)
+2026-02-18 13:04:58,267 - app.bot.handler - INFO - Processing message
+2026-02-18 13:04:58,467 - aiogram.event - INFO - Update id=897835775 is handled. Duration 203 ms by bot id=8201932079
+2026-02-18 13:05:00,747 - app.core.conversation_orchestrator - INFO - Intent detected: noise (confidence: 0.50)
+2026-02-18 13:05:00,747 - app.bot.handler - INFO - Processing message
+2026-02-18 13:05:00,950 - aiogram.event - INFO - Update id=897835776 is handled. Duration 206 ms by bot id=8201932079
+2026-02-18 13:05:35,241 - app.core.conversation_orchestrator - INFO - Intent detected: engineering (confidence: 0.80)
+2026-02-18 13:05:35,242 - app.bot.handler - INFO - Processing message
+2026-02-18 13:05:35,403 - aiogram.event - INFO - Update id=897835777 is handled. Duration 163 ms by bot id=8201932079
+2026-02-18 13:06:02,178 - app.core.conversation_orchestrator - INFO - Intent detected: noise (confidence: 0.30)
+2026-02-18 13:06:02,178 - app.bot.handler - INFO - Processing message
+2026-02-18 13:06:02,178 - app.bot.handler - INFO - Affirmative response detected with context data, activating FSM
+2026-02-18 13:06:02,358 - aiogram.event - INFO - Update id=897835778 is handled. Duration 181 ms by bot id=8201932079
+2026-02-18 13:06:19,782 - __main__ - ERROR - Error saving user decision: unsupported operand type(s) for +=: 'NoneType' and 'int'
+Traceback (most recent call last):
+  File "C:\projects\cnc-assistant\app\bot\telegram_bot.py", line 3638, in handle_user_experience
+    save_user_decision(
+    ~~~~~~~~~~~~~~~~~~^
+        session=session,
+        ^^^^^^^^^^^^^^^^
+    ...<21 lines>...
+        full_context=context.to_dict(),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\projects\cnc-assistant\app\storage\models.py", line 810, in save_user_decision
+    update_experience_profile(session, user_id, decision, operation_steps)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\projects\cnc-assistant\app\storage\models.py", line 824, in update_experience_profile
+    profile.total_decisions += 1
+TypeError: unsupported operand type(s) for +=: 'NoneType' and 'int'
+2026-02-18 13:06:19,961 - aiogram.event - INFO - Update id=897835779 is handled. Duration 200 ms by bot id=8201932079
+2026-02-18 13:10:42,542 - aiogram.dispatcher - INFO - Polling stopped
+2026-02-18 13:10:42,543 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+2026-02-18 13:10:42,543 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8201932079)
+2026-02-18 13:10:42,807 - aiogram.dispatcher - INFO - Polling stopped for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-18 13:10:49,128 - __main__ - INFO - ContextManager initialized: max_contexts=1000, ttl_hours=24
+2026-02-18 13:10:49,129 - __main__ - INFO - RateLimiter initialized: max_messages=10, per_seconds=60
+2026-02-18 13:10:49,129 - __main__ - INFO - FileContextStorage initialized: storage_dir=contexts
+2026-02-18 13:10:49,130 - __main__ - INFO - 🚀 Инициализация сервисов...
+2026-02-18 13:10:49,130 - __main__ - INFO - 📐 Автозагрузка стандартов...
+2026-02-18 13:10:49,153 - standards.loader - INFO - 📐 Начало загрузки стандартов...
+2026-02-18 13:10:49,153 - standards.loader - INFO - ✅ Загружено ГОСТ резьб: 22 записей
+2026-02-18 13:10:49,153 - standards.loader - INFO - ✅ Загружено ISO допусков: 6 классов
+2026-02-18 13:10:49,154 - standards.equivalence.equivalence_engine - INFO - Loaded equivalence data: 5 tables, 2 thread equivalents, 2 tolerance equivalents
+2026-02-18 13:10:49,154 - standards.loader - INFO - ✅ Реестр стандартов инициализирован
+2026-02-18 13:10:49,154 - standards.equivalence.equivalence_engine - INFO - Loaded equivalence data: 5 tables, 2 thread equivalents, 2 tolerance equivalents
+2026-02-18 13:10:49,154 - standards.loader - INFO - ✅ Движок эквивалентности инициализирован
+2026-02-18 13:10:49,154 - standards.equivalence.build_equivalence_db - INFO - Loaded equivalence_data.json: 5 tables
+2026-02-18 13:10:49,155 - standards.equivalence.build_equivalence_db - INFO - Loaded equivalence_db.json
+2026-02-18 13:10:49,155 - standards.equivalence.build_equivalence_db - INFO - Building equivalence graph...
+2026-02-18 13:10:49,155 - standards.equivalence.build_equivalence_db - INFO - Graph built: 28 nodes, 84 edges
+2026-02-18 13:10:49,155 - standards.loader - INFO - ✅ База данных эквивалентности построена
+2026-02-18 13:10:49,155 - standards.loader - INFO - 📐 Загрузка стандартов завершена
+2026-02-18 13:10:49,155 - __main__ - INFO - ✅ Стандарты загружены:
+2026-02-18 13:10:49,155 - __main__ - INFO -    • ГОСТ резьбы: 22
+2026-02-18 13:10:49,155 - __main__ - INFO -    • ISO допуски: 6
+2026-02-18 13:10:49,155 - __main__ - INFO -    • Реестр стандартов
+2026-02-18 13:10:49,155 - __main__ - INFO -    • Движок эквивалентности
+2026-02-18 13:10:49,155 - __main__ - INFO -    • База эквивалентности
+2026-02-18 13:10:49,155 - __main__ - INFO - 🗄️ Инициализация пула соединений БД...
+2026-02-18 13:10:49,168 - app.services.database_pool - INFO - Database pool initialized: pool_size=5, max_overflow=10
+2026-02-18 13:10:49,172 - __main__ - INFO - 🔄 Запуск миграций базы данных...
+2026-02-18 13:10:49,173 - app.storage.migrations - INFO - Running database migrations...
+2026-02-18 13:10:49,173 - app.storage.migrations - INFO - Column 'operation_chain_json' already exists. Skipping migration.
+2026-02-18 13:10:49,176 - app.storage.migrations - INFO - All migrations completed
+2026-02-18 13:10:49,176 - __main__ - INFO - ✅ Миграции выполнены успешно
+2026-02-18 13:10:49,176 - __main__ - INFO - 💾 Инициализация репозитория контекста...
+2026-02-18 13:10:49,177 - __main__ - INFO - 📚 Загрузка базы знаний...
+2026-02-18 13:10:49,177 - app.services.knowledge_service - INFO - Loading knowledge base...
+2026-02-18 13:10:49,178 - app.services.knowledge_service - INFO - Knowledge base loaded: 7 materials, 4 tools, 4 machines
+2026-02-18 13:10:49,178 - __main__ - INFO - 📸 Инициализация парсера изображений...
+2026-02-18 13:10:49,204 - app.core.image_parser - INFO - ✅ Tesseract OCR configured from .env: C:\Program Files\Tesseract-OCR\tesseract.exe
+2026-02-18 13:10:49,230 - app.core.image_parser - INFO - ✅ OCR ready: Tesseract 5.5.0.20241111
+2026-02-18 13:10:49,230 - __main__ - INFO - ✅ OCR готов к работе (Tesseract доступен)
+2026-02-18 13:10:49,230 - __main__ - INFO - 📨 Инициализация обработчика сообщений...
+2026-02-18 13:10:49,255 - app.core.image_parser - INFO - ✅ Tesseract OCR configured from .env: C:\Program Files\Tesseract-OCR\tesseract.exe
+2026-02-18 13:10:49,284 - app.core.image_parser - INFO - ✅ OCR ready: Tesseract 5.5.0.20241111
+2026-02-18 13:10:49,285 - app.services.standard_service - INFO - Loaded 0 standards
+2026-02-18 13:10:49,419 - app.knowledge.internet_parser.browser_parser - WARNING - Playwright not available for SPA sites. Install: pip install -r requirements_internet.txt && playwright install
+2026-02-18 13:10:49,419 - __main__ - INFO - ✅ Все сервисы инициализированы
+2026-02-18 13:10:50,301 - aiogram.dispatcher - INFO - Start polling
+2026-02-18 13:10:50,549 - aiogram.dispatcher - INFO - Run polling for bot @cnc_123_bot id=8201932079 - 'cnc-assistant'
+2026-02-18 13:11:07,485 - aiogram.event - INFO - Update id=897835780 is handled. Duration 4 ms by bot id=8201932079
+2026-02-18 13:11:17,228 - aiogram.event - INFO - Update id=897835781 is handled. Duration 592 ms by bot id=8201932079
+2026-02-18 13:11:28,757 - app.core.conversation_orchestrator - INFO - Intent detected: standard_part (confidence: 0.95)
+2026-02-18 13:11:28,757 - app.bot.handler - INFO - Processing message
+2026-02-18 13:11:28,932 - aiogram.event - INFO - Update id=897835782 is handled. Duration 178 ms by bot id=8201932079
+2026-02-18 13:12:33,149 - aiogram.event - INFO - Update id=897835783 is handled. Duration 323 ms by bot id=8201932079

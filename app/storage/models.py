@@ -583,12 +583,16 @@ class ExperienceProfile(Base):
     @property
     def overall_experience_score(self) -> float:
         """Общая оценка опыта (0-100)."""
-        adaptation = (self.material_adaptation_score +
-                      self.diameter_adaptation_score +
-                      self.operation_adaptation_score +
-                      self.chain_adaptation_score) / 4
+        # Защита от None значений
+        material_score = self.material_adaptation_score or 0.0
+        diameter_score = self.diameter_adaptation_score or 0.0
+        operation_score = self.operation_adaptation_score or 0.0
+        chain_score = self.chain_adaptation_score or 0.0
+        
+        adaptation = (material_score + diameter_score + operation_score + chain_score) / 4
 
-        volume_score = min(self.total_decisions / 50, 1.0)
+        total_decisions = self.total_decisions or 0
+        volume_score = min(total_decisions / 50, 1.0)
 
         return (adaptation * 0.7 + volume_score * 0.3) * 100
 
@@ -819,6 +823,34 @@ def update_experience_profile(session, user_id: str, decision: UserDecision, ope
     if not profile:
         profile = ExperienceProfile(user_id=user_id)
         session.add(profile)
+    
+    # Инициализируем None значения (защита от старых записей в БД)
+    if profile.total_decisions is None:
+        profile.total_decisions = 0
+    if profile.adaptive_decisions is None:
+        profile.adaptive_decisions = 0
+    if profile.chain_operation_count is None:
+        profile.chain_operation_count = 0
+    if profile.avg_chain_length is None:
+        profile.avg_chain_length = 1.0
+    if profile.avg_rpm_coeff is None:
+        profile.avg_rpm_coeff = 1.0
+    if profile.avg_feed_coeff is None:
+        profile.avg_feed_coeff = 1.0
+    if profile.avg_ap_coeff is None:
+        profile.avg_ap_coeff = 1.0
+    if profile.material_adaptation_score is None:
+        profile.material_adaptation_score = 0.0
+    if profile.diameter_adaptation_score is None:
+        profile.diameter_adaptation_score = 0.0
+    if profile.operation_adaptation_score is None:
+        profile.operation_adaptation_score = 0.0
+    if profile.chain_adaptation_score is None:
+        profile.chain_adaptation_score = 0.0
+    if profile.risk_tolerance is None:
+        profile.risk_tolerance = 0.5
+    if profile.preferred_aggressiveness is None:
+        profile.preferred_aggressiveness = 0.5
 
     # Обновляем статистику
     profile.total_decisions += 1

@@ -118,6 +118,17 @@ class ContextManager:
             self._contexts[user_id].clear()
             logger.info(f"Context cleared for user_id={user_id}")
     
+    def clear_all(self, user_id: int) -> None:
+        """
+        Полная очистка контекста пользователя (включая удаление объекта).
+        
+        Args:
+            user_id: ID пользователя
+        """
+        if user_id in self._contexts:
+            del self._contexts[user_id]
+            logger.info(f"Context fully cleared (deleted) for user_id={user_id}")
+    
     def clear_calculation(self, user_id: int) -> None:
         """
         Очистить только данные расчета.

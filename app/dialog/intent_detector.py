@@ -25,16 +25,17 @@ class IntentDetector:
     def __init__(self):
         """Инициализация детектора интентов."""
         # Паттерны для стандартов (ГОСТ, ОСТ, ISO, DIN и т.д.)
+        # Улучшенные паттерны с обязательным дефисом для номеров стандартов
         self.standard_patterns = [
-            r'\b(?:ГОСТ|GOST)\s*\d+(?:[-.]\d+)?',
-            r'\b(?:ОСТ|OST)\s*\d+(?:\s+\d+)?(?:[-.]\d+)?',
-            r'\bISO\s*\d+(?:[-:]\d+)?',
-            r'\bDIN\s*\d+(?:[-.]\d+)?',
-            r'\bANSI\s*\d+(?:[-.]\d+)?',
-            r'\bASME\s*\d+(?:[-.]\d+)?',
-            r'\bJIS\s*\d+(?:[-.]\d+)?',
-            r'\bEN\s*\d+(?:[-.]\d+)?',
-            r'\bBS\s*\d+(?:[-.]\d+)?',
+            r'\b(?:ГОСТ|GOST)\s*\d+[-–]\d+',  # ГОСТ 7798-70
+            r'\b(?:ОСТ|OST)\s*\d+(?:\s+\d+)?[-–]\d+',  # ОСТ 1 33056-80
+            r'\bISO\s*\d+[-–:]\d+',  # ISO 965-1
+            r'\bDIN\s*\d+[-–]\d+',  # DIN 912-88
+            r'\bANSI\s*\d+[-–]\d+',  # ANSI B18.2.1-1996
+            r'\bASME\s*\d+[-–]\d+',  # ASME B18.2.1-1996
+            r'\bJIS\s*\d+[-–]\d+',  # JIS B 1001-1998
+            r'\bEN\s*\d+[-–]\d+',  # EN 1092-1
+            r'\bBS\s*\d+[-–]\d+',  # BS 4500-1
         ]
         
         # Компилируем паттерны
@@ -89,6 +90,7 @@ class IntentDetector:
             })
         
         # 3. CALCULATION_REQUEST
+        # Проверяем фразы типа "просто посчитать режимы" для выхода из STANDARD_MODE
         if self._is_calculation_request(message_lower):
             detected_intents.append({
                 'intent': Intent.CALCULATION_REQUEST,
@@ -97,6 +99,7 @@ class IntentDetector:
                     'has_material': self._has_material_keywords(message_lower),
                     'has_dimensions': self._has_dimension_keywords(message_lower),
                     'has_operation': self._has_operation_keywords(message_lower),
+                    'is_simple_request': 'просто посчитать' in message_lower or 'посчитать режимы' in message_lower,
                 }
             })
         
@@ -217,7 +220,8 @@ class IntentDetector:
         calculation_keywords = [
             'рассчитать', 'расчет', 'посчитать', 'вычислить',
             'калькулятор', 'нужен расчет', 'нужен калькулятор',
-            'помоги рассчитать', 'помоги посчитать'
+            'помоги рассчитать', 'помоги посчитать',
+            'просто посчитать режимы', 'посчитать режимы'
         ]
         
         # Также проверяем наличие размеров или материалов

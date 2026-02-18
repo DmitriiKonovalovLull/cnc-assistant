@@ -1,9 +1,18 @@
 """
 Константы для системы диалога.
-Определяет состояния, интенты и правила переходов.
+Определяет состояния, интенты, режимы и правила переходов.
 """
 
 from enum import Enum
+
+
+class DialogMode(Enum):
+    """Режимы работы бота."""
+    IDLE = "idle"  # Начальное состояние, ожидание команды
+    STANDARD_MODE = "standard_mode"  # Режим работы со стандартами (ГОСТ, ОСТ)
+    CNC_CALC_MODE = "cnc_calc_mode"  # Режим расчета режимов резания
+    SIMPLE_CALCULATOR_MODE = "simple_calculator_mode"  # Обычный математический калькулятор
+    PROJECT_MODE = "project_mode"  # Режим работы с проектами (требует номер работы)
 
 
 class DialogState(Enum):

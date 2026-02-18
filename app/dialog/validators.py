@@ -16,12 +16,13 @@ class Validator:
     """
     
     @staticmethod
-    def validate_diameter(value: str) -> Optional[float]:
+    def validate_diameter(value: str, check_range: bool = True) -> Optional[float]:
         """
         Валидировать диаметр.
         
         Args:
             value: Строка с диаметром (например "50", "50.5", "50 мм")
+            check_range: Проверять ли диапазон значений
             
         Returns:
             float если валидно, None если невалидно
@@ -36,12 +37,16 @@ class Validator:
         try:
             diameter = float(cleaned)
             
-            # Проверяем разумные пределы (0.1 - 10000 мм)
-            if 0.1 <= diameter <= 10000:
-                return diameter
+            # Проверяем разумные пределы (0.1 - 2000 мм)
+            # Уменьшили максимум с 10000 до 2000 для защиты от номеров стандартов
+            if check_range:
+                if 0.1 <= diameter <= 2000:
+                    return diameter
+                else:
+                    logger.warning(f"Diameter out of range: {diameter}")
+                    return None
             else:
-                logger.warning(f"Diameter out of range: {diameter}")
-                return None
+                return diameter if diameter > 0 else None
         
         except (ValueError, TypeError):
             logger.warning(f"Invalid diameter format: {value}")
@@ -52,6 +57,10 @@ class Validator:
         """
         Валидировать диапазон размеров (например "50 до 200").
         
+        Требования:
+        - Должен быть контекстный маркер: "с", "до", "→", "-", "to"
+        - Значения должны быть в разумных пределах (0.1 - 2000 мм)
+        
         Args:
             value: Строка с диапазоном
             
@@ -61,9 +70,12 @@ class Validator:
         if not value:
             return None
         
-        # Паттерны: "50 до 200", "50-200", "50 to 200", "50x200"
+        # Улучшенные паттерны с обязательным контекстным маркером
+        # "с 200 до 50", "200-50", "200→50", "200 to 50"
         patterns = [
-            r'(\d+(?:\.\d+)?)\s*(?:до|to|-|×|x)\s*(\d+(?:\.\d+)?)',
+            r'(?:с|from)\s*(\d+(?:\.\d+)?)\s*(?:до|to|→|-|–)\s*(\d+(?:\.\d+)?)',  # "с 200 до 50"
+            r'(\d+(?:\.\d+)?)\s*(?:до|to|→|-|–)\s*(\d+(?:\.\d+)?)',  # "200-50", "200→50"
+            r'Ø?\s*(\d+(?:\.\d+)?)\s*(?:до|to|→|-|–)\s*(\d+(?:\.\d+)?)',  # "Ø200→50"
         ]
         
         for pattern in patterns:
@@ -73,8 +85,12 @@ class Validator:
                     from_val = float(match.group(1))
                     to_val = float(match.group(2))
                     
-                    if from_val < to_val and 0.1 <= from_val <= 10000 and 0.1 <= to_val <= 10000:
+                    # Проверяем разумные пределы (0.1 - 2000 мм)
+                    if from_val < to_val and 0.1 <= from_val <= 2000 and 0.1 <= to_val <= 2000:
                         return (from_val, to_val)
+                    elif to_val < from_val and 0.1 <= from_val <= 2000 and 0.1 <= to_val <= 2000:
+                        # Разрешаем обратный порядок (от большего к меньшему)
+                        return (to_val, from_val)
                     else:
                         logger.warning(f"Invalid dimension range: {from_val} - {to_val}")
                         return None
@@ -206,31 +222,41 @@ class Validator:
             return None
     
     @staticmethod
-    def extract_data_from_message(message: str) -> Dict[str, Any]:
+    def extract_data_from_message(message: str, allow_dimensions: bool = False, 
+                                  has_standard: bool = False) -> Dict[str, Any]:
         """
         Извлечь данные из сообщения пользователя.
         
         Args:
             message: Текст сообщения
+            allow_dimensions: Разрешить ли извлечение размеров (только в WAITING_DIMENSIONS)
+            has_standard: Есть ли в сообщении стандарт (запрещает извлечение размеров)
             
         Returns:
             Словарь с извлеченными данными
         """
         data = {}
         
-        # Извлекаем диапазон размеров
-        dimension_range = Validator.validate_dimension_range(message)
-        if dimension_range:
-            data['diameter_from'] = dimension_range[0]
-            data['diameter_to'] = dimension_range[1]
+        # Если есть стандарт - запрещаем извлечение размеров
+        if has_standard:
+            allow_dimensions = False
         
-        # Извлекаем отдельные диаметры
-        diameter_pattern = r'[Øø]?\s*(\d+(?:\.\d+)?)\s*мм'
-        diameter_match = re.search(diameter_pattern, message, re.IGNORECASE)
-        if diameter_match:
-            diameter = Validator.validate_diameter(diameter_match.group(1))
-            if diameter:
-                data['diameter_from'] = diameter
+        # Извлекаем диапазон размеров ТОЛЬКО если разрешено
+        if allow_dimensions:
+            dimension_range = Validator.validate_dimension_range(message)
+            if dimension_range:
+                data['diameter_from'] = dimension_range[0]
+                data['diameter_to'] = dimension_range[1]
+            
+            # Извлекаем отдельные диаметры ТОЛЬКО с контекстом
+            # Паттерн требует наличие "мм" или "Ø" перед числом
+            diameter_pattern = r'[Øø]\s*(\d+(?:\.\d+)?)|(\d+(?:\.\d+)?)\s*мм'
+            diameter_match = re.search(diameter_pattern, message, re.IGNORECASE)
+            if diameter_match:
+                diameter_str = diameter_match.group(1) or diameter_match.group(2)
+                diameter = Validator.validate_diameter(diameter_str)
+                if diameter:
+                    data['diameter_from'] = diameter
         
         # Извлекаем материал
         material_keywords = ['алюминий', 'сталь', 'титан', 'медь', 'латунь', 

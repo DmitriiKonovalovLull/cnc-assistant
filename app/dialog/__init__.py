@@ -8,7 +8,9 @@ from app.dialog.state_machine import StateMachine
 from app.dialog.intent_detector import IntentDetector
 from app.dialog.context_manager import ContextManager
 from app.dialog.validators import Validator
-from app.dialog.constants import DialogState, Intent
+from app.dialog.mode_manager import ModeManager
+from app.dialog.expression_calculator import ExpressionCalculator
+from app.dialog.constants import DialogState, Intent, DialogMode
 
 __all__ = [
     'MessageProcessor',
@@ -16,6 +18,9 @@ __all__ = [
     'IntentDetector',
     'ContextManager',
     'Validator',
+    'ModeManager',
+    'ExpressionCalculator',
     'DialogState',
+    'DialogMode',
     'Intent',
 ]

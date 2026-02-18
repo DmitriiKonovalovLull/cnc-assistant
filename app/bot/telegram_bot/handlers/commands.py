@@ -133,7 +133,7 @@ async def cmd_stats(message: types.Message, state: FSMContext):
 
 
 async def cmd_start(message: types.Message, state: FSMContext):
-    """Начало работы с ботом."""
+    """Начало работы с ботом - полный reset."""
     # Импортируем здесь чтобы избежать циклических зависимостей
     from app.bot.telegram_bot.main import context_repository
     
@@ -142,17 +142,25 @@ async def cmd_start(message: types.Message, state: FSMContext):
     user_id = str(message.from_user.id)
     user_name = message.from_user.first_name or "друг"
     
-    # Используем единую функцию получения контекста
-    context = await get_user_context(user_id)
+    # ПОЛНЫЙ RESET при /start
+    # Удаляем контекст из всех хранилищ
+    if context_manager:
+        context_manager.delete(user_id)
+    if file_storage:
+        file_storage.delete(user_id)
+    if context_repository:
+        try:
+            if hasattr(context_repository, 'delete'):
+                context_repository.delete(user_id)
+            elif hasattr(context_repository, 'clear_context'):
+                context_repository.clear_context(user_id)
+        except Exception as e:
+            logger.warning(f"Could not delete context from repository: {e}")
     
-    has_history = context and (
-        context.dialog_history or
-        context.material or
-        context.machine_type or
-        context.tool_name
-    )
+    # НЕ проверяем историю - всегда чистое приветствие
+    has_history = False
     
-    if has_history:
+    if False and has_history:  # Отключено - всегда чистое приветствие
         # Есть история - показываем приветствие с историей
         welcome_text = (
             f"👋 <b>Привет, {user_name}!</b>\n\n"
@@ -209,12 +217,14 @@ async def cmd_start(message: types.Message, state: FSMContext):
             f"Я <b>CNC Assistant</b> — помощник по режимам резания для токарки и фрезеровки.\n\n"
             f"📋 <b>Что умею:</b>\n"
             f"• Подбирать обороты, подачи, глубины резания\n"
+            f"• Калькулятор режимов резания (без стандартов)\n"
             f"• Работать по ГОСТ/ОСТ (болты, гайки и т.п.)\n"
             f"• Распознавать технологический маршрут (расточка, сверление, фрезер)\n"
             f"• Сохранять работы и загружать по номеру\n"
             f"• Искать информацию в интернете, если чего-то не знаю\n\n"
             f"💡 <b>Начните с описания задачи:</b>\n"
-            f"<code>сталь Ø100→90 черновая токарный ЧПУ</code>"
+            f"<code>сталь Ø100→90 черновая токарный ЧПУ</code>\n"
+            f"или используйте кнопки ниже."
         )
         await message.answer(welcome_text, reply_markup=create_main_nav_keyboard())
 

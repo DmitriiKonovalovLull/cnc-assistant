@@ -125,6 +125,7 @@ def create_main_nav_keyboard(include_machine_tool: bool = True, lang: Optional[s
             InlineKeyboardButton(text=t('btn.select_tool', lang=lang), callback_data="select_tool"),
         ])
     buttons.append([
+        InlineKeyboardButton(text="🧮 Калькулятор режимов", callback_data="nav_calculator"),
         InlineKeyboardButton(text=t('btn.vibration_analysis', lang=lang), callback_data="nav_vibration"),
     ])
     return InlineKeyboardMarkup(inline_keyboard=buttons)
