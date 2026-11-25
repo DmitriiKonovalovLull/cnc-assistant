@@ -1,186 +1,44 @@
 # CNC Assistant
 
-## Быстрый старт
+Python-помощник для задач ЧПУ: расчёт режимов обработки, работа с обозначениями стандартов и диалог через Telegram или командную строку.
 
-### Интерактивный CLI для работы со стандартами
+Проект развивается. Поддержку конкретного стандарта следует проверять по его данным и тестам; наличие названия системы стандартов в интерфейсе не означает полного покрытия всех её документов.
 
-Запустите `main.py` для интерактивной работы со всеми мировыми системами стандартов:
+## Что находится в репозитории
 
-```bash
+- `main.py` — запуск, проверка окружения и меню;
+- `app/bot/` — Telegram- и CLI-интерфейсы;
+- `app/services/` — инженерные расчёты и прикладные сервисы;
+- `standards/` — геометрия, допуски и работа со стандартами;
+- `tests/standards/` — тесты расчётов и интеграции стандартов.
+
+## Запуск
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
 python main.py
 ```
 
-**Возможности:**
-- Поддержка всех мировых систем стандартов (ГОСТ, ISO, DIN, GB, JIS, ANSI, BS)
-- Автоопределение системы по обозначению
-- Поиск аналогов стандартов в других системах с процентами совпадения
-- Региональные настройки (RU, CN, EU, US, JP, GB, GLOBAL)
-- Интерактивный режим с меню выбора
+Для Telegram настройте локальный `.env` по `.env.example`. OCR устанавливается отдельно через `requirements_ocr.txt`; ему также нужен Tesseract. Подробности — в [INSTALL.md](INSTALL.md).
 
-**Пример использования:**
-```
-Выберите систему стандартов:
-  1. ГОСТ (Россия/СНГ)
-  2. ISO (международный)
-  ...
-  8. Автоопределение
+## Проверки
 
-Введите обозначение: M20
-
-📊 Аналоги стандарта M20 (ISO):
-  GOST   24705          [████████████████████] 100%
-  DIN    13-1           [████████████████████] 100%
-  GB     192            [██████████████████░░]  98%
+```powershell
+python -m pytest tests/standards -v
 ```
 
----
+В репозитории есть CI для линтера и проверки импортов. Это не заменяет тесты расчётов и проверку работы Telegram-бота. Текущий результат полного набора тестов на этой странице не заявляется.
 
-AI-like industrial assistant for CNC operators: cutting modes, context, assumptions, and learning from feedback.
+## Документация
 
----
+- [Архитектура](ARCHITECTURE.md)
+- [Модуль стандартов](standards/README.md)
+- [Диалоговая система](DIALOG_SYSTEM.md)
 
-## Features
+В корне сохранены отчёты прошлых изменений. Они описывают отдельные этапы разработки; актуальное поведение определяется кодом и воспроизводимыми проверками.
 
-- **Languages** — interface in Russian, English, Chinese (`/lang` to switch)
-- **Natural dialogue** — describe the task in text, get recommendations with reasoning
-- **Context** — remembers material, operation, tool, diameters between messages
-- **Assumptions** — fills missing data with sensible defaults
-- **Tool recognition** — OCR from photos (Tesseract)
-- **Internet search** — looks up tools and machines online
-- **Drawing parsing** — extracts data from technical drawings
-- **Standards** — GOST, OST, DIN, ISO
-- **Engineering module** — full cutting calculation with power/torque/vibration risk
-- **Vibration analysis** — from spectrum photo or entered frequency (tooth/imbalance/resonance)
-- **Machine learning** — adapts K_machine and stable zones from operation history
+## Ограничения
 
----
-
-## Quick start
-
-**Windows:** `setup.bat`  
-**Linux/macOS:** `chmod +x setup.sh && ./setup.sh`
-
-### Запуск через main.py (рекомендуется)
-
-Главная точка входа с проверкой целостности проекта и автозагрузкой стандартов:
-
-```bash
-python main.py
-```
-
-**Возможности main.py:**
-- ✅ Автоматическая проверка структуры проекта
-- ✅ Проверка установленных зависимостей
-- ✅ Проверка наличия .env файла и токена
-- ✅ **Автозагрузка стандартов** (ГОСТ, ОСТ, ISO, DIN, GB, JIS, ANSI, BS) при старте
-- ✅ **Автоматический запуск бота** если токен найден
-- ✅ Меню настройки (если токен не найден):
-  - Запуск Telegram бота
-  - Проверка целостности проекта
-  - Установка зависимостей
-
-**Автозагрузка стандартов:**
-При запуске `main.py` автоматически загружаются:
-- ГОСТ резьбы и допуски
-- ISO допуски и резьбы
-- Реестр стандартов (WorldStandardRegistry)
-- Движок эквивалентности стандартов
-- База данных эквивалентности
-
-Стандарты интегрированы в логику Telegram бота - бот автоматически распознает обозначения стандартов (M20, H7, Ra 1.6 и т.д.) и предоставляет информацию о них.
-
-**Математические вычисления:**
-Все вычисления выполняются строго по формулам ISO/GOST:
-- Геометрия резьбы (ISO 965-1)
-- IT допуски (ISO 286)
-- Посадки (зазоры/натяги)
-- Шероховатость (связь с подачей)
-
-**Тестирование:**
-```bash
-# Запуск тестов через main.py (пункт 5)
-python main.py
-
-# Или напрямую
-pytest tests/standards -v
-```
-
-**Обновление стандартов:**
-```bash
-# Через main.py (пункт 4)
-python main.py
-
-# Или напрямую
-python standards/cli/update_standards.py update-standards
-```
-
-### Прямой запуск компонентов
-
-**Telegram бот:**
-```bash
-python app/bot/telegram_bot.py
-```
-
-**CLI режим:**
-```bash
-python app/bot/cli_bot.py
-```
-
-**Установка зависимостей:**
-```bash
-pip install -r requirements.txt
-```
-
-**Настройка .env:**
-Создайте файл `.env` в корне проекта:
-```
-TELEGRAM_TOKEN=ваш_токен_бота
-```
-
-Details: [INSTALL.md](INSTALL.md).
-
----
-
-## Architecture
-
-| Layer | Description |
-|-------|-------------|
-| Transport | Telegram / CLI |
-| Context | Per-user state (material, tool, machine, diameters) |
-| Parser | Text + image (OCR) + drawings |
-| Knowledge | Materials, tools, machines, standards |
-| Engineering | `calculate_optimal_modes`, power/torque/risk, modes (AGGRESSIVE/NORMAL/SAFE) |
-| Vibration | `analyze_vibration` / from image; tooth / imbalance / resonance + corrections |
-| Learning | `record_operation`, `update_machine_learning`, safe zones, K_machine_real |
-| Selector | `select_best_machine` by power, torque, rigidity, score formula |
-
-Main entry points:
-
-- **calculate_optimal_modes** — `app/services/engineering_calculator.py`
-- **analyze_vibration** — `app/services/vibration_analyzer.py`
-- **update_machine_learning** — `app/services/machine_learning_service.py`
-- **select_best_machine** — `app/services/machine_selector.py`
-
-Coefficients and thresholds are in DB (`calculation_coefficients`). Machine data: [docs/MACHINES_DATABASE.md](docs/MACHINES_DATABASE.md).
-
----
-
-## Data and learning
-
-- Dialogs and corrections: `data/logs/dialogs.jsonl`, `data/logs/corrections.jsonl`
-- Machine history: `machine_operation_history`, `machine_learned_params` (see schema in `app/storage/schema_machines_postgres.sql`)
-
----
-
-## Dependencies
-
-- **Core:** [requirements.txt](requirements.txt)
-- **OCR (photos):** [requirements_ocr.txt](requirements_ocr.txt) + Tesseract
-- **Internet (SPA):** [requirements_internet.txt](requirements_internet.txt) + `playwright install`
-- **CI / lint:** [requirements-dev.txt](requirements-dev.txt) (includes ruff)
-
----
-
-## Disclaimer
-
-Recommendations only. Always check parameters against your machine, tool, and safety rules.
+Расчёты требуют проверки исходных данных, единиц измерения и ограничений конкретного станка и инструмента. Для оценки ML-компонентов пока нужна отдельная опубликованная методика с набором данных и метриками.
