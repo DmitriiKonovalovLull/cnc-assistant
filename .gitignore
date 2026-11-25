@@ -1,2 +1,10 @@
 ﻿# Файлы окружения
 .env
+
+# Local Python and ML artifacts
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+.venv-ml/
+/artifacts/
